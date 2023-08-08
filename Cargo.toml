@@ -1,8 +1,7 @@
 [package]
-name = "bevy_github_ci_template"
+name = "mole_rancher_remastered"
 version = "0.1.0"
 edition = "2021"
-license = "MIT OR Apache-2.0"
 
 [dependencies]
 bevy = "0.11"
