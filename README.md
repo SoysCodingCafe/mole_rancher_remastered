@@ -5,9 +5,9 @@ This is the remastered version of the original game which came 5th Overall in th
 
 Mole Rancher can be played at: https://soyscodingcafe.itch.io/mole-rancher
 
-CREDITS
+## CREDITS
 
-Dev Team:
+### Dev Team
 
 SoysCodingCafe - Lead Programmer, Designer, Manager, and Producer.
 
@@ -17,7 +17,7 @@ IQuick143 - Programmer, Quality Assurance, and Playtester.
 
 
 
-Special Thanks To:
+### Special Thanks To
 
 Bevy Team - Game Engine and Game Jam Opportunity.
 

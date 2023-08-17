@@ -1,0 +1,790 @@
+// Import Bevy game engine essentials
+use bevy::{prelude::*, time::Stopwatch};
+// Import serde for serializing and deserializing
+// data for save files
+use serde::{Serialize, Deserialize};
+
+// CONTENTS
+// - Save Data
+// - Constants
+// - States
+// - Enums
+// - Structs
+// - System Sets
+// - Components
+// - Resources
+// - Events
+// - Molecule Helper Functions
+// - Reactor Helper Functions
+// - Text Styles
+// - Cutscene Helper Functions
+
+// SAVE DATA
+#[derive(Serialize, Deserialize)]
+pub struct SaveData {
+	pub sfx_volume: f64,
+	pub bgm_volume: f64,
+	pub selected_palette: usize,
+	pub levels_unlocked: Vec<bool>,
+	pub cutscenes_unlocked: Vec<bool>,
+}
+
+
+// CONSTANTS
+// Window Resolution
+pub const ASPECT_RATIO: f32 = 16.0 / 9.0;
+pub const ORTHO_HEIGHT: f32 = 900.0;
+pub const ORTHO_WIDTH: f32 = ORTHO_HEIGHT * ASPECT_RATIO;
+
+// Boot
+pub const BOOT_DURATION: f32 = 2.0;
+
+// Cutscene
+pub const TEXT_BOX_WIDTH: f32 = 1200.0;
+pub const TEXT_BOX_HEIGHT: f32 = 300.0;
+pub const TEXT_BOX_MARGINS: f32 = 25.0;
+
+pub const PORTRAIT_WIDTH: f32 = 300.0;
+pub const PORTRAIT_HEIGHT: f32 = 300.0;
+
+pub const ACTOR_WIDTH: f32 = 600.0;
+pub const ACTOR_HEIGHT: f32 = 900.0;
+
+pub const TEXT_SPEED: f32 = 0.01;
+pub const FADE_ACTOR_SPEED: f32 = 6.0;
+
+// Reactor Visuals
+pub const REACTOR_VIEWPORT_HEIGHT: f32 = 576.0;
+pub const REACTOR_VIEWPORT_WIDTH: f32 = REACTOR_VIEWPORT_HEIGHT * ASPECT_RATIO;
+pub const REACTOR_VIEWPORT_X: f32 = 400.0;
+pub const REACTOR_VIEWPORT_Y: f32 = 124.0;
+pub const REACTOR_VIEWPORT_CENTER: Vec2 = Vec2::new(
+	-(ORTHO_WIDTH / 2.0 - (REACTOR_VIEWPORT_X + REACTOR_VIEWPORT_WIDTH / 2.0)),
+	ORTHO_HEIGHT / 2.0 - (REACTOR_VIEWPORT_Y + REACTOR_VIEWPORT_HEIGHT / 2.0), 
+);
+
+pub const MAX_ZOOM: f32 = 0.5;
+pub const MIN_ZOOM: f32 = 10.0;
+pub const ZOOM_SPEED: f32 = 15.0;
+pub const ZOOM_TRANSLATION_SPEED: f32 = 60.0;
+pub const ZOOM_DEAD_ZONE_RADIUS: f32 = 180.0;
+
+pub const TOOLTIP_WIDTH: f32 = 300.0;
+pub const TOOLTIP_HEIGHT: f32 = 200.0;
+
+pub const STOPWATCH_BOX_WIDTH: f32 = 300.0;
+pub const STOPWATCH_BOX_HEIGHT: f32 = 80.0;
+pub const STOPWATCH_BOX_MARGINS: f32 = 8.0;
+
+
+// Reactor Interactions
+pub const LEVER_WIDTH: f32 = 160.0;
+pub const LEVER_HEIGHT: f32 = 40.0;
+
+pub const CONNECTION_WIDTH: f32 = 256.0;
+pub const CONNECTION_HEIGHT: f32 = 128.0;
+
+pub const LAUNCH_TUBE_WIDTH: f32 = 128.0;
+pub const LAUNCH_TUBE_HEIGHT: f32 = 256.0;
+pub const LAUNCH_TUBE_SPEED: f32 = 2.0;
+
+
+// General Parameters
+pub const MOLECULE_CAP: usize = 800;
+
+pub const FADE_TRANSITION_DURATION: f32 = 0.2;
+pub const POPUP_EXPAND_TIME: f32 = 0.5;
+pub const WIN_COUNTDOWN_LENGTH: f32 = 3.0;
+
+pub const NUMBER_OF_LEVELS: usize = 30;
+pub const NUMBER_OF_CUTSCENES: usize = 32;
+
+
+// STATES
+#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
+pub enum GameState {
+	#[default]
+	Boot,
+	Menu,
+	Cutscene,
+	Lab,
+	Reactor,
+}
+
+#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
+pub enum PauseState {
+	#[default]
+	Unpaused,
+	Paused,
+}
+
+
+// ENUMS
+#[derive(Eq, PartialEq, Default)]
+pub enum FadeScreenState {
+	#[default]
+	Idle,
+	Closing,
+	Opening,
+}
+
+#[derive(Eq, PartialEq, Default)]
+pub enum CutsceneState {
+	#[default]
+	Initialize,
+	Started,
+	Ended,
+}
+
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum PopupType {
+	Settings,
+	Logbook,
+	LevelSelect,
+	WinScreen,
+}
+
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum MenuButton {
+	StartGame,
+	Settings,
+	ExitGame,
+}
+
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum CustomLabButton {
+	MonitorActivate,
+	LogbookOpen,
+	ExitLab,
+	Poster,
+}
+
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum PopupButton {
+	Volume(usize),
+	Palette(usize),
+	LogbookTurnLeft,
+	LogbookTurnRight,
+	LevelSelect(usize),
+	CompleteLevel,
+	ExitPopup,
+}
+
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum ReactorButton {
+	SelectMolecule(usize),
+	ExitReactor,
+}
+
+#[derive(Eq, PartialEq, Clone, Copy, Debug, Default)]
+pub enum Actor {
+	#[default]
+	Nobody,
+	You,
+	Guard,
+	Scientist,
+}
+
+#[derive(Clone, Copy)]
+pub enum ReactorType {
+	Rectangle{
+		origin: Vec2,
+		dimensions: Dimensions,
+	},
+	Circle{
+		origin: Vec2,
+		radius: f32,
+	},
+}
+
+pub enum ReactionInfo {
+	Reaction(Vec<usize>, Limits, Limits),
+	None,
+}
+
+pub enum Lifetime {
+	Unstable(Timer, ReactionInfo),
+	Stable,
+}
+
+
+// STRUCTS
+#[derive(Clone, Copy)]
+pub struct Dimensions {
+	pub width: f32,
+	pub height: f32,
+}
+
+pub struct Limits(pub f32, pub f32);
+
+// SYSTEM SETS
+
+
+// COMPONENTS
+#[derive(Component)]
+pub struct StandardButton {
+	pub location: Vec3,
+	pub dimensions: Dimensions,
+}
+
+#[derive(Component, PartialEq, Eq, Clone, Copy, Debug)]
+pub enum ButtonEffect {
+	MenuButton(MenuButton),
+	CustomLabButton(CustomLabButton),
+	PopupButton(PopupButton),
+	ReactorButton(ReactorButton),
+}
+
+#[derive(Component)]
+pub struct ReactorInit {
+	// Molecule Index, Location, Initial Velocity
+	pub molecules: Vec<(usize, Vec2, Vec2)>,
+}
+
+#[derive(Component)]
+pub struct ReactorConnections(pub Vec<(Vec2, Connection)>);
+
+#[derive(Component)]
+pub struct Connection {
+	pub reactor_id: usize, 
+	pub connection_id: usize,
+	pub intake: bool,
+}
+
+#[derive(Component, Clone, Copy)]
+pub struct ReactorInfo {
+	pub input_chamber: bool,
+	pub product_chamber: bool,
+	pub reactor_type: ReactorType,
+	pub reactor_id: usize,
+}
+
+#[derive(Component)]
+pub struct Molecule(pub Lifetime);
+
+#[derive(Component, Clone, Copy)]
+pub struct MoleculeInfo {
+	pub index: usize,
+	pub reacted: bool,
+	pub radius: f32,
+	pub mass: f32,
+}
+
+#[derive(Component, Clone, Copy)]
+pub struct Velocity(pub Vec2);
+
+#[derive(Component)]
+pub struct SelectedLever;
+
+#[derive(Component)]
+pub struct LeverInfo {
+	pub lever_type: usize,
+	pub min_height: f32,
+	pub max_height: f32,
+}
+
+#[derive(Component)]
+pub struct MainCamera;
+
+#[derive(Component)]
+pub struct ReactorCamera;
+
+#[derive(Component)]
+pub struct SelectedMolecule;
+
+#[derive(Component)]
+pub struct SelectedReactor;
+
+#[derive(Component)]
+pub struct Highlight;
+
+#[derive(Component)]
+pub struct Tooltip;
+
+#[derive(Component)]
+pub struct LaunchTube(pub usize);
+
+#[derive(Component, Default)]
+pub struct ActorInfo {
+	pub actor: Actor,
+}
+
+#[derive(Component)]
+pub struct StopwatchText(pub Stopwatch);
+
+#[derive(Component)]
+pub struct CutsceneText;
+
+#[derive(Component)]
+pub struct PopupTimer(pub Timer);
+
+#[derive(Component)]
+pub struct FadeScreen;
+
+#[derive(Component)]
+pub struct BrightLab;
+
+#[derive(Component)]
+pub struct Logbook(pub usize);
+
+#[derive(Component)]
+pub struct PopupInfo{
+	pub origin: Vec2,
+	pub full_size: bool,
+	pub popup_type: PopupType,
+}
+
+#[derive(Component)]
+pub struct MoleculeSpawnerInfo{
+	pub spawner_index: usize,
+	pub spawner_timer: Timer,
+}
+
+#[derive(Component)]
+pub struct ReactorCondition{
+	pub temperature: f32,
+	pub pressure: f32,
+}
+
+#[derive(Component)]
+pub struct AnimationTimer(pub Timer);
+
+#[derive(Component)]
+pub struct AnimationIndices {
+	pub first: usize,
+	pub total: usize,
+}
+
+#[derive(Component)]
+pub struct DespawnOnExitGameState;
+
+#[derive(Component)]
+pub struct DespawnOnExitPauseState;
+
+
+// RESOURCES
+// Defines the internal resolution used by sprites 
+// before scaling to window size
+#[derive(Resource)]
+pub struct OrthoSize {
+	pub width: f32,
+	pub height: f32,
+}
+
+#[derive(Resource)]
+pub struct MoleculeCount {
+	pub total: usize,
+	pub cap: usize,
+}
+
+#[derive(Resource)]
+pub struct BootTimer(pub Timer);
+
+#[derive(Resource)]
+pub struct WinCountdown(pub Timer);
+
+#[derive(Resource)]
+pub struct FadeTransitionTimer(pub Timer);
+
+#[derive(Resource)]
+pub struct TextSpeedTimer(pub Timer);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct SelectedPalette(pub usize);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct CurrentLogbookPage(pub usize);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct SelectedLevel(pub usize);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct SelectedMoleculeType(pub usize);
+
+#[derive(Resource)]
+pub struct CutsceneTracker {
+	pub current_scene: usize,
+	pub current_line: usize,
+	pub current_character: usize,
+	pub full_line: String,
+	pub actor_info: ActorInfo,
+	pub cutscene_state: CutsceneState,
+}
+
+
+// EVENTS
+#[derive(Event)]
+pub struct ButtonCall(pub ButtonEffect);
+
+#[derive(Event)]
+pub struct FadeTransitionEvent(pub GameState);
+
+#[derive(Event)]
+pub struct PopupEvent{
+	pub origin: Vec2,
+	pub image: Handle<Image>,
+	pub alpha: f32,
+	pub popup_type: PopupType,
+}
+
+#[derive(Event)]
+pub struct PopupCompleteEvent;
+
+#[derive(Event)]
+pub struct ConnectionEvent{
+	pub connection_id: usize,
+	pub m_info: MoleculeInfo,
+	pub r_info: ReactorInfo,
+	pub velocity: Vec2,
+}
+
+
+// MOLECULE HELPER FUNCTIONS
+pub fn get_molecule_path(
+	index: usize,
+) -> String {
+	match index {
+		0 => "moles/smooth_triangle.png".to_string(),
+		1 => "moles/cage_triangle.png".to_string(),
+		2 => "moles/cage_square.png".to_string(),
+		3 => "moles/spikes_dense.png".to_string(),
+		4 => "moles/spikes_sparse.png".to_string(),
+		5 => "moles/cage_square.png".to_string(),
+		_ => "moles/smooth_triangle.png".to_string(),
+	}
+}
+
+pub fn get_molecule_color(
+	index: usize,
+	palette: usize,
+) -> Color {
+	match palette {
+		0 => match index {
+			0 => Color::RED,
+			1 => Color::BLUE,
+			2 => Color::PURPLE,
+			3 => Color::ORANGE,
+			4 => Color::DARK_GRAY,
+			5 => Color::WHITE,
+			_ => Color::RED,
+		}
+		_ => match index {
+			0 => Color::RED,
+			1 => Color::ORANGE,
+			2 => Color::YELLOW,
+			3 => Color::GREEN,
+			4 => Color::BLUE,
+			5 => Color::INDIGO,
+			_ => Color::VIOLET,
+		}
+	}
+}
+
+pub fn get_molecule_radius(
+	index: usize,
+) -> f32 {
+	match index {
+		0 => 32.0,
+		1 => 64.0,
+		2 => 128.0,
+		3 => 96.0,
+		4 => 16.0,
+		5 => 96.0,
+		_ => 32.0,
+	}
+}
+
+pub fn get_molecule_mass(
+	index: usize,
+) -> f32 {
+	match index {
+		0 => 100.0,
+		1 => 300.0,
+		2 => 3000.0,
+		3 => 200.0,
+		4 => 50.0,
+		5 => 1000.0,
+		_ => 100.0,
+	}
+}
+
+pub fn get_molecule_initial_velocity(
+	index: usize,
+) -> f32 {
+	match index {
+		0 => 3000.0,
+		1 => 1000.0,
+		2 => 500.0,
+		3 => 2000.0,
+		4 => 800.0,
+		5 => 100.0,
+		_ => 3000.0,
+	}
+}
+
+pub fn get_molecule_lifetime(
+	index: usize,
+) -> Lifetime {
+	match index {
+		0 => Lifetime::Stable,
+		1 => Lifetime::Stable,
+		2 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 5.0 + 5.0, TimerMode::Once), 
+		ReactionInfo::None),
+		3 => Lifetime::Stable,
+		4 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 4.0 + 1.0, TimerMode::Once), 
+		ReactionInfo::Reaction(vec![], Limits(0.0, 0.4), Limits(0.0, 1.0))),
+		5 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 0.2 + 3.0, TimerMode::Once), 
+			ReactionInfo::Reaction(vec![0, 0, 0, 0, 0], Limits(0.5, 1.0), Limits(0.0, 0.5))),
+		_ => Lifetime::Stable,
+	}
+}
+
+pub fn valid_molecule_combination(
+	mol_a: usize,
+	mol_b: usize,
+) -> ReactionInfo {
+	let (mol_a, mol_b) = (mol_a.min(mol_b), mol_a.max(mol_b));
+	match mol_a {
+		0 => match mol_b {
+			0 => ReactionInfo::Reaction(vec![0, 0, 0], Limits(0.8, 0.9), Limits(0.8, 0.9)),
+			1 => ReactionInfo::Reaction(vec![0, 1, 2], Limits(0.25, 0.5), Limits(0.0, 1.0)),
+			4 => ReactionInfo::Reaction(vec![4], Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			_ => ReactionInfo::None,
+		},
+		1 => match mol_b {
+			1 => ReactionInfo::Reaction(vec![3], Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			4 => ReactionInfo::Reaction(Vec::new(), Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			_ => ReactionInfo::None,
+		},
+		2 => match mol_b {
+			2 => ReactionInfo::Reaction(vec![3], Limits(0.0, 1.0), Limits(0.9, 1.0)),
+			3 => ReactionInfo::Reaction(vec![0, 0, 0, 0], Limits(0.0, 0.2), Limits(0.0, 0.2)),
+			4 => ReactionInfo::Reaction(vec![2], Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			_ => ReactionInfo::None,
+		},
+		3 => match mol_b {
+			3 => ReactionInfo::Reaction(vec![4], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			4 => ReactionInfo::Reaction(vec![4, 4, 4, 4, 4], Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			_ => ReactionInfo::None,
+		},
+		4 => match mol_b {
+			_ => ReactionInfo::None,
+		},
+		_ => ReactionInfo::None,
+	}
+}
+
+
+// REACTOR HELPER FUNCTIONS
+pub fn get_reactors(
+	level: usize,
+) -> Vec<ReactorInfo> {
+	let mut reactors = Vec::new();
+	match level {
+		0 => {
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-3000.0, 100.0), dimensions: Dimensions{width: 3000.0, height: 3000.0}}, reactor_id: 0, input_chamber: false, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(3000.0, -2500.0), dimensions: Dimensions{width: 3000.0, height: 2000.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(4000.0, 2000.0), radius: 2200.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
+		},
+		1 => {reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
+		2 => {
+			for j in 0..4 {
+				for i in 0..8 {
+					reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-6844.0 + 1955.5*i as f32, 3180.0 - 2120.0*j as f32), radius: 800.0}, reactor_id: i + 8*j, 
+					input_chamber: if i == 0 && j == 0 {true} else {false}, product_chamber: if i == 7 && j == 3 {true} else {false}});
+				}
+			}
+		}
+		_ => (),
+	}
+	reactors
+}
+
+pub fn get_reactor_connections(
+	level: usize,
+	reactor_id: usize,
+) -> ReactorConnections {
+	let mut connections = Vec::new();
+	match level {
+		0 => match reactor_id {
+			0 => {
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true}));
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false}));
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false}));
+			},
+			1 => {
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false}));
+			}
+			2 => {
+				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true}));
+			}
+			_ => (),
+		}
+		1 => match reactor_id {
+			_ => {
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true}));
+				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false}));
+				connections.push((Vec2::new(-1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true}));
+				connections.push((Vec2::new(-1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false}));
+				connections.push((Vec2::new(1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: true}));
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: false}));
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: true}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false}));
+			}
+		}
+		2 => match reactor_id {
+			i => {
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: (i+1)%32, intake: true}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: i, intake: false}));
+			}
+		}
+		_ => (),
+	}
+	ReactorConnections(connections)
+}
+
+pub fn get_level_goal(
+	level: usize,
+) -> (usize, usize) {
+	match level {
+		0 => (5, 0),
+		1 => (100, 4),
+		2 => (1, 0),
+		_ => (1, 0),
+	}
+}
+
+
+// TEXT STYLES
+pub fn get_title_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 160.0,
+		color: Color::rgba(0.3, 0.9, 0.3, 1.0),
+	}
+}
+
+pub fn get_subtitle_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 80.0,
+		color: Color::rgba(0.3, 0.9, 0.3, 1.0),
+	}
+}
+
+pub fn get_cutscene_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 32.0,
+		color: Color::rgba(0.1, 0.1, 0.1, 1.0),
+		..Default::default()
+	}
+}
+
+pub fn get_stopwatch_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 64.0,
+		color: Color::rgba(0.1, 0.3, 0.1, 1.0),
+		..Default::default()
+	}
+}
+
+
+// CUTSCENE HELPER FUNCTIONS
+pub fn next_line(
+	current_scene: usize,
+	current_line: usize,
+) -> (String, ActorInfo) {
+	match current_scene {
+		0 => match current_line {
+			0 =>
+			("DAY 1 - OUTSIDE MAIN ENTRANCE".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			1 =>
+			("New text! This text is very long for debug purposes! It also covers multiple lines! Wow! So cool! MMMMMMMMMMMMMMMMMMMM MMMMMMMMMMMMM MMMMMM MMMMMM M MMMMM MMMMM MMM MMMMMMMMMMMMMMM IIIIIIIIIIII IIII IIIII IIIIIIII IIIII IIIIIIIIIII IIIIIIIIIIIIIIIII IIIIIIIIIIIIII IIII Fini".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			_ =>
+			("I am a guard! Do do doooo!".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+		},
+		1 => match current_line {
+			0 =>
+			("DAY 2 - OUTSIDE MAIN ENTRANCE".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			1 =>
+			("So you are the scraps they have tossed me.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			2 =>
+			("You must get inside quickly. Your predecessor is already starting to decompose, and the morgue is full.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			3 =>
+			("Producing an acid to dispose of the body is so simple I could do it, but then who would guard the door?".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			4 =>
+			("The computer is already logged in, and the logbook is now yours, assuming you can read.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			_ =>
+			("Now get to work.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+		},
+		_ => match current_line {
+			0 =>
+			("DAY ? - PLEASE REPORT THIS".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			_ =>
+			("You have reached an unreachable cutscene, interesting. This should not have happened".to_string(),
+			ActorInfo{actor: Actor::You}),
+		}
+	}
+}
+
+pub fn lines_per_scene(
+	current_scene: usize,
+) -> usize {
+	match current_scene {
+		0 => 2,
+		1 => 5,
+		_ => 1,
+	}
+}
+
+pub fn actors_in_scene(
+	current_scene: usize,
+) -> Vec<Actor> {
+	match current_scene {
+		0 => vec![Actor::Scientist, Actor::Guard],
+		1 => vec![Actor::Guard],
+		_ => vec![Actor::You],
+	}
+}
+
+pub fn get_actor_path(
+	actor: Actor,
+) -> String {
+	match actor {
+		Actor::Nobody => "".to_string(),
+		Actor::You => "".to_string(),
+		Actor::Guard => "actors/guard.png".to_string(),
+		Actor::Scientist => "actors/scientist.png".to_string(),
+	}
+}
+
+pub fn get_actor_name(
+	actor: Actor,
+) -> String {
+	match actor {
+		Actor::Nobody => "Nobody".to_string(),
+		Actor::You => "You".to_string(),
+		Actor::Guard => "Guard".to_string(),
+		Actor::Scientist => "Scientist".to_string(),
+	}
+}
