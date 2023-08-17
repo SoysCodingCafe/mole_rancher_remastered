@@ -53,12 +53,12 @@ fn resize_reactor_camera_viewport(
 		let mut camera = reactor_camera_query.single_mut();
 		camera.viewport = Some(Viewport {
 			physical_position: UVec2::new(
-				(window.width() / ortho_size.width * location.x) as u32,
-				(window.height()  / ortho_size.height * location.y) as u32,
+				(window.physical_width() as f32 / ortho_size.width * location.x) as u32,
+				(window.physical_height() as f32 / ortho_size.height * location.y) as u32,
 			),
 			physical_size: UVec2::new(
-				(window.width() / ortho_size.width * size.width) as u32,
-				(window.height()  / ortho_size.height * size.height) as u32,
+				(window.physical_width() as f32 / ortho_size.width * size.width) as u32,
+				(window.physical_height() as f32  / ortho_size.height * size.height) as u32,
 			),
 			..default()
 		});
