@@ -10,7 +10,7 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app
-		.add_systems( Update,(
+		.add_systems(Update, (
 			resize_reactor_camera_viewport,
 			pan_zoom_reactor_camera,
 		))
@@ -124,6 +124,7 @@ fn pan_zoom_reactor_camera(
 			for (_, tracked_transform, _) in tracked_query.iter() {
 				transform.translation.x = (transform.translation.x * 3.0 + tracked_transform.translation.x) / 4.0;
 				transform.translation.y = (transform.translation.y * 3.0 + tracked_transform.translation.y) / 4.0;
+				break;
 			};
 		}
 		transform.translation.x = transform.translation.x.clamp(

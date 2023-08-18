@@ -113,13 +113,16 @@ fn vent_reactor(
 fn debug_molecule(
 	mut commands: Commands,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+	mut launch_timer: ResMut<LaunchTimer>,
 	selected_palette: Res<SelectedPalette>,
 	selected_molecule_type: Res<SelectedMoleculeType>,
 	selected_reactor_query: Query<(&ReactorInfo, With<SelectedReactor>)>,
 	launch_tube_query: Query<(&Transform, &LaunchTube)>,
 	asset_server: Res<AssetServer>,
 	keyboard: Res<Input<KeyCode>>,
+	time: Res<Time>,
 ) {
+	launch_timer.0.tick(time.delta());
 	// Space for selected, R for random, T for true random, S for spawner
 	if keyboard.just_pressed(KeyCode::S) || keyboard.just_pressed(KeyCode::Space) || keyboard.pressed(KeyCode::R) || keyboard.pressed(KeyCode::T) || keyboard.pressed(KeyCode::W) {
 		let mut rng = rand::thread_rng();
@@ -135,43 +138,46 @@ fn debug_molecule(
 			for (transform, launch_tube) in launch_tube_query.iter() {
 				if launch_tube.0 == info.reactor_id {
 					if keyboard.just_pressed(KeyCode::Space) || keyboard.pressed(KeyCode::R) || keyboard.pressed(KeyCode::T) || keyboard.pressed(KeyCode::W) {
-						let (target, distance) = match info.reactor_type {
-							ReactorType::Rectangle{dimensions, ..} => (Vec2::new(transform.translation.x, transform.translation.y - dimensions.height / 2.0), dimensions.height / 2.0), 
-							ReactorType::Circle{origin, radius} => (origin, radius),
-						};
-						let direction = (target - transform.translation.xy()).normalize();
-						let velocity = get_molecule_initial_velocity(molecule_index);
-						commands
-							.spawn((SpriteSheetBundle {
-								transform: Transform::from_translation(((Vec2::new(transform.translation.x, transform.translation.y) - target)
-									.clamp_length_max(distance - get_molecule_radius(molecule_index)) + target).extend(500.0)),
-								texture_atlas: texture_atlas_handle.clone(),
-								sprite: TextureAtlasSprite{
-									color: get_molecule_color(molecule_index, selected_palette.0),
-									index: 0,
-									custom_size: Some(Vec2::new(radius * 2.0, radius * 2.0)),
+						if launch_timer.0.finished() {
+							launch_timer.0.reset();
+							let (target, distance) = match info.reactor_type {
+								ReactorType::Rectangle{dimensions, ..} => (Vec2::new(transform.translation.x, transform.translation.y - dimensions.height / 2.0), dimensions.height / 2.0), 
+								ReactorType::Circle{origin, radius} => (origin, radius),
+							};
+							let direction = (target - transform.translation.xy()).normalize();
+							let velocity = get_molecule_initial_velocity(molecule_index);
+							commands
+								.spawn((SpriteSheetBundle {
+									transform: Transform::from_translation(((Vec2::new(transform.translation.x, transform.translation.y) - target)
+										.clamp_length_max(distance - get_molecule_radius(molecule_index)) + target).extend(500.0)),
+									texture_atlas: texture_atlas_handle.clone(),
+									sprite: TextureAtlasSprite{
+										color: get_molecule_color(molecule_index, selected_palette.0),
+										index: 0,
+										custom_size: Some(Vec2::new(radius * 2.0, radius * 2.0)),
+										..Default::default()
+									},
 									..Default::default()
 								},
-								..Default::default()
-							},
-							*info,
-							Molecule(get_molecule_lifetime(molecule_index)),
-							MoleculeInfo {
-								index: molecule_index,
-								reacted: false,
-								radius: radius,
-								mass: mass,
-							},
-							Velocity(Vec2::new(velocity, velocity) * direction),
-							AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-							AnimationIndices{ 
-								first: 0, 
-								total: 8,
-							},
-							RenderLayers::layer(1),
-							DespawnOnExitGameState,
-							Name::new("Debug Molecule")
-						));
+								*info,
+								Molecule(get_molecule_lifetime(molecule_index)),
+								MoleculeInfo {
+									index: molecule_index,
+									reacted: false,
+									radius: radius,
+									mass: mass,
+								},
+								Velocity(Vec2::new(velocity, velocity) * direction),
+								AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+								AnimationIndices{ 
+									first: 0, 
+									total: 8,
+								},
+								RenderLayers::layer(1),
+								DespawnOnExitGameState,
+								Name::new("Debug Molecule")
+							));
+						}
 					}
 					// S for Spawner
 					if keyboard.just_pressed(KeyCode::S) {

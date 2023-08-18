@@ -4,6 +4,7 @@ use bevy::{prelude::*, asset::ChangeWatcher};
 use std::time::Duration;
 
 // MODULES
+mod audio;
 mod buttons;
 mod camera;
 mod components;
@@ -49,8 +50,10 @@ fn main() {
 
 		// Plugins
 		.add_plugins((
-			// For bgm and sfx
+			// Kira audio plugin for Bevy for playing sound files
 			bevy_kira_audio::AudioPlugin,
+			// For playing background music and sound effects
+			audio::AudioPlugin,
 			// Button logic and interactions
 			buttons::ButtonsPlugin,
 			// Camera panning and zooming

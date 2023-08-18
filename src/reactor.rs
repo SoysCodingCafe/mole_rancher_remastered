@@ -297,7 +297,8 @@ fn handle_levers(
 fn intake_connections(
 	mut commands: Commands,
 	mut ev_w_connection: EventWriter<ConnectionEvent>,
-	molecule_query: Query<(Entity, &Transform, &MoleculeInfo, &Velocity, &ReactorInfo, With<Molecule>)>,
+	selected_molecule_query: Query<(Entity, &Transform, &MoleculeInfo, &Velocity, &ReactorInfo, With<SelectedMolecule>)>,
+	molecule_query: Query<(Entity, &Transform, &MoleculeInfo, &Velocity, &ReactorInfo, (With<Molecule>, Without<SelectedMolecule>))>,
 	connection_query: Query<(&Transform, &Connection)>,
 ) {
 	for (c_transform, connection) in connection_query.iter() {
@@ -309,6 +310,21 @@ fn intake_connections(
 						m_info: *m_info,
 						r_info: *r_info,
 						velocity: velocity.0,
+						selected: false,
+					});
+					commands.entity(entity).despawn_recursive();
+				}
+			}
+		}
+		for (entity, m_transform, m_info, velocity, r_info, _) in selected_molecule_query.iter() {
+			if connection.reactor_id == r_info.reactor_id {
+				if (c_transform.translation.xy() - m_transform.translation.xy()).length() < CONNECTION_WIDTH && connection.intake {
+					ev_w_connection.send(ConnectionEvent{
+						connection_id: connection.connection_id,
+						m_info: *m_info,
+						r_info: *r_info,
+						velocity: velocity.0,
+						selected: true,
 					});
 					commands.entity(entity).despawn_recursive();
 				}
@@ -346,7 +362,7 @@ fn outlet_connections(
 				prev_transform.rotate_local_z((rand::random::<f32>() - 0.5) * 0.75_f32);
 				let direction = -prev_transform.local_y().xy().normalize();
 
-				commands
+				let mut mole = commands
 					.spawn((SpriteSheetBundle {
 						transform: Transform::from_translation((transform.translation.xy() + -prev_transform.local_y().xy().normalize() * ev.m_info.radius * 1.01).extend(500.0)),
 						texture_atlas: texture_atlas_handle.clone(),
@@ -371,6 +387,9 @@ fn outlet_connections(
 					DespawnOnExitGameState,
 					Name::new("Molecule")
 				));
+				if ev.selected {
+					mole.insert(SelectedMolecule);
+				}
 			}
 		}
 	}

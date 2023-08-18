@@ -15,13 +15,18 @@ impl Plugin for MoleculesPlugin {
 			))
 			.add_systems(Update, (
 				track_molecule,
+				highlight_tracked_molecule.after(molecule_movement),
+			))
+			.add_systems(Update, (
 				update_molecule_count,
 				update_molecule_lifetime.after(update_molecule_count),
 				molecule_spawner.after(update_molecule_count),
 				molecule_movement.after(update_molecule_count),
-				highlight_tracked_molecule.after(molecule_movement),
+				clamp_inside_reactor.after(molecule_movement),
 				move_launch_tube,
-			).run_if(in_state(GameState::Reactor)))
+			).run_if(in_state(GameState::Reactor))
+			.run_if(not(in_state(PauseState::Paused)))
+		)
 		;
 	}
 }
@@ -140,6 +145,7 @@ fn molecule_movement(
 	mut molecule_query: Query<(Entity, &mut MoleculeInfo, &mut ReactorInfo, &mut Transform, &mut Velocity)>,
 	reactor_condition_query: Query<(&ReactorCondition, &ReactorInfo, Without<MoleculeInfo>)>,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+	mut ev_w_sound_effect: EventWriter<SoundEffectEvent>,
 	selected_palette: Res<SelectedPalette>,
 	molecule_count: Res<MoleculeCount>,
 	asset_server: Res<AssetServer>,
@@ -157,7 +163,11 @@ fn molecule_movement(
 		let mut baby = false;
 		let mut bounce = false;
 		let offset = transform_a.translation.xy() - transform_b.translation.xy();
+		// Molecule collision check takes place here
 		if offset.length() <= m_info_a.radius + m_info_b.radius {
+			ev_w_sound_effect.send(SoundEffectEvent{note: m_info_a.index, location: transform_a.translation.xy()});
+			ev_w_sound_effect.send(SoundEffectEvent{note: m_info_b.index, location: transform_b.translation.xy()});
+
 			let info = valid_molecule_combination(m_info_a.index, m_info_b.index);
 			let (mut current_temperature, mut current_pressure) = (0.0, 0.0);
 			for (condition, info, _) in reactor_condition_query.iter() {
@@ -167,6 +177,7 @@ fn molecule_movement(
 			}
 			match info {
 				ReactionInfo::Reaction(products, temperature_limits, pressure_limits) => {
+					// Reaction takes place here
 					if current_temperature >= temperature_limits.0 
 					&& current_temperature <= temperature_limits.1
 					&& current_pressure >= pressure_limits.0
@@ -182,11 +193,45 @@ fn molecule_movement(
 						if product_contains_a && product_contains_b {
 							baby = true;
 						};
+
+						let mass_a_in = m_info_a.mass;
+						let mass_b_in = m_info_b.mass;
+						let velocity_a_in = velocity_a.0;
+						let velocity_b_in = velocity_b.0;
+						let momentum_a = mass_a_in * velocity_a_in;
+						let momentum_b = mass_b_in * velocity_b_in;
+						let velocity_out = (momentum_a + momentum_b)/(mass_a_in + mass_b_in);
+
+						let total_products = products.len();
+
 						for product in products {
-							if product == m_info_a.index && !input_a_accounted_for {input_a_accounted_for = true}
-							else if product == m_info_b.index && !input_b_accounted_for {input_b_accounted_for = true}
+							if product == m_info_a.index && !input_a_accounted_for {
+								match total_products {
+									1 => {
+										m_info_a.mass += m_info_b.mass;
+										velocity_a.0 = velocity_out;
+									}
+									i => {
+										m_info_a.mass = (mass_a_in + mass_b_in)/i as f32;
+										velocity_b.0 = velocity_out * Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
+									}
+								}
+								input_a_accounted_for = true;
+							}
+							else if product == m_info_b.index && !input_b_accounted_for {
+								match total_products {
+									1 => {
+										m_info_b.mass += m_info_a.mass;
+										velocity_b.0 = velocity_out;
+									}
+									i => {
+										m_info_b.mass = (mass_a_in + mass_b_in)/i as f32;
+										velocity_b.0 = velocity_out * Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
+									}
+								}
+								input_b_accounted_for = true;
+							}
 							else if molecule_count.total <= molecule_count.cap {
-								let velocity = get_molecule_initial_velocity(product);
 								let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
 								commands
 									.spawn((SpriteSheetBundle {
@@ -209,9 +254,14 @@ fn molecule_movement(
 										index: product,
 										reacted: false,
 										radius: get_molecule_radius(product),
-										mass: get_molecule_mass(product),
+										mass: match total_products {
+											1 => {mass_a_in + mass_b_in},
+											i => {(mass_a_in + mass_b_in)/i as f32}
+										}
 									},
-									Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity, (rand::random::<f32>()-0.5)*velocity) * direction),
+									match total_products {
+										1 => {Velocity((momentum_a + momentum_b)/(mass_a_in + mass_b_in))},
+										i => {Velocity(velocity_out/(i as f32 * direction))}},
 									AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 									AnimationIndices{ 
 										first: 0, 
@@ -230,6 +280,7 @@ fn molecule_movement(
 				ReactionInfo::None => bounce = true,
 			};
 
+			// Molecule collision repel takes place here
 			if bounce || baby {
 				let relative_velocity = velocity_a.0 - velocity_b.0;
 				let dp = offset * relative_velocity.dot(offset) / ((offset.length_squared()) * (m_info_a.mass + m_info_b.mass));
@@ -240,46 +291,11 @@ fn molecule_movement(
 				let push = (offset.normalize() * 1.01 * (m_info_a.radius + m_info_b.radius) - offset).extend(0.0);
 				transform_a.translation += push;
 				transform_b.translation -= push;
-
-				match r_info_a.reactor_type {
-					ReactorType::Rectangle{origin, dimensions } => {
-						let offset = (transform_a.translation.xy() - origin).abs();
-						if offset.x > dimensions.width / 2.0 - m_info_a.radius {
-							transform_a.translation.x = origin.x + (transform_a.translation.x - origin.x).signum() * (dimensions.width / 2.0 - m_info_a.radius);
-						}
-						if offset.y > dimensions.height / 2.0 - m_info_a.radius{
-							transform_a.translation.y = origin.y + (transform_a.translation.y - origin.y).signum() * (dimensions.height / 2.0 - m_info_a.radius);
-						}
-					},
-					ReactorType::Circle{origin, radius } => {
-						let offset = (transform_a.translation.xy() - origin).length();
-						if offset > radius - m_info_a.radius {
-							transform_a.translation = (origin + (transform_a.translation.xy() - origin).normalize() * (radius - m_info_a.radius)).extend(transform_a.translation.z);
-						}
-					},
-				}
-
-				match r_info_b.reactor_type {
-					ReactorType::Rectangle{origin, dimensions } => {
-						let offset = (transform_b.translation.xy() - origin).abs();
-						if offset.x > dimensions.width / 2.0 - m_info_b.radius {
-							transform_b.translation.x = origin.x + (transform_b.translation.x - origin.x).signum() * (dimensions.width / 2.0 - m_info_b.radius);
-						}
-						if offset.y > dimensions.height / 2.0 - m_info_b.radius {
-							transform_b.translation.y = origin.y + (transform_b.translation.y - origin.y).signum() * (dimensions.height / 2.0 - m_info_b.radius);
-						}
-					},
-					ReactorType::Circle{origin, radius } => {
-						let offset = (transform_b.translation.xy() - origin).length();
-						if offset > radius - m_info_b.radius {
-							transform_b.translation = (origin + (transform_b.translation.xy() - origin).normalize() * (radius - m_info_b.radius)).extend(transform_b.translation.z); 
-						}
-					},
-				}
 			}
 		}
 	}
 
+	// Edge collision takes place here
 	for (_, mut m_info, r_info, mut transform, mut velocity) in molecule_query.iter_mut() {
 		m_info.reacted = false;
 		let target = Vec2::new(
@@ -291,9 +307,11 @@ fn molecule_movement(
 				let offset = (target - origin).abs();
 				if offset.x > dimensions.width / 2.0 - m_info.radius {
 					velocity.0.x = -velocity.0.x;
+					ev_w_sound_effect.send(SoundEffectEvent{note: m_info.index, location: transform.translation.xy()});
 				}
 				if offset.y > dimensions.height / 2.0 - m_info.radius {
 					velocity.0.y = -velocity.0.y;
+					ev_w_sound_effect.send(SoundEffectEvent{note: m_info.index, location: transform.translation.xy()});
 				}
 			},
 			ReactorType::Circle{origin, radius } => {
@@ -304,12 +322,37 @@ fn molecule_movement(
 					let new_velocity = prev_velocity - (2.0*prev_velocity.dot(normal)*normal);
 					velocity.0.x = new_velocity.x;
 					velocity.0.y = new_velocity.y;
+					ev_w_sound_effect.send(SoundEffectEvent{note: m_info.index, location: transform.translation.xy()});
 				}
 			},
 		}
 
 		transform.translation.x = transform.translation.x + velocity.0.x * time.delta_seconds();
 		transform.translation.y = transform.translation.y + velocity.0.y * time.delta_seconds();
+	}
+}
+
+fn clamp_inside_reactor(
+	mut molecule_query: Query<(&MoleculeInfo, &ReactorInfo, &mut Transform, With<Molecule>)>,
+) {
+	for (m_info, r_info, mut transform, _) in molecule_query.iter_mut() {
+		match r_info.reactor_type {
+			ReactorType::Rectangle{origin, dimensions } => {
+				let offset = (transform.translation.xy() - origin).abs();
+				if offset.x > dimensions.width / 2.0 - m_info.radius {
+					transform.translation.x = origin.x + (transform.translation.x - origin.x).signum() * (dimensions.width / 2.0 - m_info.radius);
+				}
+				if offset.y > dimensions.height / 2.0 - m_info.radius{
+					transform.translation.y = origin.y + (transform.translation.y - origin.y).signum() * (dimensions.height / 2.0 - m_info.radius);
+				}
+			},
+			ReactorType::Circle{origin, radius } => {
+				let offset = (transform.translation.xy() - origin).length();
+				if offset > radius - m_info.radius {
+					transform.translation = (origin + (transform.translation.xy() - origin).normalize() * (radius - m_info.radius)).extend(transform.translation.z);
+				}
+			},
+		}
 	}
 }
 
@@ -425,6 +468,7 @@ fn highlight_tracked_molecule(
 			highlight_transform.scale.x = info.radius * 2.0;
 			highlight_transform.scale.y = info.radius * 2.0;
 		}
+		break;
 	}
 	if !tracked_active {
 		for (mut highlight_transform, _, _) in highlight_query.iter_mut() {

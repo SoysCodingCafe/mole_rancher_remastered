@@ -22,6 +22,7 @@ impl Plugin for SetupPlugin {
 			.add_event::<PopupEvent>()
 			.add_event::<PopupCompleteEvent>()
 			.add_event::<ConnectionEvent>()
+			.add_event::<SoundEffectEvent>()
 			// Resources
 			.insert_resource(OrthoSize{width: ORTHO_WIDTH, height: ORTHO_HEIGHT})
 			.insert_resource(PkvStore::new(".SoysCodingCafe", "Mole Rancher Remastered"))
@@ -39,8 +40,9 @@ impl Plugin for SetupPlugin {
 			.insert_resource(CurrentLogbookPage(0))
 			.insert_resource(MoleculeCount{total: 0, cap: MOLECULE_CAP})
 			.insert_resource(BootTimer(Timer::from_seconds(BOOT_DURATION, TimerMode::Once)))
-			.insert_resource(FadeTransitionTimer(Timer::from_seconds(FADE_TRANSITION_DURATION, TimerMode::Once)))
+			.insert_resource(LaunchTimer(Timer::from_seconds(LAUNCH_COOLDOWN, TimerMode::Once)))
 			.insert_resource(WinCountdown(Timer::from_seconds(WIN_COUNTDOWN_LENGTH, TimerMode::Once)))
+			.insert_resource(FadeTransitionTimer(Timer::from_seconds(FADE_TRANSITION_DURATION, TimerMode::Once)))
 			.insert_resource(TextSpeedTimer(Timer::from_seconds(TEXT_SPEED, TimerMode::Repeating)))
 			// Systems
 			.add_systems( Startup,(
@@ -49,7 +51,7 @@ impl Plugin for SetupPlugin {
 				spawn_splash_screen,
 			))
 			.add_systems( Update,(
-				animate_sprites,
+				animate_sprites.run_if(not(in_state(PauseState::Paused))),
 				advance_splash_screen.run_if(in_state(GameState::Boot)),
 			))
 			.add_systems(OnExit(PauseState::Paused), (

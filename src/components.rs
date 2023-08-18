@@ -1,5 +1,7 @@
 // Import Bevy game engine essentials
 use bevy::{prelude::*, time::Stopwatch};
+// Import Kira audio for Bevy to handle loading sound files
+use bevy_kira_audio::AudioInstance;
 // Import serde for serializing and deserializing
 // data for save files
 use serde::{Serialize, Deserialize};
@@ -14,6 +16,7 @@ use serde::{Serialize, Deserialize};
 // - Components
 // - Resources
 // - Events
+// - Audio Helper Functions
 // - Molecule Helper Functions
 // - Reactor Helper Functions
 // - Text Styles
@@ -90,6 +93,7 @@ pub const LAUNCH_TUBE_SPEED: f32 = 2.0;
 
 
 // General Parameters
+pub const LAUNCH_COOLDOWN: f32 = 0.2;
 pub const MOLECULE_CAP: usize = 800;
 
 pub const FADE_TRANSITION_DURATION: f32 = 0.2;
@@ -372,6 +376,9 @@ pub struct OrthoSize {
 }
 
 #[derive(Resource)]
+pub struct AudioHandles(pub Vec<(Handle<AudioInstance>, f64)>);
+
+#[derive(Resource)]
 pub struct MoleculeCount {
 	pub total: usize,
 	pub cap: usize,
@@ -379,6 +386,9 @@ pub struct MoleculeCount {
 
 #[derive(Resource)]
 pub struct BootTimer(pub Timer);
+
+#[derive(Resource)]
+pub struct LaunchTimer(pub Timer);
 
 #[derive(Resource)]
 pub struct WinCountdown(pub Timer);
@@ -436,6 +446,30 @@ pub struct ConnectionEvent{
 	pub m_info: MoleculeInfo,
 	pub r_info: ReactorInfo,
 	pub velocity: Vec2,
+	pub selected: bool,
+}
+
+#[derive(Event)]
+pub struct SoundEffectEvent{
+	pub note: usize,
+	pub location: Vec2,
+}
+
+
+// AUDIO HELPER FUNCTIONS
+pub fn get_audio_path(
+	note: usize,
+) -> String {
+	match note {
+		0 => "audio/C.ogg".to_string(),
+		1 => "audio/E.ogg".to_string(),
+		2 => "audio/G.ogg".to_string(),
+		3 => "audio/D.ogg".to_string(),
+		4 => "audio/F.ogg".to_string(),
+		5 => "audio/A.ogg".to_string(),
+		6 => "audio/B.ogg".to_string(),
+		_ => "audio/C2.ogg".to_string(),
+	}
 }
 
 
@@ -485,11 +519,11 @@ pub fn get_molecule_radius(
 ) -> f32 {
 	match index {
 		0 => 32.0,
-		1 => 64.0,
-		2 => 128.0,
+		1 => 48.0,
+		2 => 64.0,
 		3 => 96.0,
 		4 => 16.0,
-		5 => 96.0,
+		5 => 24.0,
 		_ => 32.0,
 	}
 }
@@ -499,11 +533,11 @@ pub fn get_molecule_mass(
 ) -> f32 {
 	match index {
 		0 => 100.0,
-		1 => 300.0,
-		2 => 3000.0,
-		3 => 200.0,
-		4 => 50.0,
-		5 => 1000.0,
+		1 => 200.0,
+		2 => 300.0,
+		3 => 400.0,
+		4 => 1000.0,
+		5 => 800.0,
 		_ => 100.0,
 	}
 }
@@ -512,13 +546,13 @@ pub fn get_molecule_initial_velocity(
 	index: usize,
 ) -> f32 {
 	match index {
-		0 => 3000.0,
-		1 => 1000.0,
-		2 => 500.0,
-		3 => 2000.0,
-		4 => 800.0,
-		5 => 100.0,
-		_ => 3000.0,
+		0 => 600.0,
+		1 => 400.0,
+		2 => 200.0,
+		3 => 300.0,
+		4 => 1000.0,
+		5 => 50.0,
+		_ => 600.0,
 	}
 }
 
@@ -526,15 +560,12 @@ pub fn get_molecule_lifetime(
 	index: usize,
 ) -> Lifetime {
 	match index {
-		0 => Lifetime::Stable,
-		1 => Lifetime::Stable,
-		2 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 5.0 + 5.0, TimerMode::Once), 
-		ReactionInfo::None),
-		3 => Lifetime::Stable,
-		4 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 4.0 + 1.0, TimerMode::Once), 
-		ReactionInfo::Reaction(vec![], Limits(0.0, 0.4), Limits(0.0, 1.0))),
-		5 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 0.2 + 3.0, TimerMode::Once), 
-			ReactionInfo::Reaction(vec![0, 0, 0, 0, 0], Limits(0.5, 1.0), Limits(0.0, 0.5))),
+		//2 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 5.0 + 5.0, TimerMode::Once), 
+		//ReactionInfo::None),
+		4 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 3.0 + 0.2, TimerMode::Once), 
+		ReactionInfo::Reaction(vec![], Limits(0.0, 0.1), Limits(0.0, 1.0))),
+		//5 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 0.2 + 3.0, TimerMode::Once), 
+		//	ReactionInfo::Reaction(vec![0, 0, 0, 0, 0], Limits(0.5, 1.0), Limits(0.0, 0.5))),
 		_ => Lifetime::Stable,
 	}
 }
@@ -546,28 +577,31 @@ pub fn valid_molecule_combination(
 	let (mol_a, mol_b) = (mol_a.min(mol_b), mol_a.max(mol_b));
 	match mol_a {
 		0 => match mol_b {
-			0 => ReactionInfo::Reaction(vec![0, 0, 0], Limits(0.8, 0.9), Limits(0.8, 0.9)),
-			1 => ReactionInfo::Reaction(vec![0, 1, 2], Limits(0.25, 0.5), Limits(0.0, 1.0)),
-			4 => ReactionInfo::Reaction(vec![4], Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			0 => ReactionInfo::Reaction(vec![1], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			//1 => ReactionInfo::Reaction(vec![2], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			//3 => ReactionInfo::Reaction(vec![4], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			4 => ReactionInfo::Reaction(vec![0], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		1 => match mol_b {
-			1 => ReactionInfo::Reaction(vec![3], Limits(0.1, 1.0), Limits(0.0, 1.0)),
-			4 => ReactionInfo::Reaction(Vec::new(), Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			1 => ReactionInfo::Reaction(vec![2], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			4 => ReactionInfo::Reaction(vec![1], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		2 => match mol_b {
-			2 => ReactionInfo::Reaction(vec![3], Limits(0.0, 1.0), Limits(0.9, 1.0)),
-			3 => ReactionInfo::Reaction(vec![0, 0, 0, 0], Limits(0.0, 0.2), Limits(0.0, 0.2)),
-			4 => ReactionInfo::Reaction(vec![2], Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			2 => ReactionInfo::Reaction(vec![0], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			//3 => ReactionInfo::Reaction(vec![0, 0, 0, 0], Limits(0.0, 0.2), Limits(0.0, 0.2)),
+			4 => ReactionInfo::Reaction(vec![2], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		3 => match mol_b {
-			3 => ReactionInfo::Reaction(vec![4], Limits(0.0, 1.0), Limits(0.0, 1.0)),
-			4 => ReactionInfo::Reaction(vec![4, 4, 4, 4, 4], Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			3 => ReactionInfo::Reaction(vec![0], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			//4 => ReactionInfo::Reaction(vec![4, 4, 4, 4, 4], Limits(0.1, 1.0), Limits(0.0, 1.0)),
+			4 => ReactionInfo::Reaction(vec![3], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		4 => match mol_b {
+			4 => ReactionInfo::Reaction(vec![0], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		_ => ReactionInfo::None,
@@ -594,6 +628,17 @@ pub fn get_reactors(
 					input_chamber: if i == 0 && j == 0 {true} else {false}, product_chamber: if i == 7 && j == 3 {true} else {false}});
 				}
 			}
+		}
+		3 => {
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-2000.0, 0.0), radius: 800.0}, reactor_id: 0, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 800.0}, reactor_id: 1, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(2000.0, 0.0), radius: 800.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 800.0}}, reactor_id: 3, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 2000.0}}, reactor_id: 4, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 3000.0}}, reactor_id: 5, input_chamber: true, product_chamber: true});
+		}
+		4 => {
+			{reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
 		}
 		_ => (),
 	}
@@ -650,6 +695,8 @@ pub fn get_level_goal(
 		0 => (5, 0),
 		1 => (100, 4),
 		2 => (1, 0),
+		3 => (5, 5),
+		4 => (1, 8),
 		_ => (1, 0),
 	}
 }
