@@ -240,12 +240,6 @@ pub enum ButtonEffect {
 }
 
 #[derive(Component)]
-pub struct ReactorInit {
-	// Molecule Index, Location, Initial Velocity
-	pub molecules: Vec<(usize, Vec2, Vec2)>,
-}
-
-#[derive(Component)]
 pub struct ReactorConnections(pub Vec<(Vec2, Connection)>);
 
 #[derive(Component)]
@@ -700,6 +694,24 @@ pub fn get_reactor_connections(
 		_ => (),
 	}
 	ReactorConnections(connections)
+}
+
+pub fn get_reactor_initialization(
+	level: usize,
+	reactor_id: usize,
+) -> Vec<(usize, Vec2, Vec2)> {
+	let mut molecules = Vec::new();
+	match level {
+		0 => match reactor_id {
+			_ => {
+				molecules.push((0, Vec2::ZERO, Vec2::ZERO));
+				molecules
+			},
+		}
+		_ => {
+			molecules
+		}
+	}
 }
 
 pub fn get_level_goal(

@@ -401,6 +401,7 @@ fn outlet_connections(
 // a unique ID, as well as spawning launch tubes and connections
 fn spawn_reactors(
 	mut commands: Commands,
+	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 	asset_server: Res<AssetServer>,
 	level: Res<SelectedLevel>,
 	selected_palette: Res<SelectedPalette>,
@@ -440,6 +441,43 @@ fn spawn_reactors(
 						RenderLayers::layer(1),
 						DespawnOnExitGameState,
 						Name::new("Launch Tube"),
+					));
+				}
+				for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
+					let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
+					commands
+						.spawn((SpriteSheetBundle {
+							transform: Transform::from_xyz(
+								origin.x + location.x + rand::random::<f32>(),
+								origin.y + location.y + rand::random::<f32>(),
+								500.0,
+							),
+							texture_atlas: texture_atlases.add(TextureAtlas::from_grid(asset_server.load(get_molecule_path(index)), Vec2::new(32.0, 32.0), 4, 2, None, None)).clone(),
+							sprite: TextureAtlasSprite{
+								color: get_molecule_color(index, selected_palette.0),
+								index: 0,
+								custom_size: Some(Vec2::new(get_molecule_radius(index) * 2.0, get_molecule_radius(index) * 2.0)),
+								..Default::default()
+							},
+							..Default::default()
+						},
+						*reactor,
+						Molecule(get_molecule_lifetime(index)),
+						MoleculeInfo {
+							index: index,
+							reacted: false,
+							radius: get_molecule_radius(index),
+							mass: get_molecule_mass(index),
+						},
+						Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
+						AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+						AnimationIndices{ 
+							first: 0, 
+							total: 8,
+						},
+						RenderLayers::layer(1),
+						DespawnOnExitGameState,
+						Name::new("Molecule")
 					));
 				}
 				for (direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
@@ -482,6 +520,43 @@ fn spawn_reactors(
 						RenderLayers::layer(1),
 						DespawnOnExitGameState,
 						Name::new("Launch Tube"),
+					));
+				}
+				for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
+					let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
+					commands
+						.spawn((SpriteSheetBundle {
+							transform: Transform::from_xyz(
+								origin.x + location.x + rand::random::<f32>(),
+								origin.y + location.y + rand::random::<f32>(),
+								500.0,
+							),
+							texture_atlas: texture_atlases.add(TextureAtlas::from_grid(asset_server.load(get_molecule_path(index)), Vec2::new(32.0, 32.0), 4, 2, None, None)).clone(),
+							sprite: TextureAtlasSprite{
+								color: get_molecule_color(index, selected_palette.0),
+								index: 0,
+								custom_size: Some(Vec2::new(get_molecule_radius(index) * 2.0, get_molecule_radius(index) * 2.0)),
+								..Default::default()
+							},
+							..Default::default()
+						},
+						*reactor,
+						Molecule(get_molecule_lifetime(index)),
+						MoleculeInfo {
+							index: index,
+							reacted: false,
+							radius: get_molecule_radius(index),
+							mass: get_molecule_mass(index),
+						},
+						Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
+						AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+						AnimationIndices{ 
+							first: 0, 
+							total: 8,
+						},
+						RenderLayers::layer(1),
+						DespawnOnExitGameState,
+						Name::new("Molecule")
 					));
 				}
 				for (mut direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
