@@ -304,7 +304,9 @@ fn intake_connections(
 	for (c_transform, connection) in connection_query.iter() {
 		for (entity, m_transform, m_info, velocity, r_info, _) in molecule_query.iter() {
 			if connection.reactor_id == r_info.reactor_id {
-				if (c_transform.translation.xy() - m_transform.translation.xy()).length() < CONNECTION_WIDTH && connection.intake {
+				if (c_transform.translation.xy() - m_transform.translation.xy()).length() < CONNECTION_WIDTH 
+				&& connection.intake
+				&& connection.filter[m_info.index] {
 					ev_w_connection.send(ConnectionEvent{
 						connection_id: connection.connection_id,
 						m_info: *m_info,

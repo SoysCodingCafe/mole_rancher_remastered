@@ -253,6 +253,7 @@ pub struct Connection {
 	pub reactor_id: usize, 
 	pub connection_id: usize,
 	pub intake: bool,
+	pub filter: Vec<bool>,
 }
 
 #[derive(Component, Clone, Copy)]
@@ -500,6 +501,7 @@ pub fn get_molecule_color(
 			3 => Color::ORANGE,
 			4 => Color::DARK_GRAY,
 			5 => Color::WHITE,
+			6 => Color::YELLOW_GREEN,
 			_ => Color::RED,
 		}
 		_ => match index {
@@ -519,11 +521,12 @@ pub fn get_molecule_radius(
 ) -> f32 {
 	match index {
 		0 => 32.0,
-		1 => 48.0,
+		1 => 32.0,
 		2 => 64.0,
-		3 => 96.0,
-		4 => 16.0,
-		5 => 24.0,
+		3 => 64.0,
+		4 => 8.0,
+		5 => 32.0,
+		6 => 64.0,
 		_ => 32.0,
 	}
 }
@@ -532,12 +535,13 @@ pub fn get_molecule_mass(
 	index: usize,
 ) -> f32 {
 	match index {
-		0 => 100.0,
-		1 => 200.0,
-		2 => 300.0,
-		3 => 400.0,
-		4 => 1000.0,
-		5 => 800.0,
+		0 => 10.0,
+		1 => 20.0,
+		2 => 30.0,
+		3 => 40.0,
+		4 => 10000.0,
+		5 => 1000.0,
+		6 => 5.0,
 		_ => 100.0,
 	}
 }
@@ -546,12 +550,13 @@ pub fn get_molecule_initial_velocity(
 	index: usize,
 ) -> f32 {
 	match index {
-		0 => 600.0,
-		1 => 400.0,
+		0 => 1200.0,
+		1 => 1200.0,
 		2 => 200.0,
-		3 => 300.0,
-		4 => 1000.0,
-		5 => 50.0,
+		3 => 2000.0,
+		4 => 5.0,
+		5 => 3000.0,
+		6 => 2000.0,
 		_ => 600.0,
 	}
 }
@@ -562,10 +567,12 @@ pub fn get_molecule_lifetime(
 	match index {
 		//2 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 5.0 + 5.0, TimerMode::Once), 
 		//ReactionInfo::None),
-		4 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 3.0 + 0.2, TimerMode::Once), 
-		ReactionInfo::Reaction(vec![], Limits(0.0, 0.1), Limits(0.0, 1.0))),
-		//5 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 0.2 + 3.0, TimerMode::Once), 
-		//	ReactionInfo::Reaction(vec![0, 0, 0, 0, 0], Limits(0.5, 1.0), Limits(0.0, 0.5))),
+		//4 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 3.0 + 0.2, TimerMode::Once), 
+		//ReactionInfo::Reaction(vec![], Limits(0.0, 0.1), Limits(0.0, 1.0))),
+		5 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 0.2 + 0.8, TimerMode::Once), 
+			ReactionInfo::Reaction(vec![], Limits(0.0, 1.0), Limits(0.0, 1.0))),
+		6 => Lifetime::Unstable(Timer::from_seconds(rand::random::<f32>() * 0.2 + 0.8, TimerMode::Once), 
+			ReactionInfo::Reaction(vec![], Limits(0.0, 1.0), Limits(0.0, 1.0))),
 		_ => Lifetime::Stable,
 	}
 }
@@ -577,31 +584,33 @@ pub fn valid_molecule_combination(
 	let (mol_a, mol_b) = (mol_a.min(mol_b), mol_a.max(mol_b));
 	match mol_a {
 		0 => match mol_b {
-			0 => ReactionInfo::Reaction(vec![1], Limits(0.0, 1.0), Limits(0.0, 1.0)),
-			//1 => ReactionInfo::Reaction(vec![2], Limits(0.0, 1.0), Limits(0.0, 1.0)),
-			//3 => ReactionInfo::Reaction(vec![4], Limits(0.0, 1.0), Limits(0.0, 1.0)),
-			4 => ReactionInfo::Reaction(vec![0], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			1 => ReactionInfo::Reaction(vec![2], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			3 => ReactionInfo::Reaction(vec![5, 5, 5, 5, 5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			5 => ReactionInfo::Reaction(vec![5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		1 => match mol_b {
-			1 => ReactionInfo::Reaction(vec![2], Limits(0.0, 1.0), Limits(0.0, 1.0)),
-			4 => ReactionInfo::Reaction(vec![1], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			3 => ReactionInfo::Reaction(vec![5, 5, 5, 5, 5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			5 => ReactionInfo::Reaction(vec![5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		2 => match mol_b {
-			2 => ReactionInfo::Reaction(vec![0], Limits(0.0, 1.0), Limits(0.0, 1.0)),
-			//3 => ReactionInfo::Reaction(vec![0, 0, 0, 0], Limits(0.0, 0.2), Limits(0.0, 0.2)),
-			4 => ReactionInfo::Reaction(vec![2], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			3 => ReactionInfo::Reaction(vec![4], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			5 => ReactionInfo::Reaction(vec![5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		3 => match mol_b {
-			3 => ReactionInfo::Reaction(vec![0], Limits(0.0, 1.0), Limits(0.0, 1.0)),
-			//4 => ReactionInfo::Reaction(vec![4, 4, 4, 4, 4], Limits(0.1, 1.0), Limits(0.0, 1.0)),
-			4 => ReactionInfo::Reaction(vec![3], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			5 => ReactionInfo::Reaction(vec![5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
 		},
 		4 => match mol_b {
-			4 => ReactionInfo::Reaction(vec![0], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			5 => ReactionInfo::Reaction(vec![5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			_ => ReactionInfo::None,
+		},
+		5 => match mol_b {
+			_ => ReactionInfo::None,
+		},
+		6 => match mol_b {
 			_ => ReactionInfo::None,
 		},
 		_ => ReactionInfo::None,
@@ -632,10 +641,10 @@ pub fn get_reactors(
 		3 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-2000.0, 0.0), radius: 800.0}, reactor_id: 0, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 800.0}, reactor_id: 1, input_chamber: true, product_chamber: false});
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(2000.0, 0.0), radius: 800.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(2000.0, 0.0), radius: 800.0}, reactor_id: 2, input_chamber: true, product_chamber: true});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 800.0}}, reactor_id: 3, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 2000.0}}, reactor_id: 4, input_chamber: true, product_chamber: false});
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 3000.0}}, reactor_id: 5, input_chamber: true, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 3000.0}}, reactor_id: 5, input_chamber: true, product_chamber: false});
 		}
 		4 => {
 			{reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
@@ -649,38 +658,43 @@ pub fn get_reactor_connections(
 	level: usize,
 	reactor_id: usize,
 ) -> ReactorConnections {
+	let mut filter = Vec::new();
+	for _ in 0..18 {
+		filter.push(true);
+	}
 	let mut connections = Vec::new();
 	match level {
 		0 => match reactor_id {
 			0 => {
-				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true}));
-				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false}));
-				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false}));
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter.clone()}));
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter.clone()}));
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter.clone()}));
 			},
 			1 => {
-				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter.clone()}));
 			}
 			2 => {
-				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true}));
+				filter[0] = false;
+				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter.clone()}));
 			}
 			_ => (),
 		}
 		1 => match reactor_id {
 			_ => {
-				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true}));
-				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false}));
-				connections.push((Vec2::new(-1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true}));
-				connections.push((Vec2::new(-1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false}));
-				connections.push((Vec2::new(1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: true}));
-				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: false}));
-				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: true}));
-				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false}));
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter.clone()}));
+				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter.clone()}));
+				connections.push((Vec2::new(-1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter.clone()}));
+				connections.push((Vec2::new(-1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter.clone()}));
+				connections.push((Vec2::new(1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: true, filter: filter.clone()}));
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: false, filter: filter.clone()}));
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: true, filter: filter.clone()}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false, filter: filter.clone()}));
 			}
 		}
 		2 => match reactor_id {
 			i => {
-				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: (i+1)%32, intake: true}));
-				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: i, intake: false}));
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: (i+1)%32, intake: true, filter: filter.clone()}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: i, intake: false, filter: filter.clone()}));
 			}
 		}
 		_ => (),
@@ -695,7 +709,7 @@ pub fn get_level_goal(
 		0 => (5, 0),
 		1 => (100, 4),
 		2 => (1, 0),
-		3 => (5, 5),
+		3 => (20, 4),
 		4 => (1, 8),
 		_ => (1, 0),
 	}

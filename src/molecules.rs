@@ -18,6 +18,7 @@ impl Plugin for MoleculesPlugin {
 				highlight_tracked_molecule.after(molecule_movement),
 			))
 			.add_systems(Update, (
+				decay_velocity,
 				update_molecule_count,
 				update_molecule_lifetime.after(update_molecule_count),
 				molecule_spawner.after(update_molecule_count),
@@ -137,6 +138,18 @@ fn update_molecule_lifetime(
 	}
 }
 
+// Decreases velocity by a percentage of its value every frame to 
+// simulate friction and eventually bring all molecules to a stop
+fn decay_velocity(
+	mut molecule_query: Query<(&mut Velocity, With<Molecule>)>,
+	time: Res<Time>,
+) {
+	for (mut velocity, _) in molecule_query.iter_mut() {
+		let prev_velocity = velocity.0;
+		velocity.0 -= prev_velocity * 0.1 * time.delta_seconds();
+	}
+}
+
 // Handles all molecule movement and collision logic, including
 // spawning new molecules from reactions if the current temperature
 // and pressure are correct
@@ -208,11 +221,11 @@ fn molecule_movement(
 							if product == m_info_a.index && !input_a_accounted_for {
 								match total_products {
 									1 => {
-										m_info_a.mass += m_info_b.mass;
+										//m_info_a.mass += m_info_b.mass;
 										velocity_a.0 = velocity_out;
 									}
 									i => {
-										m_info_a.mass = (mass_a_in + mass_b_in)/i as f32;
+										//m_info_a.mass = (mass_a_in + mass_b_in)/i as f32;
 										velocity_b.0 = velocity_out * Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
 									}
 								}
@@ -221,11 +234,11 @@ fn molecule_movement(
 							else if product == m_info_b.index && !input_b_accounted_for {
 								match total_products {
 									1 => {
-										m_info_b.mass += m_info_a.mass;
+										//m_info_b.mass += m_info_a.mass;
 										velocity_b.0 = velocity_out;
 									}
 									i => {
-										m_info_b.mass = (mass_a_in + mass_b_in)/i as f32;
+										//m_info_b.mass = (mass_a_in + mass_b_in)/i as f32;
 										velocity_b.0 = velocity_out * Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
 									}
 								}
@@ -254,14 +267,20 @@ fn molecule_movement(
 										index: product,
 										reacted: false,
 										radius: get_molecule_radius(product),
-										mass: match total_products {
+										mass: get_molecule_mass(product)
+										/*match total_products {
 											1 => {mass_a_in + mass_b_in},
 											i => {(mass_a_in + mass_b_in)/i as f32}
-										}
+										}*/
 									},
-									match total_products {
+									Velocity(Vec2::new(
+										get_molecule_initial_velocity(product),
+										get_molecule_initial_velocity(product),
+									) * direction),
+									/*match total_products {
 										1 => {Velocity((momentum_a + momentum_b)/(mass_a_in + mass_b_in))},
-										i => {Velocity(velocity_out/(i as f32 * direction))}},
+										i => {Velocity(velocity_out/(i as f32 * direction))}
+									},*/
 									AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 									AnimationIndices{ 
 										first: 0, 
