@@ -10,13 +10,13 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app
-		.add_systems(Update, (
-			resize_reactor_camera_viewport,
-			pan_zoom_reactor_camera,
-		))
-		.add_systems( OnEnter(GameState::Reactor),(
-			reset_reactor_camera,
-		))
+			.add_systems(Update, (
+				resize_reactor_camera_viewport,
+				pan_zoom_reactor_camera,
+			))
+			.add_systems( OnEnter(GameState::Reactor),(
+				reset_reactor_camera,
+			))
 		;
 	}
 }

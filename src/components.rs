@@ -79,6 +79,9 @@ pub const STOPWATCH_BOX_WIDTH: f32 = 300.0;
 pub const STOPWATCH_BOX_HEIGHT: f32 = 80.0;
 pub const STOPWATCH_BOX_MARGINS: f32 = 8.0;
 
+pub const PARTICLE_SPAWN_DELAY: f32 = 0.01;
+pub const PARTICLE_DURATION: f32 = 0.6;
+
 
 // Reactor Interactions
 pub const LEVER_WIDTH: f32 = 160.0;
@@ -267,6 +270,17 @@ pub struct MoleculeInfo {
 	pub reacted: bool,
 	pub radius: f32,
 	pub mass: f32,
+}
+
+#[derive(Component)]
+pub struct ParticleTrail {
+	pub spawn_timer: Timer,
+	pub duration: f32,
+}
+
+#[derive(Component)]
+pub struct Particle {
+	pub duration: Timer,
 }
 
 #[derive(Component, Clone, Copy)]

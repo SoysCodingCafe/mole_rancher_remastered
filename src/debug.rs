@@ -167,6 +167,10 @@ fn debug_molecule(
 									radius: radius,
 									mass: mass,
 								},
+								ParticleTrail{
+									spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+									duration: PARTICLE_DURATION,
+								},
 								Velocity(Vec2::new(velocity, velocity) * direction),
 								AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 								AnimationIndices{ 

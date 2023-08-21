@@ -110,6 +110,10 @@ fn update_molecule_lifetime(
 												radius: get_molecule_radius(*product),
 												mass: get_molecule_mass(*product),
 											},
+											ParticleTrail{
+												spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+												duration: PARTICLE_DURATION,
+											},
 											Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity, (rand::random::<f32>()-0.5)*velocity) * direction),
 											AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 											AnimationIndices{ 
@@ -272,6 +276,10 @@ fn molecule_movement(
 											1 => {mass_a_in + mass_b_in},
 											i => {(mass_a_in + mass_b_in)/i as f32}
 										}*/
+									},
+									ParticleTrail{
+										spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+										duration: PARTICLE_DURATION,
 									},
 									Velocity(Vec2::new(
 										get_molecule_initial_velocity(product),
@@ -575,6 +583,10 @@ fn molecule_spawner(
 						reacted: false,
 						radius: get_molecule_radius(molecule_index),
 						mass: get_molecule_mass(molecule_index),
+					},
+					ParticleTrail{
+						spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+						duration: PARTICLE_DURATION,
 					},
 					Velocity(Vec2::new(velocity, velocity) * direction),
 					AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),

@@ -379,6 +379,10 @@ fn outlet_connections(
 					r_info,
 					Molecule(get_molecule_lifetime(ev.m_info.index)),
 					ev.m_info,
+					ParticleTrail{
+						spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+						duration: PARTICLE_DURATION,
+					},
 					Velocity(ev.velocity.length() * direction),
 					AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 					AnimationIndices{ 
@@ -469,6 +473,10 @@ fn spawn_reactors(
 							radius: get_molecule_radius(index),
 							mass: get_molecule_mass(index),
 						},
+						ParticleTrail{
+							spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+							duration: PARTICLE_DURATION,
+						},
 						Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
 						AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 						AnimationIndices{ 
@@ -547,6 +555,10 @@ fn spawn_reactors(
 							reacted: false,
 							radius: get_molecule_radius(index),
 							mass: get_molecule_mass(index),
+						},
+						ParticleTrail{
+							spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+							duration: PARTICLE_DURATION,
 						},
 						Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
 						AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),

@@ -10,8 +10,9 @@ mod camera;
 mod components;
 mod cutscene;
 mod lab;
-mod molecules;
 mod menu;
+mod molecules;
+mod particles;
 mod popup;
 mod reactor;
 mod setup;
@@ -66,6 +67,8 @@ fn main() {
 			menu::MenuPlugin,
 			// Molecule spawning and collision logic
 			molecules::MoleculesPlugin,
+			// Spawn and fade particle trails
+			//particles::ParticlesPlugin,
 			// Spawns popup menus and buttons such as level select
 			popup::PopupPlugin,
 			// Reactor sprite spawning and logic
