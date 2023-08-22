@@ -136,7 +136,7 @@ fn debug_molecule(
 
 		for (info, _) in selected_reactor_query.iter() {
 			for (transform, launch_tube) in launch_tube_query.iter() {
-				if launch_tube.0 == info.reactor_id {
+				if launch_tube.id == info.reactor_id {
 					if keyboard.just_pressed(KeyCode::Space) || keyboard.pressed(KeyCode::R) || keyboard.pressed(KeyCode::T) || keyboard.pressed(KeyCode::W) {
 						if launch_timer.0.finished() {
 							launch_timer.0.reset();
