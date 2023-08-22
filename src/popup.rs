@@ -89,6 +89,7 @@ fn spawn_popup_buttons(
 						width: 100.0,
 						height: 50.0,
 					},
+					enabled: true,
 				};
 				commands
 					.spawn((SpriteBundle {
@@ -112,6 +113,7 @@ fn spawn_popup_buttons(
 						width: 100.0,
 						height: 50.0,
 					},
+					enabled: true,
 				};
 				commands
 					.spawn((SpriteBundle {
@@ -138,6 +140,7 @@ fn spawn_popup_buttons(
 								width: 50.0,
 								height: 50.0,
 							},
+							enabled: true,
 						};
 						commands.spawn((SpriteBundle {
 								transform: Transform::from_translation(button.location),
@@ -160,6 +163,7 @@ fn spawn_popup_buttons(
 						width: 100.0,
 						height: 50.0,
 					},
+					enabled: true,
 				};
 				commands
 					.spawn((SpriteBundle {
@@ -183,6 +187,7 @@ fn spawn_popup_buttons(
 						width: 300.0,
 						height: 300.0,
 					},
+					enabled: true,
 				};
 				commands
 					.spawn((SpriteBundle {

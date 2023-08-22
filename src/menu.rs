@@ -70,6 +70,7 @@ fn spawn_menu(
 				width: 300.0,
 				height: 100.0,
 			},
+			enabled: true,
 		};
 		commands.spawn((SpriteBundle {
 				transform: Transform::from_translation(button.location),
