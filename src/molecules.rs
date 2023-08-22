@@ -527,6 +527,10 @@ fn move_launch_tube(
 					match info.reactor_type {
 						ReactorType::Rectangle{origin, dimensions } => {
 							let target = transform.translation.x + movement * (dimensions.width/2.0) * LAUNCH_TUBE_SPEED * time.delta_seconds();
+							launch_tube.current_rotation += rotation * LAUNCH_TUBE_ROTATIONAL_SPEED * time.delta_seconds();
+							launch_tube.current_rotation = launch_tube.current_rotation.clamp(-45.0, 45.0);
+							let angle: f32 = launch_tube.current_rotation;
+							transform.rotation = Quat::from_rotation_z(angle.to_radians());
 							if (target - origin.x).abs() < dimensions.width / 2.0 - LAUNCH_TUBE_WIDTH / 2.0{
 								transform.translation.x = target;
 							}
