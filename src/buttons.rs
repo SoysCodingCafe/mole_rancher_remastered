@@ -32,6 +32,7 @@ fn standard_buttons(
 	ortho_size: Res<OrthoSize>,
 	mouse: Res<Input<MouseButton>>,
 	current_state: Res<State<PauseState>>,
+	audio_volume: Res<AudioVolume>,
 	mut button_query: Query<(&mut Sprite, &StandardButton, &ButtonEffect)>,
 	mut animation_query: Query<(&mut TextureAtlasSprite, &mut AnimationTimer, &AnimationIndices, &MoleculeButton)>,
 	mut tooltip_query: Query<(&mut Transform, With<Tooltip>)>,
@@ -97,6 +98,25 @@ fn standard_buttons(
 			}
 			for (mut transform, _) in tooltip_query.iter_mut() {
 				transform.translation.z = -1.0;
+			}
+		}
+		for (mut sprite, _, effect) in button_query.iter_mut() {
+			match effect {
+				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
+					if (audio_volume.bgm * 10.0) as usize == *i {
+						if sprite.color != Color::BLUE {sprite.color = Color::RED};
+					} else {
+						if sprite.color != Color::BLUE {sprite.color = Color::WHITE};
+					}
+				},
+				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
+					if (audio_volume.sfx * 10.0) as usize == *i {
+						if sprite.color != Color::BLUE {sprite.color = Color::RED};
+					} else {
+						if sprite.color != Color::BLUE {sprite.color = Color::WHITE};
+					}
+				}
+				_ => (),
 			}
 		}
 	}
@@ -183,7 +203,9 @@ fn handle_button_calls(
 	asset_server: Res<AssetServer>,
 	mut pkv: ResMut<PkvStore>,
 	mut cutscene_tracker: ResMut<CutsceneTracker>,
+	mut audio_volume: ResMut<AudioVolume>,
 	mut selected_level: ResMut<SelectedLevel>,
+	mut selected_palette: ResMut<SelectedPalette>,
 	mut selected_logbook_page: ResMut<SelectedLogbookPage>,
 	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
 	mut ev_r_button_call: EventReader<ButtonCall>,
@@ -191,6 +213,7 @@ fn handle_button_calls(
 	mut ev_w_fade_transition: EventWriter<FadeTransitionEvent>,
 	mut ev_w_popup: EventWriter<PopupEvent>,
 	mut bright_lab_query: Query<(&mut Visibility, With<BrightLab>)>,
+	mut palette_query: Query<(&mut Sprite, &Palette)>,
 	mut next_state: ResMut<NextState<PauseState>>,
 ) {
 	for ev in ev_r_button_call.iter() {
@@ -256,11 +279,17 @@ fn handle_button_calls(
 			},
 			ButtonEffect::PopupButton(ref effect) => {
 				match effect {
-					PopupButton::Volume(volume) => {
-						// Set audio volume to selected volume
+					PopupButton::BgmVolume(volume) => {
+						audio_volume.bgm = *volume as f32/10.0;
 					},
-					PopupButton::Palette(palette) => {
-						// Set color palette to selected palette
+					PopupButton::SfxVolume(volume) => {
+						audio_volume.sfx = *volume as f32/10.0;
+					},
+					PopupButton::PaletteToggle => {
+						selected_palette.0 = (selected_palette.0 + 1) % 4;
+						for (mut sprite, palette) in palette_query.iter_mut() {
+							sprite.color = get_molecule_color(palette.0, selected_palette.0);
+						}
 					},
 					PopupButton::LogbookPage(page) => {
 						selected_logbook_page.0 = *page;

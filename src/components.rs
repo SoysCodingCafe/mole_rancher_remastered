@@ -72,8 +72,8 @@ pub const ZOOM_SPEED: f32 = 15.0;
 pub const ZOOM_TRANSLATION_SPEED: f32 = 60.0;
 pub const ZOOM_DEAD_ZONE_RADIUS: f32 = 180.0;
 
-pub const TOOLTIP_WIDTH: f32 = 300.0;
-pub const TOOLTIP_HEIGHT: f32 = 200.0;
+pub const TOOLTIP_WIDTH: f32 = 320.0*1.5;
+pub const TOOLTIP_HEIGHT: f32 = 265.0*1.5;
 
 pub const STOPWATCH_BOX_WIDTH: f32 = 300.0;
 pub const STOPWATCH_BOX_HEIGHT: f32 = 80.0;
@@ -93,7 +93,7 @@ pub const CONNECTION_HEIGHT: f32 = 128.0;
 pub const LAUNCH_TUBE_WIDTH: f32 = 128.0;
 pub const LAUNCH_TUBE_HEIGHT: f32 = 256.0;
 pub const LAUNCH_TUBE_SPEED: f32 = 2.0;
-pub const LAUNCH_TUBE_ROTATIONAL_SPEED: f32 = 100.0;
+pub const LAUNCH_TUBE_ROTATIONAL_SPEED: f32 = 300.0;
 
 
 // General Parameters
@@ -169,8 +169,9 @@ pub enum CustomLabButton {
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub enum PopupButton {
-	Volume(usize),
-	Palette(usize),
+	BgmVolume(usize),
+	SfxVolume(usize),
+	PaletteToggle,
 	LogbookPage(usize),
 	LevelSelect(usize),
 	CompleteLevel,
@@ -319,6 +320,9 @@ pub struct Highlight;
 pub struct Tooltip;
 
 #[derive(Component)]
+pub struct Palette(pub usize);
+
+#[derive(Component)]
 pub struct LaunchTube{
 	pub id: usize,
 	pub current_rotation: f32,
@@ -389,6 +393,12 @@ pub struct DespawnOnExitPauseState;
 pub struct OrthoSize {
 	pub width: f32,
 	pub height: f32,
+}
+
+#[derive(Resource)]
+pub struct AudioVolume {
+	pub bgm: f32,
+	pub sfx: f32,
 }
 
 #[derive(Resource)]
@@ -785,6 +795,16 @@ pub fn get_subtitle_text_style(
 		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
 		font_size: 80.0,
 		color: Color::rgba(0.3, 0.9, 0.3, 1.0),
+	}
+}
+pub fn get_settings_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 60.0,
+		color: Color::rgba(0.9, 0.9, 0.9, 1.0),
+		..Default::default()
 	}
 }
 

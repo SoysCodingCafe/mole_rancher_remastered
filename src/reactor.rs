@@ -85,9 +85,9 @@ fn spawn_reactor_visuals(
 
 	commands
 		.spawn((SpriteBundle {
+			texture: asset_server.load("sprites/popup/note_small.png"),
 			transform: Transform::from_xyz(0.0, 0.0, -1.0),
 			sprite: Sprite {
-				color: Color::GRAY,
 				custom_size: Some(Vec2::new(TOOLTIP_WIDTH, TOOLTIP_HEIGHT)),
 				..Default::default()
 			},

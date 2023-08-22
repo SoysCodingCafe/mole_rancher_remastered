@@ -76,6 +76,8 @@ fn expand_popup(
 // fully scaled
 fn spawn_popup_buttons(
 	popup_query: Query<(&PopupInfo)>,
+	asset_server: Res<AssetServer>,
+	selected_palette: Res<SelectedPalette>,
 	mut commands: Commands,
 	mut ev_r_popup_complete: EventReader<PopupCompleteEvent>,
 ) {
@@ -83,28 +85,113 @@ fn spawn_popup_buttons(
 		let info = popup_query.single();
 		match info.popup_type {
 			PopupType::Settings => {
-				let button = StandardButton {
-					location: Vec3::new(-350.0, -350.0, 810.0),
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(0.0, 300.0, 810.0),
+					text: Text::from_section(format!("SETTINGS"), get_title_text_style(&asset_server)),
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Settings Text")
+				));
+				let mut buttons  = Vec::new();
+				buttons.push((StandardButton {
+					location: Vec3::new(-500.0, -300.0, 810.0),
 					dimensions: Dimensions {
-						width: 100.0,
-						height: 50.0,
+						width: 200.0,
+						height: 100.0,
 					},
 					enabled: true,
+				}, ButtonEffect::PopupButton(PopupButton::ExitPopup)));
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(-240.0, 100.0, 810.0),
+					text: Text::from_section(format!("BGM Volume:"), get_settings_text_style(&asset_server))
+						.with_alignment(TextAlignment::Right),
+					text_anchor: bevy::sprite::Anchor::CenterRight,
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Settings Text")
+				));
+				for i in 0..=10 {
+					buttons.push((StandardButton {
+						location: Vec3::new(-200.0 + 75.0 * i as f32, 100.0, 810.0),
+						dimensions: Dimensions {
+							width: 50.0,
+							height: 100.0,
+						},
+						enabled: true,
+					}, ButtonEffect::PopupButton(PopupButton::BgmVolume(i))));
+				}
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(-240.0, -50.0, 810.0),
+					text: Text::from_section(format!("SFX Volume:"), get_settings_text_style(&asset_server))
+						.with_alignment(TextAlignment::Right),
+					text_anchor: bevy::sprite::Anchor::CenterRight,
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Settings Text")
+				));
+				for i in 0..=10 {
+					buttons.push((StandardButton {
+						location: Vec3::new(-200.0 + 75.0 * i as f32, -50.0, 810.0),
+						dimensions: Dimensions {
+							width: 50.0,
+							height: 100.0,
+						},
+						enabled: true,
+					}, ButtonEffect::PopupButton(PopupButton::SfxVolume(i))));
 				};
-				commands
-					.spawn((SpriteBundle {
-						transform: Transform::from_translation(button.location),
-						sprite: Sprite {
-							custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(-240.0, -200.0, 810.0),
+					text: Text::from_section(format!("Toggle Palette:"), get_settings_text_style(&asset_server))
+						.with_alignment(TextAlignment::Right),
+					text_anchor: bevy::sprite::Anchor::CenterRight,
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Settings Text")
+				));
+				buttons.push((StandardButton {
+					location: Vec3::new(-125.0, -200.0, 810.0),
+					dimensions: Dimensions {
+						width: 200.0,
+						height: 100.0,
+					},
+					enabled: true,
+				}, ButtonEffect::PopupButton(PopupButton::PaletteToggle)));
+				for (button, effect) in buttons {
+					commands
+						.spawn((SpriteBundle {
+							transform: Transform::from_translation(button.location),
+							sprite: Sprite {
+								custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+								..Default::default()
+							},
 							..Default::default()
 						},
-						..Default::default()
-					},
-					ButtonEffect::PopupButton(PopupButton::ExitPopup),
-					button,
-					DespawnOnExitPauseState,
-					Name::new("Exit Settings Button")
-				));
+						effect,
+						button,
+						DespawnOnExitPauseState,
+						Name::new("Settings Button")
+					));
+				}
+				for i in 0..15 {
+					commands
+						.spawn((SpriteBundle{
+							transform: Transform::from_xyz(45.0 * i as f32, -200.0, 810.0),
+							sprite: Sprite {
+								color: get_molecule_color(i, selected_palette.0),
+								custom_size: Some(Vec2::new(25.0, 100.0)), 
+								..Default::default()
+							},
+							..Default::default()
+						},
+						Palette(i),
+						DespawnOnExitPauseState,
+						Name::new("Palette")
+					));
+				}
 			},
 			PopupType::Logbook => {
 				let mut tabs = Vec::new();

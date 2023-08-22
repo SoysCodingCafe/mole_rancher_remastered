@@ -25,6 +25,7 @@ impl Plugin for SetupPlugin {
 			.add_event::<SoundEffectEvent>()
 			// Resources
 			.insert_resource(OrthoSize{width: ORTHO_WIDTH, height: ORTHO_HEIGHT})
+			.insert_resource(AudioVolume{bgm: 0.8, sfx: 0.8})
 			.insert_resource(PkvStore::new(".SoysCodingCafe", "Mole Rancher Remastered"))
 			.insert_resource(CutsceneTracker{
 				current_scene: 0,
