@@ -232,6 +232,7 @@ pub struct Limits(pub f32, pub f32);
 pub struct StandardButton {
 	pub location: Vec3,
 	pub dimensions: Dimensions,
+	pub enabled: bool,
 }
 
 #[derive(Component, PartialEq, Eq, Clone, Copy, Debug)]
@@ -483,6 +484,24 @@ pub fn get_audio_path(
 
 
 // MOLECULE HELPER FUNCTIONS
+pub fn get_available_molecules(
+	level: usize,
+) -> [bool; 18] {
+	let mut available_molecules = [false; 18];
+	match level {
+		1 => {
+			available_molecules[0] = true;
+			available_molecules
+		}
+		_ => {
+			for i in 0..18 {
+				available_molecules[i] = true;
+			};
+			available_molecules
+		}
+	}
+}
+
 pub fn get_molecule_path(
 	index: usize,
 ) -> String {

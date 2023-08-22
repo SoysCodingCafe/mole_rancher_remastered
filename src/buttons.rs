@@ -45,41 +45,45 @@ fn standard_buttons(
 		);
 		let mut hovering_any = false;
 		for (mut sprite, button, effect) in button_query.iter_mut() {
-			if *current_state == PauseState::Paused {
-				match effect {
-					ButtonEffect::PopupButton(_) => (),
-					_ => continue,
+			if button.enabled {
+				if *current_state == PauseState::Paused {
+					match effect {
+						ButtonEffect::PopupButton(_) => (),
+						_ => continue,
+					}
 				}
-			}
-			if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
-				match effect {
-					ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(index)) => {
-						for (mut transform, _) in tooltip_query.iter_mut() {
-							let offset = if index < &9 {
-								Vec2::new(TOOLTIP_WIDTH/2.0, -TOOLTIP_HEIGHT/2.0)
-							} else {
-								Vec2::new(TOOLTIP_WIDTH/2.0, TOOLTIP_HEIGHT/2.0)
-							};
-							transform.translation = Vec3::new(
-								p.x + offset.x,
-								p.y + offset.y,
-								900.0,
-							);
-						}
-					},
-					_ => (),
+				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
+					match effect {
+						ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(index)) => {
+							for (mut transform, _) in tooltip_query.iter_mut() {
+								let offset = if index < &9 {
+									Vec2::new(TOOLTIP_WIDTH/2.0, -TOOLTIP_HEIGHT/2.0)
+								} else {
+									Vec2::new(TOOLTIP_WIDTH/2.0, TOOLTIP_HEIGHT/2.0)
+								};
+								transform.translation = Vec3::new(
+									p.x + offset.x,
+									p.y + offset.y,
+									900.0,
+								);
+							}
+						},
+						_ => (),
+					}
+					sprite.color = Color::BLUE;
+					hovering_any = true;
+					if mouse.just_pressed(MouseButton::Left) {
+						ev_w_button_call.send(ButtonCall(*effect));
+					}
 				}
-				sprite.color = Color::BLUE;
-				hovering_any = true;
-				if mouse.just_pressed(MouseButton::Left) {
-					ev_w_button_call.send(ButtonCall(*effect));
-				}
+			} else {
+				sprite.color = Color::GRAY;
 			}
 		}
 		// If not hovering over any buttons then hide all effects
 		if !hovering_any {
-			for (mut sprite, _, _) in button_query.iter_mut() {
-				sprite.color = Color::WHITE;
+			for (mut sprite, button, _) in button_query.iter_mut() {
+				if button.enabled {sprite.color = Color::WHITE} else {sprite.color = Color::GRAY};
 			}
 			for (mut transform, _) in tooltip_query.iter_mut() {
 				transform.translation.z = -1.0;

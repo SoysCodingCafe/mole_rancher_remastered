@@ -152,6 +152,7 @@ fn update_stopwatch(
 // or for exiting the level
 fn spawn_reactor_buttons(
 	mut commands: Commands,
+	level: Res<SelectedLevel>,
 ) {
 	// Spawn molecule select buttons
 	for j in 0..6 {
@@ -162,6 +163,7 @@ fn spawn_reactor_buttons(
 					width: 75.0,
 					height: 75.0,
 				},
+				enabled: get_available_molecules(level.0)[i + j*3],
 			};
 			commands.spawn((SpriteBundle {
 					transform: Transform::from_translation(button.location),
@@ -185,6 +187,7 @@ fn spawn_reactor_buttons(
 			width: 150.0,
 			height: 75.0,
 		},
+		enabled: true,
 	};
 	commands
 		.spawn((SpriteBundle {
