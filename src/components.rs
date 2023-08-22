@@ -93,6 +93,7 @@ pub const CONNECTION_HEIGHT: f32 = 128.0;
 pub const LAUNCH_TUBE_WIDTH: f32 = 128.0;
 pub const LAUNCH_TUBE_HEIGHT: f32 = 256.0;
 pub const LAUNCH_TUBE_SPEED: f32 = 2.0;
+pub const LAUNCH_TUBE_ROTATIONAL_SPEED: f32 = 100.0;
 
 
 // General Parameters
@@ -315,7 +316,10 @@ pub struct Highlight;
 pub struct Tooltip;
 
 #[derive(Component)]
-pub struct LaunchTube(pub usize);
+pub struct LaunchTube{
+	pub id: usize,
+	pub current_rotation: f32,
+}
 
 #[derive(Component, Default)]
 pub struct ActorInfo {
@@ -633,7 +637,7 @@ pub fn get_reactors(
 	let mut reactors = Vec::new();
 	match level {
 		0 => {
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-3000.0, 100.0), dimensions: Dimensions{width: 3000.0, height: 3000.0}}, reactor_id: 0, input_chamber: false, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-3000.0, 100.0), dimensions: Dimensions{width: 3000.0, height: 3000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(3000.0, -2500.0), dimensions: Dimensions{width: 3000.0, height: 2000.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(4000.0, 2000.0), radius: 2200.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
 		},

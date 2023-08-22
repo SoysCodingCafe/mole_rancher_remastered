@@ -507,7 +507,7 @@ fn highlight_tracked_molecule(
 // Allows the user to move the launch tube either along the top of a reactor
 // or around the perimeter or a reactor
 fn move_launch_tube(
-	mut launch_tube_query: Query<(&mut Transform, &LaunchTube)>,
+	mut launch_tube_query: Query<(&mut Transform, &mut LaunchTube)>,
 	selected_reactor_query: Query<(&ReactorInfo, With<SelectedReactor>)>,
 	keyboard: Res<Input<KeyCode>>,
 	time: Res<Time>,
@@ -516,10 +516,14 @@ fn move_launch_tube(
 	if keyboard.pressed(KeyCode::A) {movement -= 1.0}
 	else if keyboard.pressed(KeyCode::D) {movement += 1.0};
 
-	if movement != 0.0 {
+	let mut rotation = 0.0;
+	if keyboard.pressed(KeyCode::Q) {rotation -= 1.0}
+	else if keyboard.pressed(KeyCode::E) {rotation += 1.0};
+
+	if movement != 0.0 || rotation != 0.0 {
 		for (info, _) in selected_reactor_query.iter() {
-			for (mut transform, launch_tube) in launch_tube_query.iter_mut() {
-				if launch_tube.0 == info.reactor_id {
+			for (mut transform, mut launch_tube) in launch_tube_query.iter_mut() {
+				if launch_tube.id == info.reactor_id {
 					match info.reactor_type {
 						ReactorType::Rectangle{origin, dimensions } => {
 							let target = transform.translation.x + movement * (dimensions.width/2.0) * LAUNCH_TUBE_SPEED * time.delta_seconds();
@@ -528,10 +532,13 @@ fn move_launch_tube(
 							}
 						},
 						ReactorType::Circle{origin, radius } => {
-							let direction = if movement < 0.0 {transform.left()} else {transform.right()};
+							let direction = if movement < 0.0 {(transform.translation.xy() - origin).perp().normalize()} else if movement > 0.0 {-(transform.translation.xy() - origin).perp().normalize()} else {Vec2:: ZERO};
+							launch_tube.current_rotation += rotation * LAUNCH_TUBE_ROTATIONAL_SPEED * time.delta_seconds();
+							launch_tube.current_rotation = launch_tube.current_rotation.clamp(-45.0, 45.0);
+							let angle: f32 = launch_tube.current_rotation;
 							transform.translation.x += direction.x * LAUNCH_TUBE_SPEED * radius * time.delta_seconds();
 							transform.translation.y += direction.y * LAUNCH_TUBE_SPEED * radius * time.delta_seconds();
-							transform.rotation = Quat::from_rotation_arc(Vec3::Y, (transform.translation.xy() - origin).normalize().extend(0.0));
+							transform.rotation = Quat::from_rotation_arc(Vec3::Y, (transform.translation.xy() - origin).normalize().extend(0.0)).mul_quat(Quat::from_rotation_z(angle.to_radians()));
 							transform.translation = ((transform.translation.xy() - origin).clamp_length_max(radius) + origin).extend(transform.translation.z);
 						},
 					}

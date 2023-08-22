@@ -441,7 +441,10 @@ fn spawn_reactors(
 							},
 							..Default::default()
 						},
-						LaunchTube(i),
+						LaunchTube{
+							id: i,
+							current_rotation: 0.0,
+						},
 						RenderLayers::layer(1),
 						DespawnOnExitGameState,
 						Name::new("Launch Tube"),
@@ -524,7 +527,10 @@ fn spawn_reactors(
 							},
 							..Default::default()
 						},
-						LaunchTube(i),
+						LaunchTube{
+							id: i,
+							current_rotation: 0.0,
+						},
 						RenderLayers::layer(1),
 						DespawnOnExitGameState,
 						Name::new("Launch Tube"),
