@@ -37,7 +37,7 @@ impl Plugin for SetupPlugin {
 			.insert_resource(SelectedPalette(0))
 			.insert_resource(SelectedLevel(0))
 			.insert_resource(SelectedMoleculeType(0))
-			.insert_resource(CurrentLogbookPage(0))
+			.insert_resource(SelectedLogbookPage(0))
 			.insert_resource(MoleculeCount{total: 0, cap: MOLECULE_CAP})
 			.insert_resource(BootTimer(Timer::from_seconds(BOOT_DURATION, TimerMode::Once)))
 			.insert_resource(LaunchTimer(Timer::from_seconds(LAUNCH_COOLDOWN, TimerMode::Once)))
