@@ -174,6 +174,7 @@ fn handle_button_calls(
 	mut pkv: ResMut<PkvStore>,
 	mut cutscene_tracker: ResMut<CutsceneTracker>,
 	mut selected_level: ResMut<SelectedLevel>,
+	mut selected_logbook_page: ResMut<SelectedLogbookPage>,
 	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
 	mut ev_r_button_call: EventReader<ButtonCall>,
 	mut ev_w_exit: EventWriter<AppExit>,
@@ -251,8 +252,9 @@ fn handle_button_calls(
 					PopupButton::Palette(palette) => {
 						// Set color palette to selected palette
 					},
-					PopupButton::LogbookTurnLeft => todo!(),
-					PopupButton::LogbookTurnRight => todo!(),
+					PopupButton::LogbookPage(page) => {
+						selected_logbook_page.0 = *page;
+					},
 					PopupButton::LevelSelect(level) => {
 						if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
 							if save_data.levels_unlocked[*level] {

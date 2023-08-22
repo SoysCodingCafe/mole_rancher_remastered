@@ -171,8 +171,7 @@ pub enum CustomLabButton {
 pub enum PopupButton {
 	Volume(usize),
 	Palette(usize),
-	LogbookTurnLeft,
-	LogbookTurnRight,
+	LogbookPage(usize),
 	LevelSelect(usize),
 	CompleteLevel,
 	ExitPopup,
@@ -417,7 +416,7 @@ pub struct TextSpeedTimer(pub Timer);
 pub struct SelectedPalette(pub usize);
 
 #[derive(Resource, Deref, DerefMut)]
-pub struct CurrentLogbookPage(pub usize);
+pub struct SelectedLogbookPage(pub usize);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct SelectedLevel(pub usize);

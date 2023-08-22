@@ -144,7 +144,7 @@ fn debug_molecule(
 								ReactorType::Rectangle{dimensions, ..} => (Vec2::new(transform.translation.x, transform.translation.y - dimensions.height / 2.0), dimensions.height / 2.0), 
 								ReactorType::Circle{origin, radius} => (origin, radius),
 							};
-							let direction = (target - transform.translation.xy()).normalize();
+							let direction = -transform.local_y().xy();
 							let velocity = get_molecule_initial_velocity(molecule_index);
 							commands
 								.spawn((SpriteSheetBundle {

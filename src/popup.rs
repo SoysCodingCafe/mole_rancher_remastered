@@ -107,8 +107,45 @@ fn spawn_popup_buttons(
 				));
 			},
 			PopupType::Logbook => {
+				let mut tabs = Vec::new();
+				for i in 0..15 {
+					tabs.push((StandardButton {
+						location: Vec3::new(-700.0 + 100.0 * i as f32, 400.0, 810.0),
+						dimensions: Dimensions {
+							width: 40.0,
+							height: 60.0,
+						},
+						enabled: true,
+					}, ButtonEffect::PopupButton(PopupButton::LogbookPage(i))));
+				};
+				for i in 0..7 {
+					tabs.push((StandardButton {
+						location: Vec3::new(700.0, 300.0 - 100.0 * i as f32, 810.0),
+						dimensions: Dimensions {
+							width: 60.0,
+							height: 40.0,
+						},
+						enabled: true,
+					}, ButtonEffect::PopupButton(PopupButton::LogbookPage(i+15))));
+				}
+				for (button, effect) in tabs {
+					commands
+						.spawn((SpriteBundle {
+							transform: Transform::from_translation(button.location),
+							sprite: Sprite {
+								custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+								..Default::default()
+							},
+							..Default::default()
+						},
+						effect,
+						button,
+						DespawnOnExitPauseState,
+						Name::new("Logbook Button")
+					));
+				};
 				let button = StandardButton {
-					location: Vec3::new(-350.0, -350.0, 810.0),
+					location: Vec3::new(-650.0, -350.0, 810.0),
 					dimensions: Dimensions {
 						width: 100.0,
 						height: 50.0,
@@ -127,7 +164,7 @@ fn spawn_popup_buttons(
 					ButtonEffect::PopupButton(PopupButton::ExitPopup),
 					button,
 					DespawnOnExitPauseState,
-					Name::new("Exit Logbook Button")
+					Name::new("Logbook Button")
 				));
 			},
 			PopupType::LevelSelect => {
