@@ -27,11 +27,13 @@ impl Plugin for ButtonsPlugin {
 // Checks if the cursor is hovering over a button, and 
 // emits an event if clicked
 fn standard_buttons(
+	time: Res<Time>,
 	window_query: Query<&Window>,
 	ortho_size: Res<OrthoSize>,
 	mouse: Res<Input<MouseButton>>,
 	current_state: Res<State<PauseState>>,
 	mut button_query: Query<(&mut Sprite, &StandardButton, &ButtonEffect)>,
+	mut animation_query: Query<(&mut TextureAtlasSprite, &mut AnimationTimer, &AnimationIndices, &MoleculeButton)>,
 	mut tooltip_query: Query<(&mut Transform, With<Tooltip>)>,
 	mut ev_w_button_call: EventWriter<ButtonCall>,
 ) {
@@ -66,6 +68,14 @@ fn standard_buttons(
 									p.y + offset.y,
 									900.0,
 								);
+								for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
+									if molecule.0 == *index {
+										timer.0.tick(time.delta());
+										if timer.0.just_finished() {
+											spritesheet.index = (spritesheet.index + 1) % indices.total + indices.first;
+										}
+									}
+								};
 							}
 						},
 						_ => (),

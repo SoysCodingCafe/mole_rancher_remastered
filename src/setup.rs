@@ -191,10 +191,10 @@ fn advance_splash_screen(
 
 // Animate every texture atlas sprite
 fn animate_sprites(
-	mut animation_query: Query<(&mut TextureAtlasSprite, &mut AnimationTimer, &AnimationIndices)>,
+	mut animation_query: Query<(&mut TextureAtlasSprite, &mut AnimationTimer, &AnimationIndices, Without<MoleculeButton>)>,
 	time: Res<Time>,
 ) {
-	for (mut sprite, mut timer, indices) in animation_query.iter_mut() {
+	for (mut sprite, mut timer, indices, _) in animation_query.iter_mut() {
 		timer.0.tick(time.delta());
 		if timer.0.just_finished() {
 			sprite.index = (sprite.index + 1) % indices.total + indices.first;

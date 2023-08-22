@@ -152,7 +152,10 @@ fn update_stopwatch(
 // or for exiting the level
 fn spawn_reactor_buttons(
 	mut commands: Commands,
+	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 	level: Res<SelectedLevel>,
+	asset_server: Res<AssetServer>,
+	selected_palette: Res<SelectedPalette>,
 ) {
 	// Spawn molecule select buttons
 	for j in 0..6 {
@@ -165,19 +168,52 @@ fn spawn_reactor_buttons(
 				},
 				enabled: get_available_molecules(level.0)[i + j*3],
 			};
+
+			let loc = button.location;
+			let dim = button.dimensions;
+			let en = button.enabled;
+
+			let texture_handle = asset_server.load(
+				if en {get_molecule_path(i + 3*j)} 
+				else {"moles/lock.png".to_string()});
+			let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 4, 2, None, None);
+			let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
 			commands.spawn((SpriteBundle {
-					transform: Transform::from_translation(button.location),
-					sprite: Sprite {
-						custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
-						..Default::default()
-					},
+				transform: Transform::from_translation(loc),
+				sprite: Sprite {
+					custom_size: Some(Vec2::new(dim.width, dim.height)), 
 					..Default::default()
+				},
+				..Default::default()
 				},
 				ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(i + j*3)),
 				button,
 				DespawnOnExitGameState,
 				Name::new(format!("Molecule Select Button {}", i + j*3))
 			));
+			commands
+				.spawn((SpriteSheetBundle {
+					texture_atlas: texture_atlas_handle.clone(),
+					transform: Transform::from_xyz(loc.x, loc.y, loc.z + 1.0),
+					sprite: TextureAtlasSprite {
+						color: if en {get_molecule_color(i + j*3, selected_palette.0)} else {Color::WHITE},
+						index: if en {0} else {1},
+						custom_size: Some(Vec2::new(dim.width, dim.height)), 
+						..Default::default()
+					},
+					..Default::default()
+				},
+				MoleculeButton(i+j*3),
+				AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+				AnimationIndices{ 
+					first: 0, 
+					total: 8,
+				},
+				DespawnOnExitGameState,
+				Name::new(format!("Molecule Select Button Sprite {}", i + j*3))
+			));	
+			
 		}
 	}
 

@@ -235,6 +235,9 @@ pub struct StandardButton {
 	pub enabled: bool,
 }
 
+#[derive(Component)]
+pub struct MoleculeButton(pub usize);
+
 #[derive(Component, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum ButtonEffect {
 	MenuButton(MenuButton),
