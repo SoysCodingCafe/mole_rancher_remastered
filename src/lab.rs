@@ -30,7 +30,7 @@ fn spawn_lab(
 	// Spawn background for lab when dark
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("sprites/lab_dark.png"),
+			texture: asset_server.load("sprites/background/lab_dark.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 0.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)), 
@@ -46,7 +46,7 @@ fn spawn_lab(
 	// Spawn background for bright lab, but initially set to hidden
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("sprites/lab_bright.png"),
+			texture: asset_server.load("sprites/background/lab_bright.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 10.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)), 
@@ -80,10 +80,10 @@ fn spawn_lab(
 
 	// Name, Path, Z-Level, Alpha, Visibility, Interaction
 	let lab_sprite_info = [
-		("Monitor", "sprites/monitor.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::MonitorActivate)),
-		("Logbook", "sprites/logbook.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::LogbookOpen)),
-		("Exit", "sprites/exit.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)),
-		("Exit Glow", "sprites/glow.png", 11.0, 0.05, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)),
+		("Monitor", "sprites/ui/monitor.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::MonitorActivate)),
+		("Logbook", "sprites/ui/logbook.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::LogbookOpen)),
+		("Exit", "sprites/ui/exit.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)),
+		("Exit Glow", "sprites/ui/glow.png", 11.0, 0.05, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)),
 	];
 
 	for (name, path, z, a, visibility, interaction) in lab_sprite_info {
