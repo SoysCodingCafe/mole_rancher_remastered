@@ -505,7 +505,11 @@ pub fn get_available_molecules(
 ) -> [bool; 18] {
 	let mut available_molecules = [false; 18];
 	match level {
-		0 | 1 | 3 => {
+		0 => {
+			available_molecules[0] = true;
+			available_molecules
+		}
+		1 | 3 => {
 			available_molecules[0] = true;
 			available_molecules[1] = true;
 			available_molecules
