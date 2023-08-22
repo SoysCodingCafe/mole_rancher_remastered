@@ -38,7 +38,7 @@ fn spawn_reactor_visuals(
 ) {
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("sprites/reactor_controls.png"),
+			texture: asset_server.load("sprites/background/reactor_controls.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 0.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)),
@@ -68,7 +68,7 @@ fn spawn_reactor_visuals(
 
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("sprites/circle.png"),
+			texture: asset_server.load("sprites/ui/circle.png"),
 			transform: Transform::from_xyz(0.0, 0.0, -1.0),
 			sprite: Sprite {
 				color: Color::YELLOW,
@@ -551,7 +551,7 @@ fn spawn_reactors(
 				};
 			},
 			ReactorType::Circle{origin, radius} => {
-				let texture: Handle<Image> = asset_server.load("sprites/circle.png");
+				let texture: Handle<Image> = asset_server.load("sprites/ui/circle.png");
 				r.insert(texture);
 				r.insert(Transform::from_xyz(origin.x, origin.y, 10.0));
 				r.insert(Sprite{color: Color::GREEN, custom_size: Some(Vec2::new(radius*2.0, radius*2.0)), ..Default::default()});
@@ -672,7 +672,7 @@ fn check_product_reactor(
 					next_state.set(PauseState::Paused);
 					ev_w_popup.send(PopupEvent{ 
 						origin: Vec2::new(0.0, 0.0), 
-						image: asset_server.load("sprites/logbook_base.png"),
+						image: asset_server.load("sprites/popup/logbook_base.png"),
 						alpha: 1.0,
 						popup_type: PopupType::WinScreen,
 					});

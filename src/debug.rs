@@ -83,7 +83,7 @@ fn debug_popup(
 		if mouse.just_pressed(MouseButton::Right) {
 			ev_w_popup.send(PopupEvent{
 				origin: p,
-				image: asset_server.load("sprites/level_select.png"),
+				image: asset_server.load("sprites/popup/level_select.png"),
 				alpha: 1.0,
 				popup_type: PopupType::LevelSelect,
 			});

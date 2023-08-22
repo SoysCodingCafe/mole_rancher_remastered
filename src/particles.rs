@@ -33,7 +33,7 @@ fn spawn_particles(
 						transform.translation.x + (rand::random::<f32>() - 0.5) * 8.0, 
 						transform.translation.y + (rand::random::<f32>() - 0.5) * 8.0, 
 						transform.translation.z - 1.0),
-					texture: asset_server.load("sprites/circle.png"),
+					texture: asset_server.load("sprites/ui/circle.png"),
 					sprite: Sprite {
 						//color: Color::rgb(rand::random(), rand::random(), rand::random()),
 						custom_size: Some(Vec2::new(m_info.radius * 2.0, m_info.radius * 2.0)),

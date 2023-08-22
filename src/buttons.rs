@@ -252,7 +252,7 @@ fn handle_button_calls(
 						next_state.set(PauseState::Paused);
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(0.0, -140.0), 
-							image: asset_server.load("sprites/settings.png"),
+							image: asset_server.load("sprites/popup/settings.png"),
 							alpha: 1.0,
 							popup_type: PopupType::Settings,
 						});
@@ -269,7 +269,7 @@ fn handle_button_calls(
 						next_state.set(PauseState::Paused);
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(228.0, -10.0), 
-							image: asset_server.load("sprites/level_select.png"),
+							image: asset_server.load("sprites/popup/level_select.png"),
 							alpha: 0.9,
 							popup_type: PopupType::LevelSelect,
 						});
@@ -278,7 +278,7 @@ fn handle_button_calls(
 						next_state.set(PauseState::Paused);
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(-276.0, -162.0), 
-							image: asset_server.load("sprites/logbook_base.png"),
+							image: asset_server.load("sprites/popup/logbook_base.png"),
 							alpha: 1.0,
 							popup_type: PopupType::Logbook,
 						});
