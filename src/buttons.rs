@@ -89,6 +89,21 @@ fn standard_buttons(
 				}
 			} else {
 				sprite.color = Color::GRAY;
+				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
+					for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
+						match effect {
+							ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(i)) => {
+								if molecule.0 == *i {
+									timer.0.tick(time.delta());
+									if timer.0.just_finished() {
+										spritesheet.index = (spritesheet.index + 1) % indices.total + indices.first;
+									}
+								}
+							},
+							_ => (),
+						}
+					};
+				}
 			}
 		}
 		// If not hovering over any buttons then hide all effects
