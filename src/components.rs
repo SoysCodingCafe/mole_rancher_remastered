@@ -29,6 +29,7 @@ pub struct SaveData {
 	pub bgm_volume: f64,
 	pub selected_palette: usize,
 	pub levels_unlocked: Vec<bool>,
+	pub best_times: Vec<f32>,
 	pub cutscenes_unlocked: Vec<bool>,
 }
 
@@ -82,7 +83,6 @@ pub const STOPWATCH_BOX_MARGINS: f32 = 8.0;
 pub const PARTICLE_SPAWN_DELAY: f32 = 0.01;
 pub const PARTICLE_DURATION: f32 = 0.6;
 
-
 // Reactor Interactions
 pub const LEVER_WIDTH: f32 = 160.0;
 pub const LEVER_HEIGHT: f32 = 40.0;
@@ -97,6 +97,7 @@ pub const LAUNCH_TUBE_ROTATIONAL_SPEED: f32 = 300.0;
 
 
 // General Parameters
+pub const TOTAL_MOLECULE_TYPES: usize = 18;
 pub const LAUNCH_COOLDOWN: f32 = 0.2;
 pub const MOLECULE_CAP: usize = 800;
 
@@ -145,11 +146,17 @@ pub enum CutsceneState {
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum WinCondition {
+	GreaterThan(usize, usize),
+	LessThan(usize, usize),
+}
+
+#[derive(Clone, Copy, Debug)]
 pub enum PopupType {
 	Settings,
 	Logbook,
 	LevelSelect,
-	WinScreen,
+	WinScreen(f32, f32),
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
@@ -174,6 +181,7 @@ pub enum PopupButton {
 	PaletteToggle,
 	LogbookPage(usize),
 	LevelSelect(usize),
+	ReplayLevel,
 	CompleteLevel,
 	ExitPopup,
 }
@@ -182,6 +190,11 @@ pub enum PopupButton {
 pub enum ReactorButton {
 	SelectMolecule(usize),
 	ExitReactor,
+}
+
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum CutsceneButton {
+	SkipCutscene,
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug, Default)]
@@ -245,6 +258,7 @@ pub enum ButtonEffect {
 	CustomLabButton(CustomLabButton),
 	PopupButton(PopupButton),
 	ReactorButton(ReactorButton),
+	CutsceneButton(CutsceneButton),
 }
 
 #[derive(Component)]
@@ -255,7 +269,7 @@ pub struct Connection {
 	pub reactor_id: usize, 
 	pub connection_id: usize,
 	pub intake: bool,
-	pub filter: Vec<bool>,
+	pub filter: [bool; TOTAL_MOLECULE_TYPES],
 }
 
 #[derive(Component, Clone, Copy)]
@@ -397,8 +411,8 @@ pub struct OrthoSize {
 
 #[derive(Resource)]
 pub struct AudioVolume {
-	pub bgm: f32,
-	pub sfx: f32,
+	pub bgm: f64,
+	pub sfx: f64,
 }
 
 #[derive(Resource)]
@@ -456,6 +470,9 @@ pub struct ButtonCall(pub ButtonEffect);
 pub struct FadeTransitionEvent(pub GameState);
 
 #[derive(Event)]
+pub struct ReplayLevelEvent;
+
+#[derive(Event)]
 pub struct PopupEvent{
 	pub origin: Vec2,
 	pub image: Handle<Image>,
@@ -502,15 +519,29 @@ pub fn get_audio_path(
 // MOLECULE HELPER FUNCTIONS
 pub fn get_available_molecules(
 	level: usize,
-) -> [bool; 18] {
-	let mut available_molecules = [false; 18];
+) -> [bool; TOTAL_MOLECULE_TYPES] {
+	let mut available_molecules = [false; TOTAL_MOLECULE_TYPES];
 	match level {
-		1 => {
+		0 => {
 			available_molecules[0] = true;
 			available_molecules
 		}
+		1 | 3 => {
+			available_molecules[0] = true;
+			available_molecules[1] = true;
+			available_molecules
+		}
+		2 => {
+			available_molecules[5] = true;
+			available_molecules
+		}
+		4 => {
+			available_molecules[2] = true;
+			available_molecules[3] = true;
+			available_molecules
+		}
 		_ => {
-			for i in 0..18 {
+			for i in 0..TOTAL_MOLECULE_TYPES {
 				available_molecules[i] = true;
 			};
 			available_molecules
@@ -595,7 +626,7 @@ pub fn get_molecule_initial_velocity(
 	match index {
 		0 => 1200.0,
 		1 => 1200.0,
-		2 => 200.0,
+		2 => 1600.0,
 		3 => 2000.0,
 		4 => 5.0,
 		5 => 3000.0,
@@ -668,12 +699,30 @@ pub fn get_reactors(
 	let mut reactors = Vec::new();
 	match level {
 		0 => {
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions{width: 3000.0, height: 2000.0}}, reactor_id: 0, input_chamber: true, product_chamber: true});
+		}
+		1 => {
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 2000.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
+		}
+		2 => {
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 800.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
+		}
+		3 => {
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 2000.0), dimensions: Dimensions{width: 4000.0, height: 2000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, -1500.0), radius: 2000.0}, reactor_id: 1, input_chamber: false, product_chamber: true});
+		}
+		4 => {
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-4500.0, 0.0), radius: 2000.0}, reactor_id: 0, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions{width: 4000.0, height: 1000.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(4500.0, 0.0), radius: 2000.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
+		}
+		5 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-3000.0, 100.0), dimensions: Dimensions{width: 3000.0, height: 3000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(3000.0, -2500.0), dimensions: Dimensions{width: 3000.0, height: 2000.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(4000.0, 2000.0), radius: 2200.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
 		},
-		1 => {reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
-		2 => {
+		6 => {reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
+		7 => {
 			for j in 0..4 {
 				for i in 0..8 {
 					reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-6844.0 + 1955.5*i as f32, 3180.0 - 2120.0*j as f32), radius: 800.0}, reactor_id: i + 8*j, 
@@ -681,7 +730,7 @@ pub fn get_reactors(
 				}
 			}
 		}
-		3 => {
+		8 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-2000.0, 0.0), radius: 800.0}, reactor_id: 0, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 800.0}, reactor_id: 1, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(2000.0, 0.0), radius: 800.0}, reactor_id: 2, input_chamber: true, product_chamber: true});
@@ -689,7 +738,7 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 2000.0}}, reactor_id: 4, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 3000.0}}, reactor_id: 5, input_chamber: true, product_chamber: false});
 		}
-		4 => {
+		9 => {
 			{reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
 		}
 		_ => (),
@@ -701,43 +750,69 @@ pub fn get_reactor_connections(
 	level: usize,
 	reactor_id: usize,
 ) -> ReactorConnections {
-	let mut filter = Vec::new();
-	for _ in 0..18 {
-		filter.push(true);
-	}
+	let mut filter = [false; TOTAL_MOLECULE_TYPES];
+	let (mut filter_a, mut filter_b, mut filter_c, mut filter_d) = (filter, filter, filter, filter); 
+	filter_a[0] = true;
+	filter_b[1] = true;
+	filter_c[2] = true;
+	filter_d[3] = true;
 	let mut connections = Vec::new();
 	match level {
-		0 => match reactor_id {
+		3 => match reactor_id {
 			0 => {
-				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter.clone()}));
-				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter.clone()}));
-				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter.clone()}));
+				connections.push((Vec2::new(-0.8, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter_a}));
+				connections.push((Vec2::new(0.8, -1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter_b}));
 			},
 			1 => {
-				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter.clone()}));
-			}
-			2 => {
-				filter[0] = false;
-				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter.clone()}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter}));
 			}
 			_ => (),
 		}
-		1 => match reactor_id {
+		4 => match reactor_id {
+			0 => {
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: true, filter: filter_c}));
+			},
+			1 => {
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: false, filter: filter}));
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false, filter: filter}));
+			},
+			2 => {
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: true, filter: filter_d}));
+			},
+			_ => (),
+		}
+		5 => match reactor_id {
+			0 => {
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter}));
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter}));
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter}));
+			},
+			1 => {
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter}));
+			}
+			2 => {
+				filter[0] = false;
+				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter}));
+			}
+			_ => (),
+		}
+		6 => match reactor_id {
 			_ => {
-				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter.clone()}));
-				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter.clone()}));
-				connections.push((Vec2::new(-1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter.clone()}));
-				connections.push((Vec2::new(-1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter.clone()}));
-				connections.push((Vec2::new(1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: true, filter: filter.clone()}));
-				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: false, filter: filter.clone()}));
-				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: true, filter: filter.clone()}));
-				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false, filter: filter.clone()}));
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter}));
+				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter}));
+				connections.push((Vec2::new(-1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter}));
+				connections.push((Vec2::new(-1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter}));
+				connections.push((Vec2::new(1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: true, filter: filter}));
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: false, filter: filter}));
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: true, filter: filter}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false, filter: filter}));
 			}
 		}
-		2 => match reactor_id {
+		7 => match reactor_id {
 			i => {
-				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: (i+1)%32, intake: true, filter: filter.clone()}));
-				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: i, intake: false, filter: filter.clone()}));
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: (i+1)%32, intake: true, filter: filter}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: i, intake: false, filter: filter}));
 			}
 		}
 		_ => (),
@@ -752,10 +827,32 @@ pub fn get_reactor_initialization(
 	let mut molecules = Vec::new();
 	match level {
 		0 => match reactor_id {
-			_ => {
-				molecules.push((0, Vec2::ZERO, Vec2::ZERO));
+			0 => {
+				for i in 0..5 {
+					molecules.push((1, Vec2::new(-1000.0 + 500.0 * i as f32, 0.0), Vec2::ZERO));
+				}
 				molecules
 			},
+			_ => molecules,
+		}
+		1 => match reactor_id {
+			0 => {
+				for _ in 0..50 {
+					molecules.push((4, Vec2::new((rand::random::<f32>() - 0.5) * 3000.0, (rand::random::<f32>() - 0.5) * 3000.0), Vec2::ZERO));
+				}
+				molecules
+			},
+			_ => molecules,
+		}
+		2 => match reactor_id {
+			0 => {
+				for _ in 0..100 {
+					molecules.push((0, Vec2::new((rand::random::<f32>() - 0.5) * 1500.0, (rand::random::<f32>() - 0.5) * 1500.0), 
+					Vec2::new((rand::random::<f32>() - 0.5) * 3000.0, (rand::random::<f32>() - 0.5) * 3000.0)));
+				}
+				molecules
+			},
+			_ => molecules,
 		}
 		_ => {
 			molecules
@@ -765,14 +862,14 @@ pub fn get_reactor_initialization(
 
 pub fn get_level_goal(
 	level: usize,
-) -> (usize, usize) {
+) -> WinCondition {
 	match level {
-		0 => (5, 0),
-		1 => (100, 4),
-		2 => (1, 0),
-		3 => (20, 4),
-		4 => (1, 8),
-		_ => (1, 0),
+		0 => WinCondition::GreaterThan(5, 2),
+		1 => WinCondition::GreaterThan(5, 2),
+		2 => WinCondition::LessThan(1, 0),
+		3 => WinCondition::GreaterThan(5, 2),
+		4 => WinCondition::GreaterThan(5, 4),
+		_ => WinCondition::GreaterThan(1, 0),
 	}
 }
 

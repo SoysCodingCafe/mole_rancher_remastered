@@ -89,6 +89,21 @@ fn standard_buttons(
 				}
 			} else {
 				sprite.color = Color::GRAY;
+				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
+					for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
+						match effect {
+							ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(i)) => {
+								if molecule.0 == *i {
+									timer.0.tick(time.delta());
+									if timer.0.just_finished() {
+										spritesheet.index = (spritesheet.index + 1) % indices.total + indices.first;
+									}
+								}
+							},
+							_ => (),
+						}
+					};
+				}
 			}
 		}
 		// If not hovering over any buttons then hide all effects
@@ -211,10 +226,11 @@ fn handle_button_calls(
 	mut ev_r_button_call: EventReader<ButtonCall>,
 	mut ev_w_exit: EventWriter<AppExit>,
 	mut ev_w_fade_transition: EventWriter<FadeTransitionEvent>,
+	mut ev_w_replay_level: EventWriter<ReplayLevelEvent>,
 	mut ev_w_popup: EventWriter<PopupEvent>,
 	mut bright_lab_query: Query<(&mut Visibility, With<BrightLab>)>,
 	mut palette_query: Query<(&mut Sprite, &Palette)>,
-	mut next_state: ResMut<NextState<PauseState>>,
+	mut next_pause_state: ResMut<NextState<PauseState>>,
 ) {
 	for ev in ev_r_button_call.iter() {
 		match ev.0 {
@@ -234,7 +250,7 @@ fn handle_button_calls(
 						}
 					},
 					MenuButton::Settings => {
-						next_state.set(PauseState::Paused);
+						next_pause_state.set(PauseState::Paused);
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(0.0, -140.0), 
 							image: asset_server.load("sprites/popup/settings.png"),
@@ -251,7 +267,7 @@ fn handle_button_calls(
 					CustomLabButton::MonitorActivate => {
 						let (mut vis, _) = bright_lab_query.single_mut();
 						*vis = Visibility::Visible;
-						next_state.set(PauseState::Paused);
+						next_pause_state.set(PauseState::Paused);
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(228.0, -10.0), 
 							image: asset_server.load("sprites/popup/level_select.png"),
@@ -260,7 +276,7 @@ fn handle_button_calls(
 						});
 					},
 					CustomLabButton::LogbookOpen => {
-						next_state.set(PauseState::Paused);
+						next_pause_state.set(PauseState::Paused);
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(-276.0, -162.0), 
 							image: asset_server.load("sprites/popup/logbook_base.png"),
@@ -280,15 +296,31 @@ fn handle_button_calls(
 			ButtonEffect::PopupButton(ref effect) => {
 				match effect {
 					PopupButton::BgmVolume(volume) => {
-						audio_volume.bgm = *volume as f32/10.0;
+						audio_volume.bgm = *volume as f64/10.0;
+						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
+							save_data.bgm_volume = audio_volume.bgm;
+							pkv.set("save_data", &save_data)
+									.expect("Unable to save data");
+						}
+						
 					},
 					PopupButton::SfxVolume(volume) => {
-						audio_volume.sfx = *volume as f32/10.0;
+						audio_volume.sfx = *volume as f64/10.0;
+						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
+							save_data.sfx_volume = audio_volume.sfx;
+							pkv.set("save_data", &save_data)
+									.expect("Unable to save data");
+						}
 					},
 					PopupButton::PaletteToggle => {
 						selected_palette.0 = (selected_palette.0 + 1) % 4;
 						for (mut sprite, palette) in palette_query.iter_mut() {
 							sprite.color = get_molecule_color(palette.0, selected_palette.0);
+						}
+						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
+							save_data.selected_palette = selected_palette.0;
+							pkv.set("save_data", &save_data)
+									.expect("Unable to save data");
 						}
 					},
 					PopupButton::LogbookPage(page) => {
@@ -298,24 +330,32 @@ fn handle_button_calls(
 						if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
 							if save_data.levels_unlocked[*level] {
 								selected_level.0 = *level;
-								next_state.set(PauseState::Unpaused);
+								next_pause_state.set(PauseState::Unpaused);
 								ev_w_fade_transition.send(FadeTransitionEvent(GameState::Reactor));
 							}
 						}
 					},
+					PopupButton::ReplayLevel => {
+						next_pause_state.set(PauseState::Unpaused);
+						ev_w_replay_level.send(ReplayLevelEvent);
+					},
 					PopupButton::CompleteLevel => {
+						next_pause_state.set(PauseState::Unpaused);
 						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
-							save_data.levels_unlocked[selected_level.0 + 1] = true;
-							next_state.set(PauseState::Unpaused);
-							cutscene_tracker.cutscene_state = CutsceneState::Initialize;
-							cutscene_tracker.current_scene = selected_level.0 + 1;
-							ev_w_fade_transition.send(FadeTransitionEvent(GameState::Cutscene));
-							pkv.set("save_data", &save_data)
-								.expect("Unable to save data");
+							if save_data.cutscenes_unlocked[selected_level.0 + 1] {
+								ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
+							} else {
+								save_data.cutscenes_unlocked[selected_level.0 + 1] = true;
+								pkv.set("save_data", &save_data)
+										.expect("Unable to save data");
+								cutscene_tracker.cutscene_state = CutsceneState::Initialize;
+								cutscene_tracker.current_scene = selected_level.0 + 1;
+								ev_w_fade_transition.send(FadeTransitionEvent(GameState::Cutscene));
+							}
 						}
 					},
 					PopupButton::ExitPopup => {
-						next_state.set(PauseState::Unpaused);
+						next_pause_state.set(PauseState::Unpaused);
 					},
 				}
 			},
@@ -328,6 +368,9 @@ fn handle_button_calls(
 						ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
 					},
 				}
+			},
+			ButtonEffect::CutsceneButton(CutsceneButton::SkipCutscene) => {
+				ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
 			},
 		}
 	}

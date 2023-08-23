@@ -19,6 +19,7 @@ impl Plugin for SetupPlugin {
 			// Events
 			.add_event::<ButtonCall>()
 			.add_event::<FadeTransitionEvent>()
+			.add_event::<ReplayLevelEvent>()
 			.add_event::<PopupEvent>()
 			.add_event::<PopupCompleteEvent>()
 			.add_event::<ConnectionEvent>()
@@ -82,24 +83,29 @@ impl Plugin for SetupPlugin {
 fn load_game(
 	mut pkv: ResMut<PkvStore>,
 	mut selected_palette: ResMut<SelectedPalette>,
+	mut audio_volume: ResMut<AudioVolume>,
 ) {
 	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
 		selected_palette.0 = save_data.selected_palette;
+		audio_volume.bgm = save_data.bgm_volume;
+		audio_volume.sfx = save_data.sfx_volume;
 	} else {
 		let mut levels_unlocked = Vec::new();
+		let mut best_times = Vec::new();
 		let mut cutscenes_unlocked = Vec::new();
 		for _ in 0..NUMBER_OF_LEVELS {
 			levels_unlocked.push(false);
+			best_times.push(999999.0);
 		}
 		for _ in 0..NUMBER_OF_CUTSCENES {
 			cutscenes_unlocked.push(false);
 		}
-		println!("{}", levels_unlocked.len());
 		let save_data = SaveData{
 			sfx_volume: 1.0,
 			bgm_volume: 1.0,
 			selected_palette: 0,
 			levels_unlocked: levels_unlocked,
+			best_times: best_times,
 			cutscenes_unlocked: cutscenes_unlocked,
 		};
 		pkv.set("save_data", &save_data)
