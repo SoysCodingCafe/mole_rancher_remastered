@@ -255,7 +255,8 @@ fn molecule_movement(
 								input_b_accounted_for = true;
 							}
 							else if molecule_count.total <= molecule_count.cap {
-								let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
+								let direction = if total_products == 1 {velocity_out.normalize()}
+									else {Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize()};
 								commands
 									.spawn((SpriteSheetBundle {
 										transform: Transform::from_xyz(
