@@ -21,6 +21,7 @@ impl Plugin for ParticlesPlugin {
 fn spawn_particles(
 	time: Res<Time>,
 	asset_server: Res<AssetServer>,
+	palette: Res<SelectedPalette>,
 	mut commands: Commands,
 	mut particle_trail_query: Query<(&Transform, &MoleculeInfo, &mut ParticleTrail)>,
 ) {
@@ -35,6 +36,7 @@ fn spawn_particles(
 						transform.translation.z - 1.0),
 					texture: asset_server.load("sprites/ui/circle.png"),
 					sprite: Sprite {
+						color: get_molecule_color(m_info.index, palette.0),
 						//color: Color::rgb(rand::random(), rand::random(), rand::random()),
 						custom_size: Some(Vec2::new(m_info.radius * 2.0, m_info.radius * 2.0)),
 						..Default::default()
