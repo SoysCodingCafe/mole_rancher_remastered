@@ -182,7 +182,7 @@ fn spawn_splash_screen(
 	));
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("soycodingcafe.png"),
+			texture: asset_server.load("soycodingcafe_small.png"),
 			transform: Transform:: from_xyz(0.0, 0.0, 1.0),
 			..default()
 		},
