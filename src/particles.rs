@@ -33,12 +33,12 @@ fn spawn_particles(
 					transform: Transform::from_xyz(
 						transform.translation.x + (rand::random::<f32>() - 0.5) * 8.0, 
 						transform.translation.y + (rand::random::<f32>() - 0.5) * 8.0, 
-						transform.translation.z - 1.0),
+						transform.translation.z - 2.0),
 					texture: asset_server.load("sprites/ui/circle.png"),
 					sprite: Sprite {
 						color: get_molecule_color(m_info.index, palette.0),
 						//color: Color::rgb(rand::random(), rand::random(), rand::random()),
-						custom_size: Some(Vec2::new(m_info.radius * 2.0, m_info.radius * 2.0)),
+						custom_size: Some(Vec2::new(m_info.radius, m_info.radius)),
 						..Default::default()
 					},
 					..Default::default()
@@ -61,6 +61,7 @@ fn fade_particles(
 		particle.duration.tick(time.delta());
 		transform.scale.x = (1.0 - particle.duration.percent()).clamp(0.1, 1.0);
 		transform.scale.y = (1.0 - particle.duration.percent()).clamp(0.1, 1.0);
+		transform.translation.z = (498.0 - particle.duration.percent()).clamp(497.0, 498.0);
 		sprite.color.set_a((1.0 - particle.duration.percent()).clamp(0.1, 1.0));
 		if particle.duration.just_finished() {
 			commands.entity(entity).despawn_recursive();

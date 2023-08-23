@@ -291,7 +291,7 @@ fn handle_levers(
 	window_query: Query<&Window>,
 	ortho_size: Res<OrthoSize>,
 	mouse: Res<Input<MouseButton>>,
-	lever_query: Query<(Entity, &Transform, Without<SelectedLever>)>,
+	lever_query: Query<(Entity, &Transform, (With<LeverInfo>, Without<SelectedLever>))>,
 	mut commands: Commands,
 	mut reactor_condition_query: Query<(&mut ReactorCondition, With<SelectedReactor>)>,
 	mut selected_lever_query: Query<(Entity, &mut Transform, &LeverInfo, With<SelectedLever>)>,

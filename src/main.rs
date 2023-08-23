@@ -68,7 +68,7 @@ fn main() {
 			// Molecule spawning and collision logic
 			molecules::MoleculesPlugin,
 			// Spawn and fade particle trails
-			//particles::ParticlesPlugin,
+			particles::ParticlesPlugin,
 			// Spawns popup menus and buttons such as level select
 			popup::PopupPlugin,
 			// Reactor sprite spawning and logic
