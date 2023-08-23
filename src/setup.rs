@@ -160,18 +160,28 @@ fn spawn_cameras(
 fn spawn_splash_screen(
 	mut commands: Commands,
 	ortho_size: Res<OrthoSize>,
+	asset_server: Res<AssetServer>,
 ) {
 	commands
 		.spawn((SpriteBundle {
 			transform: Transform::from_xyz(0.0, 0.0, 0.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)), 
-				color: Color::rgba(0.5, 0.0, 0.0, 1.0),
+				color: Color::rgba(0.05, 0.05, 0.05, 1.0),
 				..Default::default()},
 			..Default::default()
 		},
 		DespawnOnExitGameState,
 		Name::new("Splash Screen")
+	));
+	commands
+		.spawn((SpriteBundle {
+			texture: asset_server.load("soycodingcafe.png"),
+			transform: Transform:: from_xyz(0.0, 0.0, 1.0),
+			..default()
+		},
+		DespawnOnExitGameState,
+		Name::new("Logo")
 	));
 }
 
