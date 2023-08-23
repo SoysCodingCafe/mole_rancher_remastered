@@ -29,6 +29,7 @@ pub struct SaveData {
 	pub bgm_volume: f64,
 	pub selected_palette: usize,
 	pub levels_unlocked: Vec<bool>,
+	pub best_times: Vec<f32>,
 	pub cutscenes_unlocked: Vec<bool>,
 }
 
@@ -82,7 +83,6 @@ pub const STOPWATCH_BOX_MARGINS: f32 = 8.0;
 pub const PARTICLE_SPAWN_DELAY: f32 = 0.01;
 pub const PARTICLE_DURATION: f32 = 0.6;
 
-
 // Reactor Interactions
 pub const LEVER_WIDTH: f32 = 160.0;
 pub const LEVER_HEIGHT: f32 = 40.0;
@@ -97,6 +97,7 @@ pub const LAUNCH_TUBE_ROTATIONAL_SPEED: f32 = 300.0;
 
 
 // General Parameters
+pub const TOTAL_MOLECULE_TYPES: usize = 18;
 pub const LAUNCH_COOLDOWN: f32 = 0.2;
 pub const MOLECULE_CAP: usize = 800;
 
@@ -145,11 +146,17 @@ pub enum CutsceneState {
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum WinCondition {
+	GreaterThan(usize, usize),
+	LessThan(usize, usize),
+}
+
+#[derive(Clone, Copy, Debug)]
 pub enum PopupType {
 	Settings,
 	Logbook,
 	LevelSelect,
-	WinScreen,
+	WinScreen(f32, f32),
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
@@ -174,6 +181,7 @@ pub enum PopupButton {
 	PaletteToggle,
 	LogbookPage(usize),
 	LevelSelect(usize),
+	ReplayLevel,
 	CompleteLevel,
 	ExitPopup,
 }
@@ -182,6 +190,11 @@ pub enum PopupButton {
 pub enum ReactorButton {
 	SelectMolecule(usize),
 	ExitReactor,
+}
+
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
+pub enum CutsceneButton {
+	SkipCutscene,
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug, Default)]
@@ -245,6 +258,7 @@ pub enum ButtonEffect {
 	CustomLabButton(CustomLabButton),
 	PopupButton(PopupButton),
 	ReactorButton(ReactorButton),
+	CutsceneButton(CutsceneButton),
 }
 
 #[derive(Component)]
@@ -255,7 +269,7 @@ pub struct Connection {
 	pub reactor_id: usize, 
 	pub connection_id: usize,
 	pub intake: bool,
-	pub filter: [bool; 18],
+	pub filter: [bool; TOTAL_MOLECULE_TYPES],
 }
 
 #[derive(Component, Clone, Copy)]
@@ -397,8 +411,8 @@ pub struct OrthoSize {
 
 #[derive(Resource)]
 pub struct AudioVolume {
-	pub bgm: f32,
-	pub sfx: f32,
+	pub bgm: f64,
+	pub sfx: f64,
 }
 
 #[derive(Resource)]
@@ -456,6 +470,9 @@ pub struct ButtonCall(pub ButtonEffect);
 pub struct FadeTransitionEvent(pub GameState);
 
 #[derive(Event)]
+pub struct ReplayLevelEvent;
+
+#[derive(Event)]
 pub struct PopupEvent{
 	pub origin: Vec2,
 	pub image: Handle<Image>,
@@ -502,8 +519,8 @@ pub fn get_audio_path(
 // MOLECULE HELPER FUNCTIONS
 pub fn get_available_molecules(
 	level: usize,
-) -> [bool; 18] {
-	let mut available_molecules = [false; 18];
+) -> [bool; TOTAL_MOLECULE_TYPES] {
+	let mut available_molecules = [false; TOTAL_MOLECULE_TYPES];
 	match level {
 		0 => {
 			available_molecules[0] = true;
@@ -524,7 +541,7 @@ pub fn get_available_molecules(
 			available_molecules
 		}
 		_ => {
-			for i in 0..18 {
+			for i in 0..TOTAL_MOLECULE_TYPES {
 				available_molecules[i] = true;
 			};
 			available_molecules
@@ -733,7 +750,7 @@ pub fn get_reactor_connections(
 	level: usize,
 	reactor_id: usize,
 ) -> ReactorConnections {
-	let mut filter = [false; 18];
+	let mut filter = [false; TOTAL_MOLECULE_TYPES];
 	let (mut filter_a, mut filter_b, mut filter_c, mut filter_d) = (filter, filter, filter, filter); 
 	filter_a[0] = true;
 	filter_b[1] = true;
@@ -845,14 +862,14 @@ pub fn get_reactor_initialization(
 
 pub fn get_level_goal(
 	level: usize,
-) -> (usize, usize) {
+) -> WinCondition {
 	match level {
-		0 => (5, 2),
-		1 => (5, 2),
-		2 => (0, 0),
-		3 => (5, 2),
-		4 => (5, 4),
-		_ => (1, 0),
+		0 => WinCondition::GreaterThan(5, 2),
+		1 => WinCondition::GreaterThan(5, 2),
+		2 => WinCondition::LessThan(1, 0),
+		3 => WinCondition::GreaterThan(5, 2),
+		4 => WinCondition::GreaterThan(5, 4),
+		_ => WinCondition::GreaterThan(1, 0),
 	}
 }
 

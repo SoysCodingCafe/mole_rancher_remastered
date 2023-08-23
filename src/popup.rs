@@ -1,5 +1,6 @@
 // Import Bevy game engine essentials
 use bevy::prelude::*;
+use bevy_pkv::PkvStore;
 // Import components, resources, and events
 use crate::components::*;
 
@@ -78,6 +79,8 @@ fn spawn_popup_buttons(
 	popup_query: Query<(&PopupInfo)>,
 	asset_server: Res<AssetServer>,
 	selected_palette: Res<SelectedPalette>,
+	selected_level: Res<SelectedLevel>,
+	pkv: Res<PkvStore>,
 	mut commands: Commands,
 	mut ev_r_popup_complete: EventReader<PopupCompleteEvent>,
 ) {
@@ -255,30 +258,32 @@ fn spawn_popup_buttons(
 				));
 			},
 			PopupType::LevelSelect => {
-				// Spawn level select buttons
-				for j in 0..5 {
-					for i in 0..5 {
-						let button = StandardButton {
-							location: Vec3::new(-200.0 + 100.0 * i as f32, 100.0 - 100.0 * j as f32, 810.0),
-							dimensions: Dimensions {
-								width: 50.0,
-								height: 50.0,
-							},
-							enabled: true,
-						};
-						commands.spawn((SpriteBundle {
-								transform: Transform::from_translation(button.location),
-								sprite: Sprite {
-									custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+				if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+					// Spawn level select buttons
+					for j in 0..5 {
+						for i in 0..5 {
+							let button = StandardButton {
+								location: Vec3::new(-200.0 + 100.0 * i as f32, 100.0 - 100.0 * j as f32, 810.0),
+								dimensions: Dimensions {
+									width: 50.0,
+									height: 50.0,
+								},
+								enabled: save_data.levels_unlocked[i+5*j],
+							};
+							commands.spawn((SpriteBundle {
+									transform: Transform::from_translation(button.location),
+									sprite: Sprite {
+										custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+										..Default::default()
+									},
 									..Default::default()
 								},
-								..Default::default()
-							},
-							ButtonEffect::PopupButton(PopupButton::LevelSelect(i + 5*j)),
-							button,
-							DespawnOnExitPauseState,
-							Name::new(format!("Level Select Button {}", i + 5*j))
-						));
+								ButtonEffect::PopupButton(PopupButton::LevelSelect(i + 5*j)),
+								button,
+								DespawnOnExitPauseState,
+								Name::new(format!("Level Select Button {}", i + 5*j))
+							));
+						}
 					}
 				}
 				let button = StandardButton {
@@ -304,29 +309,82 @@ fn spawn_popup_buttons(
 					Name::new("Exit Level Select Button")
 				));
 			},
-			PopupType::WinScreen => {
-				let button = StandardButton {
-					location: Vec3::new(0.0, -200.0, 810.0),
-					dimensions: Dimensions {
-						width: 300.0,
-						height: 300.0,
+			PopupType::WinScreen(prev_best_time, current_time) => {
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(0.0, 300.0, 810.0),
+					text: Text::from_section(format!("You Win!"), get_title_text_style(&asset_server))
+						.with_alignment(TextAlignment::Center),
+					text_anchor: bevy::sprite::Anchor::Center,
+					..Default::default()
 					},
-					enabled: true,
-				};
-				commands
-					.spawn((SpriteBundle {
-						transform: Transform::from_translation(button.location),
-						sprite: Sprite {
-							custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+					DespawnOnExitPauseState,
+					Name::new("Win Text")
+				));
+				let prev_best_text = if prev_best_time < 60.0 {format!("{:.2} s", prev_best_time)}
+					else if prev_best_time < 6000.0 {format!("{:.0} m {:.0} s", (prev_best_time / 60.0).floor(), prev_best_time % 60.0)}
+					else if prev_best_time < 999999.0 {format!("{:.0} m", (prev_best_time / 60.0).floor())}
+					else {format!("N/A")};
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(0.0, 150.0, 810.0),
+					text: Text::from_section(format!("Previous Best: {}", prev_best_text), get_subtitle_text_style(&asset_server))
+						.with_alignment(TextAlignment::Center),
+					text_anchor: bevy::sprite::Anchor::Center,
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Win Text")
+				));
+				let current_time_text = if current_time < 60.0 {format!("{:.2} s", current_time)}
+					else if current_time < 6000.0 {format!("{:.0} m {:.0} s", (current_time / 60.0).floor(), current_time % 60.0)}
+					else if current_time < 999999.0 {format!("{:.0} m", (current_time / 60.0).floor())}
+					else {format!("A While")};
+				let new_best = if current_time < prev_best_time {format!("New Best: ")} else {format!("Time Taken: ")};
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(0.0, 0.0, 810.0),
+					text: Text::from_section(format!("{}{}", new_best, current_time_text), get_subtitle_text_style(&asset_server))
+						.with_alignment(TextAlignment::Center),
+					text_anchor: bevy::sprite::Anchor::Center,
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Win Text")
+				));
+				let mut buttons = Vec::new();
+				let effects = [
+					ButtonEffect::PopupButton(PopupButton::ReplayLevel),
+					ButtonEffect::PopupButton(PopupButton::CompleteLevel),
+				];
+				if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+					let enabled = [save_data.cutscenes_unlocked[selected_level.0 + 1], true];
+					for i in 0..2 {
+						buttons.push((
+							StandardButton {
+								location: Vec3::new(-300.0+600.0*i as f32, -200.0, 830.0),
+								dimensions: Dimensions {
+									width: 200.0,
+									height: 150.0,
+								},
+								enabled: enabled[i],
+							}, effects[i]
+						));
+					}
+				}
+				for button in buttons {
+					commands
+						.spawn((SpriteBundle {
+							transform: Transform::from_translation(button.0.location),
+							sprite: Sprite {
+								custom_size: Some(Vec2::new(button.0.dimensions.width, button.0.dimensions.height)), 
+								..Default::default()
+							},
 							..Default::default()
 						},
-						..Default::default()
-					},
-					ButtonEffect::PopupButton(PopupButton::CompleteLevel),
-					button,
-					DespawnOnExitPauseState,
-					Name::new("Exit Win Screen Button")
-				));
+						button.0,
+						button.1,
+						DespawnOnExitPauseState,
+						Name::new("Win Screen Button")
+					));
+				}
 			}
 		}
 	}

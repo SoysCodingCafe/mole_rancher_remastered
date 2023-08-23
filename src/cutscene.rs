@@ -1,5 +1,6 @@
 // Import Bevy game engine essentials
 use bevy::prelude::*;
+use bevy_pkv::PkvStore;
 // Import components, resources, and events
 use crate::components::*;
 
@@ -95,6 +96,29 @@ fn spawn_cutscene(
 			Name::new("Cutscene Text")
 		));
 	});
+
+	let button = StandardButton {
+		location: Vec3::new(600.0, 350.0, 810.0),
+		dimensions: Dimensions {
+			width: 200.0,
+			height: 100.0,
+		},
+		enabled: true,
+	};
+	commands
+		.spawn((SpriteBundle {
+			transform: Transform::from_translation(button.location),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+				..Default::default()
+			},
+			..Default::default()
+		},
+		ButtonEffect::CutsceneButton(CutsceneButton::SkipCutscene),
+		button,
+		DespawnOnExitGameState,
+		Name::new("Skip Cutscene Button")
+	));
 }
 
 // Update cutscene text as user advances through
