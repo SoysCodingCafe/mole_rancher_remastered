@@ -548,7 +548,6 @@ fn move_launch_tube(
 							let direction = if movement < 0.0 {(transform.translation.xy() - origin).perp().normalize()} else if movement > 0.0 {-(transform.translation.xy() - origin).perp().normalize()} else {Vec2:: ZERO};
 							let target = (((transform.translation.xy() + direction * LAUNCH_TUBE_SPEED * radius * time.delta_seconds()) - origin).clamp_length_max(radius) + origin).extend(transform.translation.z);
 							let angle_percent = (-Vec2::Y.perp_dot(target.xy() - origin).atan2(-Vec2::Y.dot(target.xy()- origin)) + PI)/(2.0*PI);
-							println!("{}, {}, {}", angle_percent, launch_tube.limits.0, launch_tube.limits.1);
 							if !(angle_percent > launch_tube.limits.0 && angle_percent < launch_tube.limits.1) { 
 								transform.translation = target;
 							}
