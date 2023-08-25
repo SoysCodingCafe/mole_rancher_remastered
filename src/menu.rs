@@ -60,6 +60,13 @@ fn spawn_menu(
 		ButtonEffect::MenuButton(MenuButton::Settings),
 		ButtonEffect::MenuButton(MenuButton::ExitGame),
 	];
+	// Button text
+	let text = [
+		"Play".to_string(), 
+		"Settings".to_string(), 
+		"Quit".to_string() 
+	];
+
 	for i in 0..3 {
 		let button = StandardButton {
 			location: Vec3::new(0.0, -70.0 * i as f32, 100.0),
@@ -81,7 +88,18 @@ fn spawn_menu(
 			button,
 			DespawnOnExitGameState,
 			Name::new("Menu Button")
-		));
+		)).with_children(|parent| {
+			parent
+				.spawn((Text2dBundle {
+					transform: Transform::from_xyz(0.0, -5.0, 110.0,),
+					text: Text::from_section(format!("{}", text[i]), get_button_text_style(&asset_server))
+					.with_alignment(TextAlignment::Center),
+					..Default::default()
+				},
+				CutsceneText,
+				Name::new("Cutscene Text")
+			));
+		});
 	}
 
 }
