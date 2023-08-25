@@ -808,8 +808,10 @@ fn replay_level(
 						));
 					}
 					for (mut transform, mut launch_tube, _) in launch_tube_query.iter_mut() {
-						*transform = Transform::from_translation(Vec3::new(origin.x, origin.y + dimensions.height / 2.0, z));
-						launch_tube.current_rotation = 0.0;
+						if launch_tube.id == reactor.reactor_id {
+							*transform = Transform::from_translation(Vec3::new(origin.x, origin.y + dimensions.height / 2.0, z));
+							launch_tube.current_rotation = 0.0;
+						}
 					}
 				},
 				ReactorType::Circle{origin, radius} => {
@@ -855,8 +857,10 @@ fn replay_level(
 						));
 					}
 					for (mut transform, mut launch_tube, _) in launch_tube_query.iter_mut() {
-						*transform = Transform::from_translation(Vec3::new(origin.x, origin.y + radius, z));
-						launch_tube.current_rotation = 0.0;
+						if launch_tube.id == reactor.reactor_id {
+							*transform = Transform::from_translation(Vec3::new(origin.x, origin.y + radius, z));
+							launch_tube.current_rotation = 0.0;
+						}
 					}
 				},
 			}
