@@ -947,6 +947,16 @@ pub fn get_stopwatch_text_style(
 	}
 }
 
+pub fn get_button_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 45.0,
+		color: Color::hex("2B2B29").unwrap(),
+		..Default::default()
+	}
+}
 
 // CUTSCENE HELPER FUNCTIONS
 pub fn next_line(

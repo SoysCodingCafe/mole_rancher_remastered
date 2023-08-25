@@ -81,7 +81,7 @@ fn standard_buttons(
 						},
 						_ => (),
 					}
-					sprite.color = Color::hex("DDC69D").unwrap();
+					sprite.color = Color::hex("CDB68D").unwrap();
 					hovering_any = true;
 					if mouse.just_pressed(MouseButton::Left) {
 						ev_w_button_call.send(ButtonCall(*effect));
@@ -119,16 +119,16 @@ fn standard_buttons(
 			match effect {
 				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
 					if (audio_volume.bgm * 10.0) as usize == *i {
-						if sprite.color != Color::hex("DDC69D").unwrap() {sprite.color = Color::hex("6D562D").unwrap()};
+						if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
 					} else {
-						if sprite.color != Color::hex("DDC69D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
+						if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
 					}
 				},
 				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
 					if (audio_volume.sfx * 10.0) as usize == *i {
-						if sprite.color != Color::hex("DDC69D").unwrap() {sprite.color = Color::RED};
+						if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
 					} else {
-						if sprite.color != Color::hex("DDC69D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
+						if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
 					}
 				}
 				_ => (),
