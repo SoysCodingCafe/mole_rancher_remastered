@@ -221,6 +221,29 @@ fn spawn_reactor_buttons(
 	}
 
 	let button = StandardButton {
+		location: Vec3::new(-675.0, -375.0, 710.0),
+		dimensions: Dimensions {
+			width: 150.0,
+			height: 75.0,
+		},
+		enabled: true,
+	};
+	commands
+		.spawn((SpriteBundle {
+			transform: Transform::from_translation(button.location),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+				..Default::default()
+			},
+			..Default::default()
+		},
+		ButtonEffect::PopupButton(PopupButton::ReplayLevel),
+		button,
+		DespawnOnExitGameState,
+		Name::new("Replay Level Button"),
+	));
+
+	let button = StandardButton {
 		location: Vec3::new(675.0, -375.0, 710.0),
 		dimensions: Dimensions {
 			width: 150.0,
@@ -471,7 +494,11 @@ fn spawn_reactors(
 		match reactor.reactor_type {
 			ReactorType::Rectangle{origin, dimensions} => {
 				r.insert(Transform::from_xyz(origin.x, origin.y, 10.0));
-				r.insert(Sprite{color: Color::GREEN, custom_size: Some(Vec2::new(dimensions.width, dimensions.height)), ..Default::default()});
+				r.insert(Sprite{
+					color: if reactor.product_chamber {Color::BISQUE} else {Color::GREEN}, 
+					custom_size: Some(Vec2::new(dimensions.width, dimensions.height)), 
+					..Default::default()
+				});
 				if reactor.input_chamber {
 					commands
 						.spawn((SpriteBundle {
@@ -558,7 +585,11 @@ fn spawn_reactors(
 				let texture: Handle<Image> = asset_server.load("sprites/ui/circle.png");
 				r.insert(texture);
 				r.insert(Transform::from_xyz(origin.x, origin.y, 10.0));
-				r.insert(Sprite{color: Color::GREEN, custom_size: Some(Vec2::new(radius*2.0, radius*2.0)), ..Default::default()});
+				r.insert(Sprite{
+					color: if reactor.product_chamber {Color::BISQUE} else {Color::GREEN}, 
+					custom_size: Some(Vec2::new(radius*2.0, radius*2.0)), 
+					..Default::default()
+				});
 				if reactor.input_chamber {
 					commands
 						.spawn((SpriteBundle {
@@ -746,7 +777,7 @@ fn replay_level(
 			}
 		}
 		let (mut ortho_proj, mut transform, _) = reactor_camera_query.single_mut();
-		ortho_proj.scale = 4.0;
+		ortho_proj.scale = get_initial_zoom(level.0);
 		transform.translation.x = 0.0;
 		transform.translation.y = 0.0;
 		for (mut text, mut stopwatch) in stopwatch_text_query.iter_mut() {

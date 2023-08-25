@@ -24,10 +24,11 @@ impl Plugin for CameraPlugin {
 // Resets the camera view back to the center of the screen
 // when re-entering the reactor
 fn reset_reactor_camera(
+	level: Res<SelectedLevel>,
 	mut reactor_camera_query: Query<(&mut OrthographicProjection, &mut Transform, With<ReactorCamera>)>,
 ) {
 	let (mut ortho_proj, mut transform, _) = reactor_camera_query.single_mut();
-	ortho_proj.scale = 4.0;
+	ortho_proj.scale = get_initial_zoom(level.0);
 	transform.translation.x = 0.0;
 	transform.translation.y = 0.0;
 }
@@ -108,7 +109,7 @@ fn pan_zoom_reactor_camera(
 	let scale_limits = (MAX_ZOOM, MIN_ZOOM);
     for (mut transform, mut ortho_projection, _, _) in reactor_camera_query.iter_mut() {
 		if scroll.abs() > 0.0 {
-			ortho_projection.scale = ((ortho_projection.scale.ln() - scroll/ZOOM_SPEED).exp()).clamp(scale_limits.0, scale_limits.1);
+			ortho_projection.scale = ((ortho_projection.scale.ln() - scroll*ZOOM_SPEED).exp()).clamp(scale_limits.0, scale_limits.1);
 			if ortho_projection.scale != scale_limits.0 && ortho_projection.scale != scale_limits.1 {
 				transform.translation.x = transform.translation.x + offset.x * ortho_projection.scale * ZOOM_TRANSLATION_SPEED * scroll.signum();
 				transform.translation.y = transform.translation.y + offset.y * ortho_projection.scale * ZOOM_TRANSLATION_SPEED * scroll.signum();

@@ -91,13 +91,12 @@ fn spawn_menu(
 		)).with_children(|parent| {
 			parent
 				.spawn((Text2dBundle {
-					transform: Transform::from_xyz(0.0, -5.0, 110.0,),
+					transform: Transform::from_xyz(0.0, -5.0, 10.0,),
 					text: Text::from_section(format!("{}", text[i]), get_button_text_style(&asset_server))
-					.with_alignment(TextAlignment::Center),
+						.with_alignment(TextAlignment::Center),
 					..Default::default()
 				},
-				CutsceneText,
-				Name::new("Cutscene Text")
+				Name::new("Menu Button Text")
 			));
 		});
 	}

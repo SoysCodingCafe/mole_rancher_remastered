@@ -252,7 +252,7 @@ fn handle_button_calls(
 					MenuButton::Settings => {
 						next_pause_state.set(PauseState::Paused);
 						ev_w_popup.send(PopupEvent{ 
-							origin: Vec2::new(0.0, -140.0), 
+							origin: Vec2::new(0.0, -70.0), 
 							image: asset_server.load("sprites/popup/settings.png"),
 							alpha: 1.0,
 							popup_type: PopupType::Settings,

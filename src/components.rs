@@ -69,8 +69,8 @@ pub const REACTOR_VIEWPORT_CENTER: Vec2 = Vec2::new(
 
 pub const MAX_ZOOM: f32 = 0.5;
 pub const MIN_ZOOM: f32 = 10.0;
-pub const ZOOM_SPEED: f32 = 15.0;
-pub const ZOOM_TRANSLATION_SPEED: f32 = 60.0;
+pub const ZOOM_SPEED: f32 = 0.15;
+pub const ZOOM_TRANSLATION_SPEED: f32 = 80.0;
 pub const ZOOM_DEAD_ZONE_RADIUS: f32 = 180.0;
 
 pub const TOOLTIP_WIDTH: f32 = 320.0*1.5;
@@ -889,6 +889,19 @@ pub fn get_launch_tube_limits(
 		_ => match reactor_id {
 			_ => Limits(1.0, 1.0),
 		},
+	}
+}
+
+pub fn get_initial_zoom(
+	level: usize,
+) -> f32 {
+	match level {
+		0 => 3.0,
+		1 => 5.0,
+		2 => 2.2,
+		3 => 9.0,
+		4 => 9.0,
+		_ => 10.0,
 	}
 }
 
