@@ -486,6 +486,7 @@ fn spawn_reactors(
 						LaunchTube{
 							id: i,
 							current_rotation: 0.0,
+							limits: get_launch_tube_limits(level.0, reactor.reactor_id),
 						},
 						RenderLayers::layer(1),
 						DespawnOnExitGameState,
@@ -572,6 +573,7 @@ fn spawn_reactors(
 						LaunchTube{
 							id: i,
 							current_rotation: 0.0,
+							limits: get_launch_tube_limits(level.0, reactor.reactor_id),
 						},
 						RenderLayers::layer(1),
 						DespawnOnExitGameState,

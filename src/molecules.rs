@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 // Import Bevy game engine essentials
 use bevy::{prelude::*, math::Vec3Swizzles, render::view::RenderLayers};
 // Import components, resources, and events
@@ -255,7 +257,8 @@ fn molecule_movement(
 								input_b_accounted_for = true;
 							}
 							else if molecule_count.total <= molecule_count.cap {
-								let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
+								let direction = if total_products == 1 {velocity_out.normalize()}
+									else {Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize()};
 								commands
 									.spawn((SpriteSheetBundle {
 										transform: Transform::from_xyz(
@@ -523,33 +526,32 @@ fn move_launch_tube(
 	else if keyboard.pressed(KeyCode::D) {movement += 1.0};
 
 	let mut rotation = 0.0;
-	if keyboard.pressed(KeyCode::Q) {rotation -= 1.0}
-	else if keyboard.pressed(KeyCode::E) {rotation += 1.0};
+	if keyboard.pressed(KeyCode::Q) {rotation += 1.0}
+	else if keyboard.pressed(KeyCode::E) {rotation -= 1.0};
 
 	if movement != 0.0 || rotation != 0.0 {
 		for (info, _) in selected_reactor_query.iter() {
 			for (mut transform, mut launch_tube) in launch_tube_query.iter_mut() {
 				if launch_tube.id == info.reactor_id {
+					launch_tube.current_rotation = (launch_tube.current_rotation + rotation * LAUNCH_TUBE_ROTATIONAL_SPEED * time.delta_seconds()).clamp(-45.0, 45.0);
 					match info.reactor_type {
 						ReactorType::Rectangle{origin, dimensions } => {
 							let target = transform.translation.x + movement * (dimensions.width/2.0) * LAUNCH_TUBE_SPEED * time.delta_seconds();
-							launch_tube.current_rotation += rotation * LAUNCH_TUBE_ROTATIONAL_SPEED * time.delta_seconds();
-							launch_tube.current_rotation = launch_tube.current_rotation.clamp(-45.0, 45.0);
 							let angle: f32 = launch_tube.current_rotation;
 							transform.rotation = Quat::from_rotation_z(angle.to_radians());
-							if (target - origin.x).abs() < dimensions.width / 2.0 - LAUNCH_TUBE_WIDTH / 2.0{
+							if target - origin.x > -(dimensions.width / 2.0 - LAUNCH_TUBE_WIDTH / 2.0) * launch_tube.limits.0
+							&& target - origin.x < (dimensions.width / 2.0 - LAUNCH_TUBE_WIDTH / 2.0) * launch_tube.limits.1 {
 								transform.translation.x = target;
 							}
 						},
 						ReactorType::Circle{origin, radius } => {
 							let direction = if movement < 0.0 {(transform.translation.xy() - origin).perp().normalize()} else if movement > 0.0 {-(transform.translation.xy() - origin).perp().normalize()} else {Vec2:: ZERO};
-							launch_tube.current_rotation += rotation * LAUNCH_TUBE_ROTATIONAL_SPEED * time.delta_seconds();
-							launch_tube.current_rotation = launch_tube.current_rotation.clamp(-45.0, 45.0);
-							let angle: f32 = launch_tube.current_rotation;
-							transform.translation.x += direction.x * LAUNCH_TUBE_SPEED * radius * time.delta_seconds();
-							transform.translation.y += direction.y * LAUNCH_TUBE_SPEED * radius * time.delta_seconds();
-							transform.rotation = Quat::from_rotation_arc(Vec3::Y, (transform.translation.xy() - origin).normalize().extend(0.0)).mul_quat(Quat::from_rotation_z(angle.to_radians()));
-							transform.translation = ((transform.translation.xy() - origin).clamp_length_max(radius) + origin).extend(transform.translation.z);
+							let target = (((transform.translation.xy() + direction * LAUNCH_TUBE_SPEED * radius * time.delta_seconds()) - origin).clamp_length_max(radius) + origin).extend(transform.translation.z);
+							let angle_percent = (-Vec2::Y.perp_dot(target.xy() - origin).atan2(-Vec2::Y.dot(target.xy()- origin)) + PI)/(2.0*PI);
+							if !(angle_percent > launch_tube.limits.0 && angle_percent < launch_tube.limits.1) { 
+								transform.translation = target;
+							}
+							transform.rotation = Quat::from_rotation_arc(Vec3::Y, (transform.translation.xy() - origin).normalize().extend(0.0)).mul_quat(Quat::from_rotation_z(launch_tube.current_rotation.to_radians()));
 						},
 					}
 				}

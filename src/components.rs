@@ -340,6 +340,7 @@ pub struct Palette(pub usize);
 pub struct LaunchTube{
 	pub id: usize,
 	pub current_rotation: f32,
+	pub limits: Limits,
 }
 
 #[derive(Component, Default)]
@@ -870,6 +871,24 @@ pub fn get_level_goal(
 		3 => WinCondition::GreaterThan(5, 2),
 		4 => WinCondition::GreaterThan(5, 4),
 		_ => WinCondition::GreaterThan(1, 0),
+	}
+}
+
+// For rectangles, limits between 0.0 and 1.0 represent centre to edge
+// For circles, limits between 0.0 and 1.0 represent top, going anticlockwise, back to the top
+pub fn get_launch_tube_limits(
+	level: usize,
+	reactor_id: usize,
+) -> Limits {
+	match level {
+		4 => match reactor_id {
+			0 => Limits(0.625, 0.875),
+			2 => Limits(0.125, 0.375),
+			_ => Limits(1.0, 1.0),
+		}
+		_ => match reactor_id {
+			_ => Limits(1.0, 1.0),
+		},
 	}
 }
 
