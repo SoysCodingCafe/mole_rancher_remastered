@@ -531,14 +531,16 @@ fn move_launch_tube(
 	if keyboard.pressed(KeyCode::Q) {rotation += 1.0}
 	else if keyboard.pressed(KeyCode::E) {rotation -= 1.0};
 
+	let sprint = if keyboard.pressed(KeyCode::ShiftLeft) {3.0} else {1.0};
+
 	if movement != 0.0 || rotation != 0.0 {
 		for (info, _) in selected_reactor_query.iter() {
 			for (mut transform, mut launch_tube) in launch_tube_query.iter_mut() {
 				if launch_tube.id == info.reactor_id {
-					launch_tube.current_rotation = (launch_tube.current_rotation + rotation * LAUNCH_TUBE_ROTATIONAL_SPEED * time.delta_seconds()).clamp(-45.0, 45.0);
+					launch_tube.current_rotation = (launch_tube.current_rotation + rotation * sprint * LAUNCH_TUBE_ROTATIONAL_SPEED * time.delta_seconds()).clamp(-45.0, 45.0);
 					match info.reactor_type {
 						ReactorType::Rectangle{origin, dimensions } => {
-							let target = transform.translation.x + movement * (dimensions.width/2.0) * LAUNCH_TUBE_SPEED * time.delta_seconds();
+							let target = transform.translation.x + movement * sprint * (dimensions.width/2.0) * LAUNCH_TUBE_SPEED * time.delta_seconds();
 							let angle: f32 = launch_tube.current_rotation;
 							transform.rotation = Quat::from_rotation_z(angle.to_radians());
 							if target - origin.x > -(dimensions.width / 2.0 - LAUNCH_TUBE_WIDTH / 2.0) * launch_tube.limits.0
@@ -548,7 +550,7 @@ fn move_launch_tube(
 						},
 						ReactorType::Circle{origin, radius } => {
 							let direction = if movement < 0.0 {(transform.translation.xy() - origin).perp().normalize()} else if movement > 0.0 {-(transform.translation.xy() - origin).perp().normalize()} else {Vec2:: ZERO};
-							let target = (((transform.translation.xy() + direction * LAUNCH_TUBE_SPEED * radius * time.delta_seconds()) - origin).clamp_length_max(radius) + origin).extend(transform.translation.z);
+							let target = (((transform.translation.xy() + direction * sprint * LAUNCH_TUBE_SPEED * radius * time.delta_seconds()) - origin).clamp_length_max(radius) + origin).extend(transform.translation.z);
 							let angle_percent = (-Vec2::Y.perp_dot(target.xy() - origin).atan2(-Vec2::Y.dot(target.xy()- origin)) + PI)/(2.0*PI);
 							if !(angle_percent > launch_tube.limits.0 && angle_percent < launch_tube.limits.1) { 
 								transform.translation = target;

@@ -33,6 +33,7 @@ fn standard_buttons(
 	mouse: Res<Input<MouseButton>>,
 	current_state: Res<State<PauseState>>,
 	audio_volume: Res<AudioVolume>,
+	pkv: Res<PkvStore>,
 	mut button_query: Query<(&mut Sprite, &StandardButton, &ButtonEffect)>,
 	mut animation_query: Query<(&mut TextureAtlasSprite, &mut AnimationTimer, &AnimationIndices, &MoleculeButton)>,
 	mut tooltip_query: Query<(&mut Transform, With<Tooltip>)>,
@@ -129,6 +130,15 @@ fn standard_buttons(
 						if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
 					} else {
 						if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
+					}
+				}
+				ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {
+					if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+						if save_data.particles_enabled == *enable {
+							if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
+						} else {
+							if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
+						}
 					}
 				}
 				_ => (),
@@ -253,7 +263,7 @@ fn handle_button_calls(
 						next_pause_state.set(PauseState::Paused);
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(0.0, -70.0), 
-							image: asset_server.load("sprites/popup/settings.png"),
+							image: asset_server.load("sprites/popup/note_small.png"),
 							alpha: 1.0,
 							popup_type: PopupType::Settings,
 						});
@@ -319,6 +329,13 @@ fn handle_button_calls(
 						}
 						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
 							save_data.selected_palette = selected_palette.0;
+							pkv.set("save_data", &save_data)
+									.expect("Unable to save data");
+						}
+					},
+					PopupButton::ParticleTrails(enable) => {
+						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
+							save_data.particles_enabled = *enable;
 							pkv.set("save_data", &save_data)
 									.expect("Unable to save data");
 						}

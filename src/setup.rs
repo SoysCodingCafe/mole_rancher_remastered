@@ -107,6 +107,7 @@ fn load_game(
 			sfx_volume: 0.8,
 			bgm_volume: 0.8,
 			selected_palette: 0,
+			particles_enabled: true,
 			levels_unlocked: levels_unlocked,
 			best_times: best_times,
 			best_costs: best_costs,

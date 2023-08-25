@@ -90,79 +90,94 @@ fn spawn_popup_buttons(
 			PopupType::Settings => {
 				commands.spawn((Text2dBundle{
 					transform: Transform::from_xyz(0.0, 300.0, 810.0),
-					text: Text::from_section(format!("SETTINGS"), get_title_text_style(&asset_server)),
+					text: Text::from_section(format!("Settings"), get_title_text_style(&asset_server)),
 					..Default::default()
 					},
 					DespawnOnExitPauseState,
 					Name::new("Settings Text")
 				));
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(-25.0, 0.0, 810.0),
+					text: Text::from_section(format!("BGM Volume:\n\nSFX Volume:\n\nToggle Palette:\n\nParticle Trails:"), get_settings_text_style(&asset_server))
+						.with_alignment(TextAlignment::Right),
+					text_anchor: bevy::sprite::Anchor::CenterRight,
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Settings Text")
+				));
+
 				let mut buttons  = Vec::new();
 				buttons.push((StandardButton {
-					location: Vec3::new(-500.0, -300.0, 810.0),
+					location: Vec3::new(-520.0, -310.0, 810.0),
 					dimensions: Dimensions {
 						width: 200.0,
 						height: 100.0,
 					},
 					enabled: true,
 				}, ButtonEffect::PopupButton(PopupButton::ExitPopup)));
-				commands.spawn((Text2dBundle{
-					transform: Transform::from_xyz(-240.0, 100.0, 810.0),
-					text: Text::from_section(format!("BGM Volume:"), get_settings_text_style(&asset_server))
-						.with_alignment(TextAlignment::Right),
-					text_anchor: bevy::sprite::Anchor::CenterRight,
-					..Default::default()
-					},
-					DespawnOnExitPauseState,
-					Name::new("Settings Text")
-				));
 				for i in 0..=10 {
 					buttons.push((StandardButton {
-						location: Vec3::new(-200.0 + 75.0 * i as f32, 100.0, 810.0),
+						location: Vec3::new(25.0 + 60.0 * i as f32, 190.0, 810.0),
 						dimensions: Dimensions {
 							width: 50.0,
 							height: 100.0,
 						},
 						enabled: true,
 					}, ButtonEffect::PopupButton(PopupButton::BgmVolume(i))));
-				}
-				commands.spawn((Text2dBundle{
-					transform: Transform::from_xyz(-240.0, -50.0, 810.0),
-					text: Text::from_section(format!("SFX Volume:"), get_settings_text_style(&asset_server))
-						.with_alignment(TextAlignment::Right),
-					text_anchor: bevy::sprite::Anchor::CenterRight,
-					..Default::default()
-					},
-					DespawnOnExitPauseState,
-					Name::new("Settings Text")
-				));
-				for i in 0..=10 {
 					buttons.push((StandardButton {
-						location: Vec3::new(-200.0 + 75.0 * i as f32, -50.0, 810.0),
+						location: Vec3::new(25.0 + 60.0 * i as f32, 65.0, 810.0),
 						dimensions: Dimensions {
 							width: 50.0,
 							height: 100.0,
 						},
 						enabled: true,
 					}, ButtonEffect::PopupButton(PopupButton::SfxVolume(i))));
-				};
+				}
+				buttons.push((StandardButton {
+					location: Vec3::new(50.0, -55.0, 810.0),
+					dimensions: Dimensions {
+						width: 100.0,
+						height: 100.0,
+					},
+					enabled: true,
+				}, ButtonEffect::PopupButton(PopupButton::PaletteToggle)));
 				commands.spawn((Text2dBundle{
-					transform: Transform::from_xyz(-240.0, -200.0, 810.0),
-					text: Text::from_section(format!("Toggle Palette:"), get_settings_text_style(&asset_server))
-						.with_alignment(TextAlignment::Right),
-					text_anchor: bevy::sprite::Anchor::CenterRight,
+					transform: Transform::from_xyz(100.0, -180.0, 820.0),
+					text: Text::from_section(format!("On"), get_settings_text_style(&asset_server))
+						.with_alignment(TextAlignment::Center),
+					text_anchor: bevy::sprite::Anchor::Center,
 					..Default::default()
 					},
 					DespawnOnExitPauseState,
-					Name::new("Settings Text")
+					Name::new("Particle Trail Enable Text")
 				));
 				buttons.push((StandardButton {
-					location: Vec3::new(-125.0, -200.0, 810.0),
+					location: Vec3::new(100.0, -175.0, 810.0),
 					dimensions: Dimensions {
 						width: 200.0,
 						height: 100.0,
 					},
 					enabled: true,
-				}, ButtonEffect::PopupButton(PopupButton::PaletteToggle)));
+				}, ButtonEffect::PopupButton(PopupButton::ParticleTrails(true))));
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(350.0, -180.0, 820.0),
+					text: Text::from_section(format!("Off"), get_settings_text_style(&asset_server))
+						.with_alignment(TextAlignment::Center),
+					text_anchor: bevy::sprite::Anchor::Center,
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Particle Trail Enable Text")
+				));
+				buttons.push((StandardButton {
+					location: Vec3::new(350.0, -175.0, 810.0),
+					dimensions: Dimensions {
+						width: 200.0,
+						height: 100.0,
+					},
+					enabled: true,
+				}, ButtonEffect::PopupButton(PopupButton::ParticleTrails(false))));
 				for (button, effect) in buttons {
 					commands
 						.spawn((SpriteBundle {
@@ -182,7 +197,7 @@ fn spawn_popup_buttons(
 				for i in 0..15 {
 					commands
 						.spawn((SpriteBundle{
-							transform: Transform::from_xyz(45.0 * i as f32, -200.0, 810.0),
+							transform: Transform::from_xyz(133.0 + 36.0 * i as f32, -55.0, 810.0),
 							sprite: Sprite {
 								color: get_molecule_color(i, selected_palette.0),
 								custom_size: Some(Vec2::new(25.0, 100.0)), 

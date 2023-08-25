@@ -28,6 +28,7 @@ pub struct SaveData {
 	pub sfx_volume: f64,
 	pub bgm_volume: f64,
 	pub selected_palette: usize,
+	pub particles_enabled: bool,
 	pub levels_unlocked: Vec<bool>,
 	pub best_times: Vec<f32>,
 	pub best_costs: Vec<usize>,
@@ -93,8 +94,8 @@ pub const CONNECTION_HEIGHT: f32 = 128.0;
 
 pub const LAUNCH_TUBE_WIDTH: f32 = 128.0;
 pub const LAUNCH_TUBE_HEIGHT: f32 = 256.0;
-pub const LAUNCH_TUBE_SPEED: f32 = 2.0;
-pub const LAUNCH_TUBE_ROTATIONAL_SPEED: f32 = 300.0;
+pub const LAUNCH_TUBE_SPEED: f32 = 1.0;
+pub const LAUNCH_TUBE_ROTATIONAL_SPEED: f32 = 150.0;
 
 
 // General Parameters
@@ -180,6 +181,7 @@ pub enum PopupButton {
 	BgmVolume(usize),
 	SfxVolume(usize),
 	PaletteToggle,
+	ParticleTrails(bool),
 	LogbookPage(usize),
 	LevelSelect(usize),
 	ReplayLevel,
@@ -950,9 +952,9 @@ pub fn get_settings_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
 	TextStyle {
-		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font: asset_server.load("fonts/Ronda.ttf"),
 		font_size: 60.0,
-		color: Color::rgba(0.9, 0.9, 0.9, 1.0),
+		color: Color::hex("EDD6AD").unwrap(),
 		..Default::default()
 	}
 }
