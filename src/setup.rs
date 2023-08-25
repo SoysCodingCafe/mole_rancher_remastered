@@ -173,7 +173,7 @@ fn spawn_splash_screen(
 			transform: Transform::from_xyz(0.0, 0.0, 0.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)), 
-				color: Color::rgba(0.05, 0.05, 0.05, 1.0),
+				color: Color::hex("A63FAB").unwrap(),
 				..Default::default()},
 			..Default::default()
 		},

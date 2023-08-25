@@ -879,9 +879,9 @@ pub fn get_title_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
 	TextStyle {
-		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
-		font_size: 160.0,
-		color: Color::rgba(0.3, 0.9, 0.3, 1.0),
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 120.0,
+		color: Color::hex("EDD6AD").unwrap(),
 	}
 }
 
@@ -889,11 +889,12 @@ pub fn get_subtitle_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
 	TextStyle {
-		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
-		font_size: 80.0,
-		color: Color::rgba(0.3, 0.9, 0.3, 1.0),
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 60.0,
+		color: Color::hex("EDD6AD").unwrap(),
 	}
 }
+
 pub fn get_settings_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {

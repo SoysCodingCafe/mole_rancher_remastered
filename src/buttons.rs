@@ -81,14 +81,14 @@ fn standard_buttons(
 						},
 						_ => (),
 					}
-					sprite.color = Color::BLUE;
+					sprite.color = Color::hex("DDC69D").unwrap();
 					hovering_any = true;
 					if mouse.just_pressed(MouseButton::Left) {
 						ev_w_button_call.send(ButtonCall(*effect));
 					}
 				}
 			} else {
-				sprite.color = Color::GRAY;
+				sprite.color = Color::hex("9D865D").unwrap();
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
 					for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
 						match effect {
@@ -109,7 +109,7 @@ fn standard_buttons(
 		// If not hovering over any buttons then hide all effects
 		if !hovering_any {
 			for (mut sprite, button, _) in button_query.iter_mut() {
-				if button.enabled {sprite.color = Color::WHITE} else {sprite.color = Color::GRAY};
+				if button.enabled {sprite.color = Color::hex("EDD6AD").unwrap()} else {sprite.color = Color::hex("9D865D").unwrap()};
 			}
 			for (mut transform, _) in tooltip_query.iter_mut() {
 				transform.translation.z = -1.0;
@@ -119,16 +119,16 @@ fn standard_buttons(
 			match effect {
 				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
 					if (audio_volume.bgm * 10.0) as usize == *i {
-						if sprite.color != Color::BLUE {sprite.color = Color::RED};
+						if sprite.color != Color::hex("DDC69D").unwrap() {sprite.color = Color::hex("6D562D").unwrap()};
 					} else {
-						if sprite.color != Color::BLUE {sprite.color = Color::WHITE};
+						if sprite.color != Color::hex("DDC69D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
 					}
 				},
 				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
 					if (audio_volume.sfx * 10.0) as usize == *i {
-						if sprite.color != Color::BLUE {sprite.color = Color::RED};
+						if sprite.color != Color::hex("DDC69D").unwrap() {sprite.color = Color::RED};
 					} else {
-						if sprite.color != Color::BLUE {sprite.color = Color::WHITE};
+						if sprite.color != Color::hex("DDC69D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
 					}
 				}
 				_ => (),
