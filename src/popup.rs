@@ -309,10 +309,10 @@ fn spawn_popup_buttons(
 					Name::new("Exit Level Select Button")
 				));
 			},
-			PopupType::WinScreen(prev_best_time, current_time) => {
+			PopupType::WinScreen(prev_best_time, current_time, prev_best_cost, current_cost) => {
 				commands.spawn((Text2dBundle{
 					transform: Transform::from_xyz(0.0, 300.0, 810.0),
-					text: Text::from_section(format!("You Win!"), get_title_text_style(&asset_server))
+					text: Text::from_section(format!("Reaction Successful!"), get_win_title_text_style(&asset_server))
 						.with_alignment(TextAlignment::Center),
 					text_anchor: bevy::sprite::Anchor::Center,
 					..Default::default()
@@ -320,35 +320,50 @@ fn spawn_popup_buttons(
 					DespawnOnExitPauseState,
 					Name::new("Win Text")
 				));
-				let prev_best_text = if prev_best_time < 60.0 {format!("{:.2} s", prev_best_time)}
+				let prev_best_time_text = if prev_best_time < 60.0 {format!("{:.2} s", prev_best_time)}
 					else if prev_best_time < 6000.0 {format!("{:.0} m {:.0} s", (prev_best_time / 60.0).floor(), prev_best_time % 60.0)}
 					else if prev_best_time < 999999.0 {format!("{:.0} m", (prev_best_time / 60.0).floor())}
-					else {format!("N/A")};
-				commands.spawn((Text2dBundle{
-					transform: Transform::from_xyz(0.0, 150.0, 810.0),
-					text: Text::from_section(format!("Previous Best: {}", prev_best_text), get_subtitle_text_style(&asset_server))
-						.with_alignment(TextAlignment::Center),
-					text_anchor: bevy::sprite::Anchor::Center,
-					..Default::default()
-					},
-					DespawnOnExitPauseState,
-					Name::new("Win Text")
-				));
+					else {format!("None")};
 				let current_time_text = if current_time < 60.0 {format!("{:.2} s", current_time)}
 					else if current_time < 6000.0 {format!("{:.0} m {:.0} s", (current_time / 60.0).floor(), current_time % 60.0)}
 					else if current_time < 999999.0 {format!("{:.0} m", (current_time / 60.0).floor())}
 					else {format!("A While")};
-				let new_best = if current_time < prev_best_time {format!("New Best: ")} else {format!("Time Taken: ")};
+				let new_best_time = if current_time < prev_best_time {format!("New Best Time: ")} else {format!("Reaction Time: ")};
+				let new_best_cost = if current_cost < prev_best_cost {format!("New Best Cost: ")} else {format!("Reaction Cost: ")};
+				let prev_best_cost_text = if prev_best_cost < 999999 {format!("{} c", prev_best_cost)} else {format!("None")};
+				let current_cost_text = format!("{} c", current_cost);
+				let win_text = [
+					prev_best_time_text,
+					current_time_text,
+					prev_best_cost_text,
+					current_cost_text,
+				];
+
+				let x = 10.0;
+				let y = 100.0;
+				let z = 810.0;
 				commands.spawn((Text2dBundle{
-					transform: Transform::from_xyz(0.0, 0.0, 810.0),
-					text: Text::from_section(format!("{}{}", new_best, current_time_text), get_subtitle_text_style(&asset_server))
-						.with_alignment(TextAlignment::Center),
-					text_anchor: bevy::sprite::Anchor::Center,
+					transform: Transform::from_xyz(-x, y, z),
+					text: Text::from_section(format!("Previous Best Time: \n{}\nPrevious Best Cost: \n{}", new_best_time, new_best_cost), get_win_text_style(&asset_server))
+						.with_alignment(TextAlignment::Right),
+					text_anchor: bevy::sprite::Anchor::CenterRight,
 					..Default::default()
 					},
 					DespawnOnExitPauseState,
 					Name::new("Win Text")
 				));
+
+				commands.spawn((Text2dBundle{
+					transform: Transform::from_xyz(x, y, z),
+					text: Text::from_section(format!("{}\n{}\n{}\n{}", win_text[0], win_text[1], win_text[2], win_text[3]), get_win_values_text_style(&asset_server))
+						.with_alignment(TextAlignment::Left),
+					text_anchor: bevy::sprite::Anchor::CenterLeft,
+					..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Win Text")
+				));
+				
 				let mut buttons = Vec::new();
 				let effects = [
 					ButtonEffect::PopupButton(PopupButton::ReplayLevel),

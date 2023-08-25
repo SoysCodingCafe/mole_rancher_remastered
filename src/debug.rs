@@ -114,6 +114,7 @@ fn debug_molecule(
 	mut commands: Commands,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 	mut launch_timer: ResMut<LaunchTimer>,
+	mut current_cost: ResMut<CurrentCost>,
 	selected_palette: Res<SelectedPalette>,
 	selected_molecule_type: Res<SelectedMoleculeType>,
 	selected_reactor_query: Query<(&ReactorInfo, With<SelectedReactor>)>,
@@ -140,6 +141,7 @@ fn debug_molecule(
 					if keyboard.just_pressed(KeyCode::Space) || keyboard.pressed(KeyCode::R) || keyboard.pressed(KeyCode::T) || keyboard.pressed(KeyCode::W) {
 						if launch_timer.0.finished() {
 							launch_timer.0.reset();
+							current_cost.0 += get_molecule_cost(molecule_index);
 							let (target, distance) = match info.reactor_type {
 								ReactorType::Rectangle{dimensions, ..} => (Vec2::new(transform.translation.x, transform.translation.y - dimensions.height / 2.0), dimensions.height / 2.0), 
 								ReactorType::Circle{origin, radius} => (origin, radius),

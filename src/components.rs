@@ -30,6 +30,7 @@ pub struct SaveData {
 	pub selected_palette: usize,
 	pub levels_unlocked: Vec<bool>,
 	pub best_times: Vec<f32>,
+	pub best_costs: Vec<usize>,
 	pub cutscenes_unlocked: Vec<bool>,
 }
 
@@ -156,7 +157,7 @@ pub enum PopupType {
 	Settings,
 	Logbook,
 	LevelSelect,
-	WinScreen(f32, f32),
+	WinScreen(f32, f32, usize, usize),
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
@@ -426,6 +427,9 @@ pub struct MoleculeCount {
 }
 
 #[derive(Resource)]
+pub struct CurrentCost(pub usize);
+
+#[derive(Resource)]
 pub struct BootTimer(pub Timer);
 
 #[derive(Resource)]
@@ -618,6 +622,21 @@ pub fn get_molecule_mass(
 		5 => 1000.0,
 		6 => 5.0,
 		_ => 100.0,
+	}
+}
+
+pub fn get_molecule_cost(
+	index: usize,
+) -> usize {
+	match index {
+		0 => 10,
+		1 => 20,
+		2 => 40,
+		3 => 50,
+		4 => 80,
+		5 => 2,
+		6 => 0,
+		_ => 1,
 	}
 }
 
@@ -935,6 +954,36 @@ pub fn get_settings_text_style(
 		font_size: 60.0,
 		color: Color::rgba(0.9, 0.9, 0.9, 1.0),
 		..Default::default()
+	}
+}
+
+pub fn get_win_title_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 100.0,
+		color: Color::hex("EDD6AD").unwrap(),
+	}
+}
+
+pub fn get_win_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 50.0,
+		color: Color::hex("EDD6AD").unwrap(),
+	}
+}
+
+pub fn get_win_values_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 50.0,
+		color: Color::hex("CDB68D").unwrap(),
 	}
 }
 

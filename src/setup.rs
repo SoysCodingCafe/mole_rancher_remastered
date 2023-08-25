@@ -40,6 +40,7 @@ impl Plugin for SetupPlugin {
 			.insert_resource(SelectedLevel(0))
 			.insert_resource(SelectedMoleculeType(0))
 			.insert_resource(SelectedLogbookPage(0))
+			.insert_resource(CurrentCost(0))
 			.insert_resource(MoleculeCount{total: 0, cap: MOLECULE_CAP})
 			.insert_resource(BootTimer(Timer::from_seconds(BOOT_DURATION, TimerMode::Once)))
 			.insert_resource(LaunchTimer(Timer::from_seconds(LAUNCH_COOLDOWN, TimerMode::Once)))
@@ -92,20 +93,23 @@ fn load_game(
 	} else {
 		let mut levels_unlocked = Vec::new();
 		let mut best_times = Vec::new();
+		let mut best_costs = Vec::new();
 		let mut cutscenes_unlocked = Vec::new();
 		for _ in 0..NUMBER_OF_LEVELS {
 			levels_unlocked.push(false);
 			best_times.push(999999.0);
+			best_costs.push(999999);
 		}
 		for _ in 0..NUMBER_OF_CUTSCENES {
 			cutscenes_unlocked.push(false);
 		}
 		let save_data = SaveData{
-			sfx_volume: 1.0,
-			bgm_volume: 1.0,
+			sfx_volume: 0.8,
+			bgm_volume: 0.8,
 			selected_palette: 0,
 			levels_unlocked: levels_unlocked,
 			best_times: best_times,
+			best_costs: best_costs,
 			cutscenes_unlocked: cutscenes_unlocked,
 		};
 		pkv.set("save_data", &save_data)

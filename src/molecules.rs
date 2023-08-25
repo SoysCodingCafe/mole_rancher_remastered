@@ -37,6 +37,7 @@ impl Plugin for MoleculesPlugin {
 // Resets the selected molecule type upon re-entering the reactor
 fn reset_choices(
 	level: Res<SelectedLevel>,
+	mut current_cost: ResMut<CurrentCost>,
 	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
 ) {
 	for i in 0..TOTAL_MOLECULE_TYPES {
@@ -45,6 +46,7 @@ fn reset_choices(
 			break;
 		}
 	}
+	current_cost.0 = 0;
 }
 
 // Counts the current number of molecules, this is used

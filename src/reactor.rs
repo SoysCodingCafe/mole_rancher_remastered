@@ -686,6 +686,7 @@ fn check_product_reactor(
 	mut next_state: ResMut<NextState<PauseState>>,
 	mut win_countdown: ResMut<WinCountdown>,
 	asset_server: Res<AssetServer>,
+	current_cost: Res<CurrentCost>,
 	reactor_query: Query<(&ReactorInfo, With<ReactorCondition>)>,
 	molecule_query: Query<(&MoleculeInfo, &ReactorInfo, With<Molecule>)>,
 	stopwatch_query: Query<&StopwatchText>,
@@ -726,9 +727,14 @@ fn check_product_reactor(
 			if condition_passed {
 				win_countdown.0.tick(time.delta());
 				if win_countdown.0.just_finished() {
+					let mut prev_best_cost = 999999;
 					let mut prev_best_time = 999999.0;
 					let mut current_time = 999999.0;
 					if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
+						prev_best_cost = save_data.best_costs[selected_level.0];
+						if current_cost.0 < prev_best_cost {
+							save_data.best_costs[selected_level.0] = current_cost.0;
+						}
 						for stopwatch in stopwatch_query.iter() {
 							prev_best_time = save_data.best_times[selected_level.0];
 							current_time = stopwatch.0.elapsed_secs();
@@ -745,7 +751,7 @@ fn check_product_reactor(
 						origin: Vec2::new(0.0, 0.0), 
 						image: asset_server.load("sprites/popup/logbook_base.png"),
 						alpha: 1.0,
-						popup_type: PopupType::WinScreen(prev_best_time, current_time),
+						popup_type: PopupType::WinScreen(prev_best_time, current_time, prev_best_cost, current_cost.0),
 					});
 				}
 			} else {
@@ -760,6 +766,7 @@ fn replay_level(
 	asset_server: Res<AssetServer>,
 	level: Res<SelectedLevel>,
 	selected_palette: Res<SelectedPalette>,
+	mut current_cost: ResMut<CurrentCost>,
 	mut ev_r_replay_level: EventReader<ReplayLevelEvent>,
 	mut commands: Commands,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
@@ -776,6 +783,7 @@ fn replay_level(
 				break;
 			}
 		}
+		current_cost.0 = 0;
 		let (mut ortho_proj, mut transform, _) = reactor_camera_query.single_mut();
 		ortho_proj.scale = get_initial_zoom(level.0);
 		transform.translation.x = 0.0;
