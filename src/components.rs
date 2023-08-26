@@ -741,8 +741,8 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 800.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
 		3 => {
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 2000.0), dimensions: Dimensions{width: 4000.0, height: 2000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, -1500.0), radius: 2000.0}, reactor_id: 1, input_chamber: false, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 1000.0), dimensions: Dimensions{width: 4000.0, height: 2000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, -1000.0), radius: 800.0}, reactor_id: 1, input_chamber: false, product_chamber: true});
 		}
 		4 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-4500.0, 0.0), radius: 2000.0}, reactor_id: 0, input_chamber: true, product_chamber: false});

@@ -615,7 +615,11 @@ fn spawn_reactors(
 					));
 				}
 				for (direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
-					let translation = Vec3::new(origin.x + direction.x * dimensions.width / 2.0, origin.y + direction.y * dimensions.height/2.0, z);
+					let translation = Vec3::new(
+						origin.x + direction.x * dimensions.width / 2.0, 
+						origin.y + direction.y * dimensions.height/2.0, 
+						z + connection.connection_id as f32
+					);
 					commands.spawn((SpriteBundle {
 						transform: Transform::from_translation(translation)
 						.with_rotation(Quat::from_rotation_z(if direction.y == 1.0 {0.0} else if direction.y == -1.0 {180.0_f32.to_radians()} else {if direction.x == 1.0 {-90.0_f32.to_radians()} else {90.0_f32.to_radians()}})),
@@ -707,7 +711,11 @@ fn spawn_reactors(
 				}
 				for (mut direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
 					direction = direction.normalize();
-					let translation = Vec3::new(origin.x + direction.x * radius, origin.y + direction.y * radius, z);
+					let translation = Vec3::new(
+						origin.x + direction.x * radius, 
+						origin.y + direction.y * radius, 
+						z + connection.connection_id as f32
+					);
 					commands.spawn((SpriteBundle {
 						transform: Transform::from_translation(translation)
 						.with_rotation(Quat::from_rotation_arc(Vec3::Y, (translation.xy() - origin).normalize().extend(0.0))),
