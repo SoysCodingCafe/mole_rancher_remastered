@@ -48,6 +48,9 @@ fn standard_buttons(
 			-ortho_size.height * (p.y / w.height() - 0.5)
 		);
 		let mut hovering_any = false;
+		let idle_color = Color::hex("EDD6AD").unwrap();
+		let hovered_color = Color::hex("CDB68D").unwrap();
+		let disabled_color = Color::hex("9D865D").unwrap();
 		for (mut sprite, button, effect) in button_query.iter_mut() {
 			if button.enabled {
 				if *current_state == PauseState::Paused {
@@ -56,6 +59,7 @@ fn standard_buttons(
 						_ => continue,
 					}
 				}
+				sprite.color = idle_color;
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
 					match effect {
 						ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(index)) => {
@@ -82,14 +86,14 @@ fn standard_buttons(
 						},
 						_ => (),
 					}
-					sprite.color = Color::hex("CDB68D").unwrap();
+					sprite.color = hovered_color;
 					hovering_any = true;
 					if mouse.just_pressed(MouseButton::Left) {
 						ev_w_button_call.send(ButtonCall(*effect));
 					}
 				}
 			} else {
-				sprite.color = Color::hex("9D865D").unwrap();
+				sprite.color = disabled_color;
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
 					for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
 						match effect {
@@ -109,15 +113,12 @@ fn standard_buttons(
 		}
 		// If not hovering over any buttons then hide all effects
 		if !hovering_any {
-			for (mut sprite, button, _) in button_query.iter_mut() {
-				if button.enabled {sprite.color = Color::hex("EDD6AD").unwrap()} else {sprite.color = Color::hex("9D865D").unwrap()};
-			}
 			for (mut transform, _) in tooltip_query.iter_mut() {
 				transform.translation.z = -1.0;
 			}
 		}
 		for (mut sprite, _, effect) in button_query.iter_mut() {
-			match effect {
+			/*match effect {
 				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
 					if (audio_volume.bgm * 10.0) as usize == *i {
 						if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
@@ -138,6 +139,26 @@ fn standard_buttons(
 							if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
 						} else {
 							if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
+						}
+					}
+				}
+				_ => (),
+			}*/
+			match effect {
+				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
+					if (audio_volume.bgm * 10.0) as usize == *i {
+						sprite.color = disabled_color;
+					}
+				},
+				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
+					if (audio_volume.sfx * 10.0) as usize == *i {
+						sprite.color = disabled_color;
+					}
+				}
+				ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {
+					if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+						if save_data.particles_enabled == *enable {
+							sprite.color = disabled_color;
 						}
 					}
 				}
@@ -231,13 +252,13 @@ fn handle_button_calls(
 	mut audio_volume: ResMut<AudioVolume>,
 	mut selected_level: ResMut<SelectedLevel>,
 	mut selected_palette: ResMut<SelectedPalette>,
-	mut selected_logbook_page: ResMut<SelectedLogbookPage>,
 	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
 	mut ev_r_button_call: EventReader<ButtonCall>,
 	mut ev_w_exit: EventWriter<AppExit>,
 	mut ev_w_fade_transition: EventWriter<FadeTransitionEvent>,
 	mut ev_w_replay_level: EventWriter<ReplayLevelEvent>,
 	mut ev_w_popup: EventWriter<PopupEvent>,
+	mut logbook_text_query: Query<(&mut Text, &LogbookText)>,
 	mut bright_lab_query: Query<(&mut Visibility, With<BrightLab>)>,
 	mut palette_query: Query<(&mut Sprite, &Palette)>,
 	mut next_pause_state: ResMut<NextState<PauseState>>,
@@ -281,7 +302,7 @@ fn handle_button_calls(
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(228.0, -10.0), 
 							image: asset_server.load("sprites/popup/level_select.png"),
-							alpha: 0.9,
+							alpha: 1.0,
 							popup_type: PopupType::LevelSelect,
 						});
 					},
@@ -341,7 +362,9 @@ fn handle_button_calls(
 						}
 					},
 					PopupButton::LogbookPage(page) => {
-						selected_logbook_page.0 = *page;
+						for (mut text, side) in logbook_text_query.iter_mut() {
+							text.sections[0].value = get_logbook_text(*page, side.0);
+						}
 					},
 					PopupButton::LevelSelect(level) => {
 						if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
@@ -352,6 +375,10 @@ fn handle_button_calls(
 							}
 						}
 					},
+					PopupButton::ReturnToLab => {
+						next_pause_state.set(PauseState::Unpaused);
+						ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
+					}
 					PopupButton::ReplayLevel => {
 						next_pause_state.set(PauseState::Unpaused);
 						ev_w_replay_level.send(ReplayLevelEvent);
@@ -381,6 +408,18 @@ fn handle_button_calls(
 					ReactorButton::SelectMolecule(molecule_index) => {
 						selected_molecule_type.0 = *molecule_index;
 					},
+					ReactorButton::RestartLevel => {
+						ev_w_replay_level.send(ReplayLevelEvent);
+					},
+					ReactorButton::PauseLevel => {
+						next_pause_state.set(PauseState::Paused);
+						ev_w_popup.send(PopupEvent{
+							origin: Vec2::ZERO, 
+							image: asset_server.load("sprites/popup/note_small.png"), 
+							alpha: 0.9, 
+							popup_type: PopupType::LevelIntro(selected_level.0), 
+						})
+					}
 					ReactorButton::ExitReactor => {
 						ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
 					},

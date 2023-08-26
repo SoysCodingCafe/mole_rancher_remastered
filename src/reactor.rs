@@ -11,6 +11,7 @@ impl Plugin for ReactorPlugin {
     fn build(&self, app: &mut App) {
         app
 			.add_systems(OnEnter(GameState::Reactor), (
+				spawn_reactor_intro,
 				spawn_reactor_visuals,
 				spawn_reactor_buttons,
 				spawn_reactor_levers,
@@ -29,6 +30,21 @@ impl Plugin for ReactorPlugin {
 			))
 		;
 	}
+}
+
+pub fn spawn_reactor_intro(
+	asset_server: Res<AssetServer>,
+	level: Res<SelectedLevel>,
+	mut next_state: ResMut<NextState<PauseState>>,
+	mut ev_w_popup: EventWriter<PopupEvent>,
+) {
+	next_state.set(PauseState::Paused);
+	ev_w_popup.send(PopupEvent{ 
+		origin: Vec2::new(0.0, 0.0), 
+		image: asset_server.load("sprites/popup/note_small.png"),
+		alpha: 0.9,
+		popup_type: PopupType::LevelIntro(level.0),
+	});
 }
 
 // Spawn all the visual elements of the reactor such
@@ -129,6 +145,20 @@ fn spawn_reactor_visuals(
 			Name::new("Stopwatch Text")
 		));
 	});
+
+	commands
+		.spawn((Text2dBundle {
+			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x, REACTOR_VIEWPORT_CENTER.y, 710.0),
+			text_anchor: bevy::sprite::Anchor::Center,
+			text: Text::from_section(format!("3.00"), get_win_countdown_text_style(&asset_server))
+				.with_alignment(TextAlignment::Center),
+				visibility: Visibility::Hidden,
+			..Default::default()
+		},
+		DespawnOnExitGameState,
+		WinCountdownText,
+		Name::new("Win Countdown Text")
+	));
 }
 
 // Update the stopwatch to track time spent on a level
@@ -200,7 +230,7 @@ fn spawn_reactor_buttons(
 					texture_atlas: texture_atlas_handle.clone(),
 					transform: Transform::from_xyz(loc.x, loc.y, loc.z + 1.0),
 					sprite: TextureAtlasSprite {
-						color: if en {get_molecule_color(i + j*3, selected_palette.0)} else {Color::WHITE},
+						color: if en {get_molecule_color(i + j*3, selected_palette.0)} else {Color::hex("9D865D").unwrap()},
 						index: if en {0} else {1},
 						custom_size: Some(Vec2::new(dim.width, dim.height)), 
 						..Default::default()
@@ -237,10 +267,33 @@ fn spawn_reactor_buttons(
 			},
 			..Default::default()
 		},
-		ButtonEffect::PopupButton(PopupButton::ReplayLevel),
+		ButtonEffect::ReactorButton(ReactorButton::ExitReactor),
 		button,
 		DespawnOnExitGameState,
-		Name::new("Replay Level Button"),
+		Name::new("Exit Reactor Button"),
+	));
+
+	let button = StandardButton {
+		location: Vec3::new(0.0, -375.0, 710.0),
+		dimensions: Dimensions {
+			width: 150.0,
+			height: 75.0,
+		},
+		enabled: true,
+	};
+	commands
+		.spawn((SpriteBundle {
+			transform: Transform::from_translation(button.location),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+				..Default::default()
+			},
+			..Default::default()
+		},
+		ButtonEffect::ReactorButton(ReactorButton::PauseLevel),
+		button,
+		DespawnOnExitGameState,
+		Name::new("Pause Button"),
 	));
 
 	let button = StandardButton {
@@ -260,10 +313,10 @@ fn spawn_reactor_buttons(
 			},
 			..Default::default()
 		},
-		ButtonEffect::ReactorButton(ReactorButton::ExitReactor),
+		ButtonEffect::ReactorButton(ReactorButton::RestartLevel),
 		button,
 		DespawnOnExitGameState,
-		Name::new("Exit Reactor Button"),
+		Name::new("Replay Level Button"),
 	));
 }
 
@@ -685,6 +738,7 @@ fn check_product_reactor(
 	mut ev_w_popup: EventWriter<PopupEvent>,
 	mut next_state: ResMut<NextState<PauseState>>,
 	mut win_countdown: ResMut<WinCountdown>,
+	mut win_countdown_text_query: Query<(&mut Text, &mut Visibility, With<WinCountdownText>)>,
 	asset_server: Res<AssetServer>,
 	current_cost: Res<CurrentCost>,
 	reactor_query: Query<(&ReactorInfo, With<ReactorCondition>)>,
@@ -726,7 +780,15 @@ fn check_product_reactor(
 
 			if condition_passed {
 				win_countdown.0.tick(time.delta());
+				for (mut text, mut visibility, _) in win_countdown_text_query.iter_mut() {
+					*visibility = Visibility::Visible;
+					let time_left = 3.0 - 3.0 * win_countdown.0.percent();
+					text.sections[0].value = format!("Reaction\nComplete in:\n{:.2}", time_left);
+				}
 				if win_countdown.0.just_finished() {
+					for (_, mut visibility, _) in win_countdown_text_query.iter_mut() {
+						*visibility = Visibility::Hidden;
+					}
 					let mut prev_best_cost = 999999;
 					let mut prev_best_time = 999999.0;
 					let mut current_time = 999999.0;
@@ -756,6 +818,9 @@ fn check_product_reactor(
 				}
 			} else {
 				win_countdown.0.reset();
+				for (_, mut visibility, _) in win_countdown_text_query.iter_mut() {
+					*visibility = Visibility::Hidden;
+				}
 			}
 		}
 	}
@@ -768,8 +833,10 @@ fn replay_level(
 	selected_palette: Res<SelectedPalette>,
 	mut current_cost: ResMut<CurrentCost>,
 	mut ev_r_replay_level: EventReader<ReplayLevelEvent>,
+	mut ev_w_popup: EventWriter<PopupEvent>,
 	mut commands: Commands,
 	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+	mut next_state: ResMut<NextState<PauseState>>,
 	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
 	mut stopwatch_text_query: Query<(&mut Text, &mut StopwatchText)>,
 	mut reactor_query: Query<(Entity, &mut ReactorCondition)>,
@@ -777,6 +844,13 @@ fn replay_level(
 	mut reactor_camera_query: Query<(&mut OrthographicProjection, &mut Transform, With<ReactorCamera>)>,
 ) {
 	for _ in ev_r_replay_level.iter() {
+		next_state.set(PauseState::Paused);
+		ev_w_popup.send(PopupEvent{ 
+			origin: Vec2::new(0.0, 0.0), 
+			image: asset_server.load("sprites/popup/note_small.png"),
+			alpha: 1.0,
+			popup_type: PopupType::LevelIntro(level.0),
+		});
 		for i in 0..TOTAL_MOLECULE_TYPES {
 			if get_available_molecules(level.0)[i] {
 				selected_molecule_type.0 = i;

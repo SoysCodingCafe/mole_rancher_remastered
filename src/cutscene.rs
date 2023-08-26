@@ -80,7 +80,7 @@ fn spawn_cutscene(
 			.spawn((Text2dBundle {
 				text_2d_bounds: bevy::text::Text2dBounds{ size: Vec2::new(
 					TEXT_BOX_WIDTH - TEXT_BOX_MARGINS * 2.0,
-					TEXT_BOX_HEIGHT - TEXT_BOX_MARGINS,
+					TEXT_BOX_HEIGHT - TEXT_BOX_MARGINS * 2.0,
 				)},
 				transform: Transform::from_xyz(
 					-TEXT_BOX_WIDTH / 2.0 + TEXT_BOX_MARGINS,

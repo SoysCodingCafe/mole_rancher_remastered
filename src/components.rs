@@ -103,12 +103,16 @@ pub const TOTAL_MOLECULE_TYPES: usize = 18;
 pub const LAUNCH_COOLDOWN: f32 = 0.2;
 pub const MOLECULE_CAP: usize = 800;
 
-pub const FADE_TRANSITION_DURATION: f32 = 0.2;
 pub const POPUP_EXPAND_TIME: f32 = 0.5;
+pub const POPUP_WIDTH: f32 = 1440.0;
+pub const POPUP_HEIGHT: f32 = 810.0;
+pub const LOGBOOK_MARGINS: f32 = 75.0;
+
+pub const FADE_TRANSITION_DURATION: f32 = 0.2;
 pub const WIN_COUNTDOWN_LENGTH: f32 = 3.0;
 
-pub const NUMBER_OF_LEVELS: usize = 30;
-pub const NUMBER_OF_CUTSCENES: usize = 32;
+pub const NUMBER_OF_LEVELS: usize = 31;
+pub const NUMBER_OF_CUTSCENES: usize = 33;
 
 
 // STATES
@@ -158,6 +162,7 @@ pub enum PopupType {
 	Settings,
 	Logbook,
 	LevelSelect,
+	LevelIntro(usize),
 	WinScreen(f32, f32, usize, usize),
 }
 
@@ -184,6 +189,7 @@ pub enum PopupButton {
 	ParticleTrails(bool),
 	LogbookPage(usize),
 	LevelSelect(usize),
+	ReturnToLab,
 	ReplayLevel,
 	CompleteLevel,
 	ExitPopup,
@@ -192,6 +198,8 @@ pub enum PopupButton {
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub enum ReactorButton {
 	SelectMolecule(usize),
+	RestartLevel,
+	PauseLevel,
 	ExitReactor,
 }
 
@@ -337,6 +345,12 @@ pub struct Highlight;
 pub struct Tooltip;
 
 #[derive(Component)]
+pub struct WinCountdownText;
+
+#[derive(Component)]
+pub struct LogbookText(pub usize);
+
+#[derive(Component)]
 pub struct Palette(pub usize);
 
 #[derive(Component)]
@@ -448,9 +462,6 @@ pub struct TextSpeedTimer(pub Timer);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct SelectedPalette(pub usize);
-
-#[derive(Resource, Deref, DerefMut)]
-pub struct SelectedLogbookPage(pub usize);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct SelectedLevel(pub usize);
@@ -735,7 +746,7 @@ pub fn get_reactors(
 		}
 		4 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-4500.0, 0.0), radius: 2000.0}, reactor_id: 0, input_chamber: true, product_chamber: false});
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions{width: 4000.0, height: 1000.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions{width: 4000.0, height: 600.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(4500.0, 0.0), radius: 2000.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
 		}
 		5 => {
@@ -860,7 +871,7 @@ pub fn get_reactor_initialization(
 		1 => match reactor_id {
 			0 => {
 				for _ in 0..50 {
-					molecules.push((4, Vec2::new((rand::random::<f32>() - 0.5) * 3000.0, (rand::random::<f32>() - 0.5) * 3000.0), Vec2::ZERO));
+					molecules.push((4, Vec2::new((rand::random::<f32>() - 0.5) * 1000.0, (rand::random::<f32>() - 0.5) * 1000.0), Vec2::ZERO));
 				}
 				molecules
 			},
@@ -869,7 +880,7 @@ pub fn get_reactor_initialization(
 		2 => match reactor_id {
 			0 => {
 				for _ in 0..100 {
-					molecules.push((0, Vec2::new((rand::random::<f32>() - 0.5) * 1500.0, (rand::random::<f32>() - 0.5) * 1500.0), 
+					molecules.push((0, Vec2::new((rand::random::<f32>() - 0.5) * 800.0, (rand::random::<f32>() - 0.5) * 800.0), 
 					Vec2::new((rand::random::<f32>() - 0.5) * 3000.0, (rand::random::<f32>() - 0.5) * 3000.0)));
 				}
 				molecules
@@ -926,6 +937,37 @@ pub fn get_initial_zoom(
 	}
 }
 
+pub fn get_intro_text(
+	level: usize,
+) -> String {
+	match level {
+		0 => format!("This is the introduction text for level one. Move left and right with A and D and shoot with space bar. Rotate with Q and E. Select reactor with middle mouse click. Try to hit the molecules to cause reactions!"),
+		1 => format!("You are getting the hang of this! Select which molecule you want from the menu on the left, and remember to launch by pressing the space bar!"),
+		2 => format!("This reactor is filled with unwanted molecules! Use that new molecule in the menu to the left to clear them out! You can hold shift to move faster!"),
+		3 => format!("This reactor has two chambers, an input chamber at the top and an output chamber at the bottom! However, the pipes connecting them only accept specific kinds of molecules. How will you get the reaction products to the output chamber?"),
+		4 => format!("TGIF! Three chambers this time, but it should be no problem for you! Make sure you select each reactor with the middle mouse button so that you can control the launcher in each. Be aware that your movement is restricted due to the connections on the side of the chamber!"),
+		_ => format!("I hope you are enjoying Mole Rancher Remastered! If you made it this far, leave me a comment letting me know what you think! Any feedback is appreciated!"),
+	}
+}
+
+pub fn get_logbook_text(
+	page: usize,
+	side: usize,
+) -> String {
+	match side {
+		0 => match page {
+			0 => format!("Welcome to the logbook! Click the tabs to view other pages!"),
+			1 => format!("The Mole Ranch was first founded after the Molecular Shortages of 67, and is still in operation to this day."),
+			2 => format!("According to many ranchers, the spikier a molecule is the tastier it is."),
+			_ => format!("Maybe I will fill these pages myself once I have uncovered the secrets of the mole!"),
+		}
+		_ => match page {
+			2 => format!("However, they also require the most careful cooking techniques. A strong particle trail is indicative of a potent scent when cooking."),
+			_ => format!("Noone ever writes on the right page of notebooks... The ink would leak through!"),
+		}
+	}
+}
+
 
 // TEXT STYLES
 pub fn get_title_text_style(
@@ -956,6 +998,27 @@ pub fn get_settings_text_style(
 		font_size: 60.0,
 		color: Color::hex("EDD6AD").unwrap(),
 		..Default::default()
+	}
+}
+
+pub fn get_intro_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 60.0,
+		color: Color::hex("2B2B29").unwrap(),
+		..Default::default()
+	}
+}
+
+pub fn get_win_countdown_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 100.0,
+		color: *Color::hex("2B2B29").unwrap().set_a(0.95),
 	}
 }
 
