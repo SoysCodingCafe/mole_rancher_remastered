@@ -18,6 +18,7 @@ impl Plugin for ReactorPlugin {
 				spawn_reactors,
 			))
 			.add_systems(Update, (
+				recolor_selected_reactor,
 				update_stopwatch,
 				handle_levers,
 				intake_connections,
@@ -29,7 +30,23 @@ impl Plugin for ReactorPlugin {
 	}
 }
 
-pub fn spawn_reactor_intro(
+fn recolor_selected_reactor (
+	mut reactor_query: Query<(&mut Sprite, &mut ReactorInfo, (With<ReactorCondition>, Without<SelectedReactor>))>,
+	mut selected_reactor_query: Query<(&mut Sprite, With<SelectedReactor>)>,
+) {
+	for (mut sprite, r_info, _) in reactor_query.iter_mut() {
+		if r_info.product_chamber {
+			sprite.color = get_reactor_color(0);
+		} else {
+			sprite.color = get_reactor_color(1);
+		}
+	}
+	for (mut sprite, _) in selected_reactor_query.iter_mut() {
+		sprite.color = get_reactor_color(2);
+	}
+}
+
+fn spawn_reactor_intro(
 	asset_server: Res<AssetServer>,
 	level: Res<SelectedLevel>,
 	mut next_state: ResMut<NextState<PauseState>>,
@@ -571,7 +588,6 @@ fn spawn_reactors(
 					));
 				}
 				for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
-					let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
 					commands
 						.spawn((SpriteSheetBundle {
 							transform: Transform::from_xyz(
@@ -600,7 +616,7 @@ fn spawn_reactors(
 							spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
 							duration: PARTICLE_DURATION,
 						},
-						Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
+						Velocity(velocity),
 						AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 						AnimationIndices{ 
 							first: 0, 

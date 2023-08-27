@@ -612,13 +612,13 @@ pub fn get_molecule_radius(
 	index: usize,
 ) -> f32 {
 	match index {
-		0 => 32.0,
-		1 => 32.0,
-		2 => 64.0,
-		3 => 64.0,
-		4 => 8.0,
-		5 => 32.0,
-		6 => 64.0,
+		0 => 48.0,
+		1 => 64.0,
+		2 => 80.0,
+		3 => 16.0,
+		4 => 32.0,
+		5 => 56.0,
+		6 => 72.0,
 		_ => 32.0,
 	}
 }
@@ -738,7 +738,7 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 2000.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
 		2 => {
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 800.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions { width: 2000.0, height: 1600.0 }}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
 		3 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 1000.0), dimensions: Dimensions{width: 4000.0, height: 2000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
@@ -870,8 +870,10 @@ pub fn get_reactor_initialization(
 		}
 		1 => match reactor_id {
 			0 => {
-				for _ in 0..50 {
-					molecules.push((4, Vec2::new((rand::random::<f32>() - 0.5) * 1000.0, (rand::random::<f32>() - 0.5) * 1000.0), Vec2::ZERO));
+				for j in 0..9 {
+					for i in 0..9 {
+						molecules.push((4, Vec2::new(-600.0 + 150.0 * i as f32, -600.0 + 150.0 * j as f32), Vec2::ZERO));
+					}
 				}
 				molecules
 			},
@@ -879,9 +881,9 @@ pub fn get_reactor_initialization(
 		}
 		2 => match reactor_id {
 			0 => {
-				for _ in 0..100 {
-					molecules.push((0, Vec2::new((rand::random::<f32>() - 0.5) * 800.0, (rand::random::<f32>() - 0.5) * 800.0), 
-					Vec2::new((rand::random::<f32>() - 0.5) * 3000.0, (rand::random::<f32>() - 0.5) * 3000.0)));
+				for i in 0..18 {
+					molecules.push((0, Vec2::new(-800.0 + 100.0 * i as f32, 0.0), 
+					Vec2::new(0.0, if i % 2 == 0 {300.0} else {-300.0})));
 				}
 				molecules
 			},
@@ -903,6 +905,19 @@ pub fn get_level_goal(
 		3 => WinCondition::GreaterThan(5, 2),
 		4 => WinCondition::GreaterThan(5, 4),
 		_ => WinCondition::GreaterThan(1, 0),
+	}
+}
+
+pub fn get_reactor_color(
+	reactor_type: usize,
+) -> Color {
+	match reactor_type {
+		// Input
+		0 => Color::YELLOW_GREEN,
+		// Product
+		1 => Color::MAROON,
+		// Selected
+		_ => Color::rgb(0.7, 0.7, 0.7),
 	}
 }
 
