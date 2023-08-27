@@ -66,6 +66,7 @@ fn spawn_reactor_intro(
 // and tooltip sprites which are initially hidden
 fn spawn_reactor_visuals(
 	mut commands: Commands,
+	selected_level: Res<SelectedLevel>,
 	asset_server: Res<AssetServer>,
 	ortho_size: Res<OrthoSize>,
 ) {
@@ -132,8 +133,22 @@ fn spawn_reactor_visuals(
 	));
 
 	commands
+		.spawn((Text2dBundle {
+			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x, REACTOR_VIEWPORT_CENTER.y, 710.0),
+			text_anchor: bevy::sprite::Anchor::Center,
+			text: Text::from_section(format!("3.00"), get_win_countdown_text_style(&asset_server))
+				.with_alignment(TextAlignment::Center),
+				visibility: Visibility::Hidden,
+			..Default::default()
+		},
+		DespawnOnExitGameState,
+		WinCountdownText,
+		Name::new("Win Countdown Text")
+	));
+
+	commands
 		.spawn((SpriteBundle {
-			transform: Transform::from_xyz(112.0, 390.0, 730.0),
+			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x + REACTOR_VIEWPORT_WIDTH/2.0 - STOPWATCH_BOX_WIDTH/2.0, STOPWATCH_BOX_Y, 730.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(STOPWATCH_BOX_WIDTH, STOPWATCH_BOX_HEIGHT)),
 				..Default::default()
@@ -149,8 +164,8 @@ fn spawn_reactor_visuals(
 					STOPWATCH_BOX_WIDTH - STOPWATCH_BOX_MARGINS * 2.0,
 					STOPWATCH_BOX_HEIGHT - STOPWATCH_BOX_MARGINS,
 				)},
-				transform: Transform::from_xyz(STOPWATCH_BOX_WIDTH / 2.0 - STOPWATCH_BOX_MARGINS, 0.0, 10.0),
-				text_anchor: bevy::sprite::Anchor::CenterRight,
+				transform: Transform::from_xyz(-STOPWATCH_BOX_WIDTH / 2.0 + STOPWATCH_BOX_MARGINS, 0.0, 10.0),
+				text_anchor: bevy::sprite::Anchor::CenterLeft,
 				text: Text::from_section(format!("0.00"), get_cutscene_text_style(&asset_server))
 				.with_alignment(TextAlignment::Right),
 				..Default::default()
@@ -161,18 +176,32 @@ fn spawn_reactor_visuals(
 	});
 
 	commands
-		.spawn((Text2dBundle {
-			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x, REACTOR_VIEWPORT_CENTER.y, 710.0),
-			text_anchor: bevy::sprite::Anchor::Center,
-			text: Text::from_section(format!("3.00"), get_win_countdown_text_style(&asset_server))
-				.with_alignment(TextAlignment::Center),
-				visibility: Visibility::Hidden,
+		.spawn((SpriteBundle {
+			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x - REACTOR_VIEWPORT_WIDTH/2.0 + GOAL_BOX_WIDTH/2.0, GOAL_BOX_Y, 730.0),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(GOAL_BOX_WIDTH, GOAL_BOX_HEIGHT)),
+				..Default::default()
+			},
 			..Default::default()
 		},
 		DespawnOnExitGameState,
-		WinCountdownText,
-		Name::new("Win Countdown Text")
-	));
+		Name::new("Goal Box Sprite")
+	)).with_children(|parent| {
+		parent
+			.spawn((Text2dBundle {
+				text_2d_bounds: bevy::text::Text2dBounds{ size: Vec2::new(
+					GOAL_BOX_WIDTH - GOAL_BOX_MARGINS * 2.0,
+					GOAL_BOX_HEIGHT - GOAL_BOX_MARGINS,
+				)},
+				transform: Transform::from_xyz(-GOAL_BOX_WIDTH / 2.0 + GOAL_BOX_MARGINS, 0.0, 10.0),
+				text_anchor: bevy::sprite::Anchor::CenterLeft,
+				text: Text::from_section(get_level_goal_text(selected_level.0), get_cutscene_text_style(&asset_server))
+				.with_alignment(TextAlignment::Left),
+				..Default::default()
+			},
+			Name::new("Goal Text")
+		));
+	});
 }
 
 // Update the stopwatch to track time spent on a level
@@ -682,7 +711,6 @@ fn spawn_reactors(
 					));
 				}
 				for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
-					let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
 					commands
 						.spawn((SpriteSheetBundle {
 							transform: Transform::from_xyz(
@@ -711,7 +739,7 @@ fn spawn_reactors(
 							spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
 							duration: PARTICLE_DURATION,
 						},
-						Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
+						Velocity(velocity),
 						AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 						AnimationIndices{ 
 							first: 0, 

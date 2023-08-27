@@ -183,6 +183,7 @@ fn spawn_popup_buttons(
 							.spawn((SpriteBundle {
 								transform: Transform::from_translation(button.location),
 								sprite: Sprite {
+									color: Color::hex("EDD6AD").unwrap(),
 									custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
 									..Default::default()
 								},
@@ -268,6 +269,7 @@ fn spawn_popup_buttons(
 							.spawn((SpriteBundle {
 								transform: Transform::from_translation(button.location),
 								sprite: Sprite {
+									color: Color::hex("EDD6AD").unwrap(),
 									custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
 									..Default::default()
 								},
@@ -291,6 +293,7 @@ fn spawn_popup_buttons(
 						.spawn((SpriteBundle {
 							transform: Transform::from_translation(button.location),
 							sprite: Sprite {
+								color: Color::hex("EDD6AD").unwrap(),
 								custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
 								..Default::default()
 							},
@@ -319,6 +322,7 @@ fn spawn_popup_buttons(
 								commands.spawn((SpriteBundle {
 										transform: Transform::from_translation(button.location),
 										sprite: Sprite {
+											color: Color::hex("EDD6AD").unwrap(),
 											custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
 											..Default::default()
 										},
@@ -354,6 +358,7 @@ fn spawn_popup_buttons(
 						.spawn((SpriteBundle {
 							transform: Transform::from_translation(button.location),
 							sprite: Sprite {
+								color: Color::hex("EDD6AD").unwrap(),
 								custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
 								..Default::default()
 							},
@@ -402,6 +407,7 @@ fn spawn_popup_buttons(
 						.spawn((SpriteBundle {
 							transform: Transform::from_translation(button.location),
 							sprite: Sprite {
+								color: Color::hex("EDD6AD").unwrap(),
 								custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
 								..Default::default()
 							},
@@ -424,6 +430,7 @@ fn spawn_popup_buttons(
 						.spawn((SpriteBundle {
 							transform: Transform::from_translation(button.location),
 							sprite: Sprite {
+								color: Color::hex("EDD6AD").unwrap(),
 								custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
 								..Default::default()
 							},
@@ -515,6 +522,7 @@ fn spawn_popup_buttons(
 							.spawn((SpriteBundle {
 								transform: Transform::from_translation(button.0.location),
 								sprite: Sprite {
+									color: Color::hex("EDD6AD").unwrap(),
 									custom_size: Some(Vec2::new(button.0.dimensions.width, button.0.dimensions.height)), 
 									..Default::default()
 								},

@@ -40,6 +40,10 @@ fn standard_buttons(
 	mut tooltip_query: Query<(&mut Transform, With<Tooltip>)>,
 	mut ev_w_button_call: EventWriter<ButtonCall>,
 ) {
+	let mut hovering_any = false;
+	let idle_color = Color::hex("EDD6AD").unwrap();
+	let hovered_color = Color::hex("CDB68D").unwrap();
+	let disabled_color = Color::hex("9D865D").unwrap();
 	// Get the current window, and the cursor position scaled 
 	// to the window size
 	let w = window_query.single();
@@ -48,10 +52,6 @@ fn standard_buttons(
 			ortho_size.width * (p.x / w.width() - 0.5), 
 			-ortho_size.height * (p.y / w.height() - 0.5)
 		);
-		let mut hovering_any = false;
-		let idle_color = Color::hex("EDD6AD").unwrap();
-		let hovered_color = Color::hex("CDB68D").unwrap();
-		let disabled_color = Color::hex("9D865D").unwrap();
 		for (mut sprite, button, effect) in button_query.iter_mut() {
 			if button.enabled {
 				if *current_state == PauseState::Paused {
@@ -112,59 +112,33 @@ fn standard_buttons(
 				}
 			}
 		}
-		// If not hovering over any buttons then hide all effects
-		if !hovering_any {
-			for (mut transform, _) in tooltip_query.iter_mut() {
-				transform.translation.z = -1.0;
-			}
+	}
+	// If not hovering over any buttons then hide all effects
+	if !hovering_any {
+		for (mut transform, _) in tooltip_query.iter_mut() {
+			transform.translation.z = -1.0;
 		}
-		for (mut sprite, _, effect) in button_query.iter_mut() {
-			/*match effect {
-				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
-					if (audio_volume.bgm * 10.0) as usize == *i {
-						if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
-					} else {
-						if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
-					}
-				},
-				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
-					if (audio_volume.sfx * 10.0) as usize == *i {
-						if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
-					} else {
-						if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
-					}
+	}
+	for (mut sprite, _, effect) in button_query.iter_mut() {
+		match effect {
+			ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
+				if (audio_volume.bgm * 10.0) as usize == *i {
+					sprite.color = disabled_color;
 				}
-				ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {
-					if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
-						if save_data.particles_enabled == *enable {
-							if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
-						} else {
-							if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
-						}
-					}
+			},
+			ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
+				if (audio_volume.sfx * 10.0) as usize == *i {
+					sprite.color = disabled_color;
 				}
-				_ => (),
-			}*/
-			match effect {
-				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
-					if (audio_volume.bgm * 10.0) as usize == *i {
-						sprite.color = disabled_color;
-					}
-				},
-				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
-					if (audio_volume.sfx * 10.0) as usize == *i {
-						sprite.color = disabled_color;
-					}
-				}
-				ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {
-					if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
-						if save_data.particles_enabled == *enable {
-							sprite.color = disabled_color;
-						}
-					}
-				}
-				_ => (),
 			}
+			ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {
+				if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+					if save_data.particles_enabled == *enable {
+						sprite.color = disabled_color;
+					}
+				}
+			}
+			_ => (),
 		}
 	}
 }
@@ -487,7 +461,6 @@ fn replay_level(
 			match reactor.reactor_type {
 				ReactorType::Rectangle{origin, dimensions} => {
 					for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
-						let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
 						commands
 							.spawn((SpriteSheetBundle {
 								transform: Transform::from_xyz(
@@ -516,7 +489,7 @@ fn replay_level(
 								spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
 								duration: PARTICLE_DURATION,
 							},
-							Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
+							Velocity(velocity),
 							AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 							AnimationIndices{ 
 								first: 0, 
@@ -536,7 +509,6 @@ fn replay_level(
 				},
 				ReactorType::Circle{origin, radius} => {
 					for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
-						let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
 						commands
 							.spawn((SpriteSheetBundle {
 								transform: Transform::from_xyz(
@@ -565,7 +537,7 @@ fn replay_level(
 								spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
 								duration: PARTICLE_DURATION,
 							},
-							Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
+							Velocity(velocity),
 							AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
 							AnimationIndices{ 
 								first: 0, 

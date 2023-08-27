@@ -78,9 +78,15 @@ pub const ZOOM_DEAD_ZONE_RADIUS: f32 = 180.0;
 pub const TOOLTIP_WIDTH: f32 = 320.0*1.5;
 pub const TOOLTIP_HEIGHT: f32 = 265.0*1.5;
 
+pub const STOPWATCH_BOX_Y: f32 = 390.0;
 pub const STOPWATCH_BOX_WIDTH: f32 = 300.0;
-pub const STOPWATCH_BOX_HEIGHT: f32 = 80.0;
+pub const STOPWATCH_BOX_HEIGHT: f32 = 100.0;
 pub const STOPWATCH_BOX_MARGINS: f32 = 8.0;
+
+pub const GOAL_BOX_Y: f32 = 390.0;
+pub const GOAL_BOX_WIDTH: f32 = 650.0;
+pub const GOAL_BOX_HEIGHT: f32 = 100.0;
+pub const GOAL_BOX_MARGINS: f32 = 8.0;
 
 pub const PARTICLE_SPAWN_DELAY: f32 = 0.01;
 pub const PARTICLE_DURATION: f32 = 0.6;
@@ -590,10 +596,10 @@ pub fn get_molecule_color(
 			0 => Color::RED,
 			1 => Color::BLUE,
 			2 => Color::GREEN,
-			3 => Color::CYAN,
+			3 => Color::WHITE,
 			4 => Color::DARK_GRAY,
-			5 => Color::WHITE,
-			6 => Color::YELLOW_GREEN,
+			5 => Color::ORANGE,
+			6 => Color::YELLOW,
 			_ => Color::RED,
 		}
 		_ => match index {
@@ -657,13 +663,13 @@ pub fn get_molecule_initial_velocity(
 	index: usize,
 ) -> f32 {
 	match index {
-		0 => 1200.0,
-		1 => 1200.0,
-		2 => 1600.0,
-		3 => 2000.0,
-		4 => 5.0,
+		0 => 1000.0,
+		1 => 2000.0,
+		2 => 1500.0,
+		3 => 2500.0,
+		4 => 50.0,
 		5 => 3000.0,
-		6 => 2000.0,
+		6 => 3000.0,
 		_ => 600.0,
 	}
 }
@@ -905,6 +911,19 @@ pub fn get_level_goal(
 		3 => WinCondition::GreaterThan(5, 2),
 		4 => WinCondition::GreaterThan(5, 4),
 		_ => WinCondition::GreaterThan(1, 0),
+	}
+}
+
+pub fn get_level_goal_text(
+	level: usize,
+) -> String {
+	match level {
+		0 => format!("Produce at least 5 Comba molecules"),
+		1 => format!("Produce at least 5 Comba molecules"),
+		2 => format!("Empty the product reactor"),
+		3 => format!("Produce at least 5 Comba molecules"),
+		4 => format!("Produce at least 5 Densa molecules"),
+		_ => format!("Have fun!"),
 	}
 }
 
