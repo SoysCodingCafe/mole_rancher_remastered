@@ -1,5 +1,5 @@
 // Import Bevy game engine essentials
-use bevy::{prelude::*, app::AppExit};
+use bevy::{prelude::*, app::AppExit, render::view::RenderLayers};
 // Import Pkv Store for saving and loading game data
 use bevy_pkv::PkvStore;
 // Import components, resources, and events
@@ -13,7 +13,8 @@ impl Plugin for ButtonsPlugin {
     fn build(&self, app: &mut App) {
         app
 			.add_systems(Update, (
-				handle_button_calls,
+				replay_level.run_if(in_state(GameState::Reactor)),
+				handle_button_calls.after(replay_level),
 				standard_buttons,
 			))
 			.add_systems(Update, (
@@ -428,6 +429,161 @@ fn handle_button_calls(
 			ButtonEffect::CutsceneButton(CutsceneButton::SkipCutscene) => {
 				ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
 			},
+		}
+	}
+}
+
+fn replay_level(
+	molecule_query: Query<(Entity, With<Molecule>)>,
+	asset_server: Res<AssetServer>,
+	level: Res<SelectedLevel>,
+	selected_palette: Res<SelectedPalette>,
+	mut current_cost: ResMut<CurrentCost>,
+	mut ev_r_replay_level: EventReader<ReplayLevelEvent>,
+	mut ev_w_popup: EventWriter<PopupEvent>,
+	mut commands: Commands,
+	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+	mut next_state: ResMut<NextState<PauseState>>,
+	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
+	mut stopwatch_text_query: Query<(&mut Text, &mut StopwatchText)>,
+	mut reactor_query: Query<(Entity, &mut ReactorCondition)>,
+	mut launch_tube_query: Query<(&mut Transform, &mut LaunchTube, Without<ReactorCamera>)>,
+	mut reactor_camera_query: Query<(&mut OrthographicProjection, &mut Transform, With<ReactorCamera>)>,
+) {
+	for _ in ev_r_replay_level.iter() {
+		next_state.set(PauseState::Paused);
+		ev_w_popup.send(PopupEvent{ 
+			origin: Vec2::new(0.0, 0.0), 
+			image: asset_server.load("sprites/popup/note_small.png"),
+			alpha: 1.0,
+			popup_type: PopupType::LevelIntro(level.0),
+		});
+		for i in 0..TOTAL_MOLECULE_TYPES {
+			if get_available_molecules(level.0)[i] {
+				selected_molecule_type.0 = i;
+				break;
+			}
+		}
+		current_cost.0 = 0;
+		let (mut ortho_proj, mut transform, _) = reactor_camera_query.single_mut();
+		ortho_proj.scale = get_initial_zoom(level.0);
+		transform.translation.x = 0.0;
+		transform.translation.y = 0.0;
+		for (mut text, mut stopwatch) in stopwatch_text_query.iter_mut() {
+			text.sections[0].value = "".to_string();
+			stopwatch.0.reset();
+		}
+		for (entity, _) in molecule_query.iter() {
+			commands.entity(entity).despawn_recursive();
+		}
+		for (entity, mut condition) in reactor_query.iter_mut() {
+			condition.temperature = 0.0;
+			condition.pressure = 0.0;
+			commands.entity(entity).remove::<SelectedReactor>();
+		}
+		let reactors = get_reactors(level.0);
+		let z = 910.0;
+		for reactor in reactors.iter() {
+			match reactor.reactor_type {
+				ReactorType::Rectangle{origin, dimensions} => {
+					for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
+						let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
+						commands
+							.spawn((SpriteSheetBundle {
+								transform: Transform::from_xyz(
+									origin.x + location.x + rand::random::<f32>(),
+									origin.y + location.y + rand::random::<f32>(),
+									500.0,
+								),
+								texture_atlas: texture_atlases.add(TextureAtlas::from_grid(asset_server.load(get_molecule_path(index)), Vec2::new(32.0, 32.0), 4, 2, None, None)).clone(),
+								sprite: TextureAtlasSprite{
+									color: get_molecule_color(index, selected_palette.0),
+									index: 0,
+									custom_size: Some(Vec2::new(get_molecule_radius(index) * 2.0, get_molecule_radius(index) * 2.0)),
+									..Default::default()
+								},
+								..Default::default()
+							},
+							*reactor,
+							Molecule(get_molecule_lifetime(index)),
+							MoleculeInfo {
+								index: index,
+								reacted: false,
+								radius: get_molecule_radius(index),
+								mass: get_molecule_mass(index),
+							},
+							ParticleTrail{
+								spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+								duration: PARTICLE_DURATION,
+							},
+							Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
+							AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+							AnimationIndices{ 
+								first: 0, 
+								total: 8,
+							},
+							RenderLayers::layer(1),
+							DespawnOnExitGameState,
+							Name::new("Molecule")
+						));
+					}
+					for (mut transform, mut launch_tube, _) in launch_tube_query.iter_mut() {
+						if launch_tube.id == reactor.reactor_id {
+							*transform = Transform::from_translation(Vec3::new(origin.x, origin.y + dimensions.height / 2.0, z));
+							launch_tube.current_rotation = 0.0;
+						}
+					}
+				},
+				ReactorType::Circle{origin, radius} => {
+					for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
+						let direction = Vec2::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
+						commands
+							.spawn((SpriteSheetBundle {
+								transform: Transform::from_xyz(
+									origin.x + location.x + rand::random::<f32>(),
+									origin.y + location.y + rand::random::<f32>(),
+									500.0,
+								),
+								texture_atlas: texture_atlases.add(TextureAtlas::from_grid(asset_server.load(get_molecule_path(index)), Vec2::new(32.0, 32.0), 4, 2, None, None)).clone(),
+								sprite: TextureAtlasSprite{
+									color: get_molecule_color(index, selected_palette.0),
+									index: 0,
+									custom_size: Some(Vec2::new(get_molecule_radius(index) * 2.0, get_molecule_radius(index) * 2.0)),
+									..Default::default()
+								},
+								..Default::default()
+							},
+							*reactor,
+							Molecule(get_molecule_lifetime(index)),
+							MoleculeInfo {
+								index: index,
+								reacted: false,
+								radius: get_molecule_radius(index),
+								mass: get_molecule_mass(index),
+							},
+							ParticleTrail{
+								spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+								duration: PARTICLE_DURATION,
+							},
+							Velocity(Vec2::new((rand::random::<f32>()-0.5)*velocity.x, (rand::random::<f32>()-0.5)*velocity.y) * direction),
+							AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+							AnimationIndices{ 
+								first: 0, 
+								total: 8,
+							},
+							RenderLayers::layer(1),
+							DespawnOnExitGameState,
+							Name::new("Molecule")
+						));
+					}
+					for (mut transform, mut launch_tube, _) in launch_tube_query.iter_mut() {
+						if launch_tube.id == reactor.reactor_id {
+							*transform = Transform::from_translation(Vec3::new(origin.x, origin.y + radius, z));
+							launch_tube.current_rotation = 0.0;
+						}
+					}
+				},
+			}
 		}
 	}
 }

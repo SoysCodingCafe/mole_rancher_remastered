@@ -572,10 +572,10 @@ pub fn get_molecule_path(
 ) -> String {
 	match index {
 		0 => "moles/smooth_triangle.png".to_string(),
-		1 => "moles/cage_triangle.png".to_string(),
-		2 => "moles/cage_square.png".to_string(),
-		3 => "moles/spikes_dense.png".to_string(),
-		4 => "moles/spikes_sparse.png".to_string(),
+		1 => "moles/spikes_sparse.png".to_string(),
+		2 => "moles/spikes_dense.png".to_string(),
+		3 => "moles/cage_triangle.png".to_string(),
+		4 => "moles/smooth_triangle.png".to_string(),
 		5 => "moles/cage_square.png".to_string(),
 		_ => "moles/smooth_triangle.png".to_string(),
 	}
@@ -589,8 +589,8 @@ pub fn get_molecule_color(
 		0 => match index {
 			0 => Color::RED,
 			1 => Color::BLUE,
-			2 => Color::PURPLE,
-			3 => Color::ORANGE,
+			2 => Color::GREEN,
+			3 => Color::CYAN,
 			4 => Color::DARK_GRAY,
 			5 => Color::WHITE,
 			6 => Color::YELLOW_GREEN,
