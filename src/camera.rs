@@ -13,6 +13,7 @@ impl Plugin for CameraPlugin {
 			.add_systems(Update, (
 				resize_reactor_camera_viewport,
 				pan_zoom_reactor_camera,
+				toggle_fullscreen,
 			))
 			.add_systems( OnEnter(GameState::Reactor),(
 				reset_reactor_camera,
@@ -138,4 +139,18 @@ fn pan_zoom_reactor_camera(
 		);
     }
     ev_r_motion.clear();
+}
+
+fn toggle_fullscreen(
+	keyboard: Res<Input<KeyCode>>,
+	mut window_query: Query<&mut Window>,
+) {
+	if keyboard.just_pressed(KeyCode::F) {
+		for mut window in window_query.iter_mut() {
+			match window.mode {
+				bevy::window::WindowMode::Windowed => window.mode = bevy::window::WindowMode::BorderlessFullscreen,
+				_ => window.mode = bevy::window::WindowMode::Windowed,
+			} 
+		}
+	}
 }
