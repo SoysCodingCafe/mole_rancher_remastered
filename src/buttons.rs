@@ -142,6 +142,9 @@ fn standard_buttons(
 		for (mut transform, _) in tooltip_query.iter_mut() {
 			transform.translation.z = -1.0;
 		}
+		for (mut spritesheet, _, _, _) in animation_query.iter_mut() {
+			spritesheet.index = 1;
+		};
 	}
 	for (mut sprite, button, effect) in button_query.iter_mut() {
 		if let Ok(save_data) = pkv.get::<SaveData>("save_data") {

@@ -16,7 +16,7 @@ impl Plugin for DebugPlugin {
 				change_game_state,
 				change_pause_state,
 				//debug_popup,
-				debug_molecule,
+				//debug_molecule,
 				vent_reactor,
 			))
 		;
@@ -91,23 +91,7 @@ fn debug_popup(
 	}
 }
 
-// Allows the user to remove all molecules from the selected reactor
-fn vent_reactor(
-	mut commands: Commands,
-	keyboard: Res<Input<KeyCode>>,
-	selected_reactor_query: Query<(&ReactorInfo, With<SelectedReactor>)>,
-	molecule_query: Query<(Entity, &ReactorInfo, With<Molecule>)>,
-) {
-	if keyboard.just_pressed(KeyCode::L) {
-		for (r_info, _) in selected_reactor_query.iter() {
-			for (entity, m_r_info, _) in molecule_query.iter() {
-				if m_r_info.reactor_id == r_info.reactor_id {
-					commands.entity(entity).despawn_recursive();
-				}
-			}
-		}
-	}
-}
+
 
 // Allows the user to spawn molecules and spawners
 fn debug_molecule(
@@ -213,6 +197,24 @@ fn debug_molecule(
 							Name::new("Debug Molecule Spawner"),
 						));
 					};
+				}
+			}
+		}
+	}
+}
+
+// Allows the user to remove all molecules from the selected reactor
+fn vent_reactor(
+	mut commands: Commands,
+	keyboard: Res<Input<KeyCode>>,
+	selected_reactor_query: Query<(&ReactorInfo, With<SelectedReactor>)>,
+	molecule_query: Query<(Entity, &ReactorInfo, With<Molecule>)>,
+) {
+	if keyboard.just_pressed(KeyCode::L) {
+		for (r_info, _) in selected_reactor_query.iter() {
+			for (entity, m_r_info, _) in molecule_query.iter() {
+				if m_r_info.reactor_id == r_info.reactor_id {
+					commands.entity(entity).despawn_recursive();
 				}
 			}
 		}

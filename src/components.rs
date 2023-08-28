@@ -117,6 +117,8 @@ pub const TOTAL_MOLECULE_TYPES: usize = 18;
 pub const LAUNCH_COOLDOWN: f32 = 0.2;
 pub const MOLECULE_CAP: usize = 800;
 
+pub const FRICTION: f32 = 0.05;
+
 pub const POPUP_EXPAND_TIME: f32 = 0.5;
 pub const POPUP_WIDTH: f32 = 1440.0;
 pub const POPUP_HEIGHT: f32 = 810.0;

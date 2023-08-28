@@ -2,6 +2,7 @@ use std::f32::consts::PI;
 
 // Import Bevy game engine essentials
 use bevy::{prelude::*, math::Vec3Swizzles, render::view::RenderLayers};
+use rand::Rng;
 // Import components, resources, and events
 use crate::components::*;
 
@@ -20,6 +21,7 @@ impl Plugin for MoleculesPlugin {
 				highlight_tracked_molecule.after(molecule_movement),
 			))
 			.add_systems(Update, (
+				launch_molecule,
 				decay_velocity,
 				update_molecule_count,
 				update_molecule_lifetime.after(update_molecule_count),
@@ -160,7 +162,7 @@ fn decay_velocity(
 ) {
 	for (mut velocity, _) in molecule_query.iter_mut() {
 		let prev_velocity = velocity.0;
-		velocity.0 -= prev_velocity * 0.1 * time.delta_seconds();
+		velocity.0 -= prev_velocity * FRICTION * time.delta_seconds();
 	}
 }
 
@@ -564,8 +566,8 @@ fn move_launch_tube(
 	}
 }
 
-// Allows the user to drop a molecule spawner at their current location
-// which spawns molecules of the selected type at fixed intervals
+// Causes any dropped molecule spawners to spawn
+// molecules at fixed intervals
 fn molecule_spawner(
 	mut commands: Commands,
 	mut molecule_spawner_query: Query<(&Transform, &mut MoleculeSpawnerInfo, &ReactorInfo)>,
@@ -626,3 +628,112 @@ fn molecule_spawner(
 	}
 }
 
+// Allows the user to spawn molecules and spawners
+fn launch_molecule(
+	mut commands: Commands,
+	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+	mut launch_timer: ResMut<LaunchTimer>,
+	mut current_cost: ResMut<CurrentCost>,
+	current_level: Res<SelectedLevel>,
+	selected_palette: Res<SelectedPalette>,
+	selected_molecule_type: Res<SelectedMoleculeType>,
+	selected_reactor_query: Query<(&ReactorInfo, With<SelectedReactor>)>,
+	launch_tube_query: Query<(&Transform, &LaunchTube)>,
+	asset_server: Res<AssetServer>,
+	keyboard: Res<Input<KeyCode>>,
+	time: Res<Time>,
+) {
+	launch_timer.0.tick(time.delta());
+	// Space for single, hold W for continuous
+	if keyboard.just_pressed(KeyCode::S) || keyboard.just_pressed(KeyCode::Space) || keyboard.pressed(KeyCode::W) {
+		let molecule_index = selected_molecule_type.0;
+		let radius = get_molecule_radius(molecule_index);
+		let mass = get_molecule_mass(molecule_index);
+
+		let texture_handle = asset_server.load(get_molecule_path(molecule_index));
+		let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 4, 2, None, None);
+		let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+		for (info, _) in selected_reactor_query.iter() {
+			for (transform, launch_tube) in launch_tube_query.iter() {
+				if launch_tube.id == info.reactor_id {
+					if keyboard.just_pressed(KeyCode::Space) || keyboard.pressed(KeyCode::W) {
+						if launch_timer.0.finished() {
+							launch_timer.0.reset();
+							current_cost.0 += get_molecule_cost(molecule_index);
+							let (target, distance) = match info.reactor_type {
+								ReactorType::Rectangle{dimensions, ..} => (Vec2::new(transform.translation.x, transform.translation.y - dimensions.height / 2.0), dimensions.height / 2.0), 
+								ReactorType::Circle{origin, radius} => (origin, radius),
+							};
+							let direction = -transform.local_y().xy();
+							let velocity = get_molecule_initial_velocity(molecule_index);
+							commands
+								.spawn((SpriteSheetBundle {
+									transform: Transform::from_translation(((Vec2::new(transform.translation.x, transform.translation.y) - target)
+										.clamp_length_max(distance - get_molecule_radius(molecule_index)) + target).extend(500.0)),
+									texture_atlas: texture_atlas_handle.clone(),
+									sprite: TextureAtlasSprite{
+										color: get_molecule_color(molecule_index, selected_palette.0),
+										index: 0,
+										custom_size: Some(Vec2::new(radius * 2.0, radius * 2.0)),
+										..Default::default()
+									},
+									..Default::default()
+								},
+								*info,
+								Molecule(get_molecule_lifetime(molecule_index)),
+								MoleculeInfo {
+									index: molecule_index,
+									reacted: false,
+									radius: radius,
+									mass: mass,
+								},
+								ParticleTrail{
+									spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+									duration: PARTICLE_DURATION,
+								},
+								Velocity(Vec2::new(velocity, velocity) * direction),
+								AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+								AnimationIndices{ 
+									first: 0, 
+									total: 8,
+								},
+								RenderLayers::layer(1),
+								DespawnOnExitGameState,
+								Name::new("Molecule")
+							));
+						}
+					}
+					// S for Spawner
+					if keyboard.just_pressed(KeyCode::S) && current_level.0 == 31 {
+						let (target, distance) = match info.reactor_type {
+							ReactorType::Rectangle{dimensions, ..} => (Vec2::new(transform.translation.x, transform.translation.y - dimensions.height / 2.0), dimensions.height / 2.0), 
+							ReactorType::Circle{origin, radius} => (origin, radius),
+						};
+						commands
+							.spawn((SpriteBundle {
+								transform: Transform::from_translation(((Vec2::new(transform.translation.x, transform.translation.y) - target)
+									.clamp_length_max(distance - 64.0) + target).extend(400.0))
+									.with_rotation(Quat::from_rotation_arc(Vec3::Y, (transform.translation.xy() - target).normalize().extend(0.0))),
+								sprite: Sprite{
+									color: Color::BLACK,
+									custom_size: Some(Vec2::new(64.0, 128.0)),
+									..Default::default()
+								},
+								..Default::default()
+							},
+							*info,
+							MoleculeSpawnerInfo{
+								spawner_index: selected_molecule_type.0,
+								spawner_timer: Timer::from_seconds(3.0, TimerMode::Repeating),
+							},
+							RenderLayers::layer(1),
+							DespawnOnExitGameState,
+							Name::new("Molecule Spawner"),
+						));
+					};
+				}
+			}
+		}
+	}
+}

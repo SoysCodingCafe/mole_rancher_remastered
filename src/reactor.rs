@@ -335,7 +335,7 @@ fn spawn_reactor_buttons(
 					transform: Transform::from_xyz(loc.x, loc.y, loc.z + 1.0),
 					sprite: TextureAtlasSprite {
 						color: get_molecule_color(i + j*3, selected_palette.0),
-						index: 0,
+						index: 1,
 						custom_size: Some(Vec2::new(dim.width, dim.height)), 
 						..Default::default()
 					},
