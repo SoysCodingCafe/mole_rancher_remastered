@@ -19,6 +19,7 @@ impl Plugin for ReactorPlugin {
 			))
 			.add_systems(Update, (
 				recolor_selected_reactor,
+				update_cost,
 				update_stopwatch,
 				handle_levers,
 				intake_connections,
@@ -130,7 +131,23 @@ fn spawn_reactor_visuals(
 		Tooltip,
 		DespawnOnExitGameState,
 		Name::new("Tooltip"),
-	));
+	)).with_children(|parent| {
+		parent
+			.spawn((Text2dBundle {
+				text_2d_bounds: bevy::text::Text2dBounds{ size: Vec2::new(
+					TOOLTIP_WIDTH - TOOLTIP_MARGINS * 2.0,
+					TOOLTIP_HEIGHT - TOOLTIP_MARGINS * 2.0,
+				)},
+				transform: Transform::from_xyz(-TOOLTIP_WIDTH/2.0 + TOOLTIP_MARGINS, TOOLTIP_HEIGHT/2.0 - TOOLTIP_MARGINS, 0.1),
+				text_anchor: bevy::sprite::Anchor::TopLeft,
+				text: Text::from_section(format!(""), get_tooltip_text_style(&asset_server))
+				.with_alignment(TextAlignment::Left),
+				..Default::default()
+			},
+			TooltipText,
+			Name::new("Tooltip Text")
+		));
+	});
 
 	commands
 		.spawn((Text2dBundle {
@@ -166,12 +183,41 @@ fn spawn_reactor_visuals(
 				)},
 				transform: Transform::from_xyz(-STOPWATCH_BOX_WIDTH / 2.0 + STOPWATCH_BOX_MARGINS, 0.0, 10.0),
 				text_anchor: bevy::sprite::Anchor::CenterLeft,
-				text: Text::from_section(format!("0.00"), get_cutscene_text_style(&asset_server))
+				text: Text::from_section(format!("0.00 s"), get_stopwatch_text_style(&asset_server))
 				.with_alignment(TextAlignment::Right),
 				..Default::default()
 			},
 			StopwatchText(Stopwatch::default()),
 			Name::new("Stopwatch Text")
+		));
+	});
+
+	commands
+		.spawn((SpriteBundle {
+			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x - REACTOR_VIEWPORT_WIDTH/2.0 + GOAL_BOX_WIDTH + COST_BOX_WIDTH/2.0 + REACTION_UI_SPACING, COST_BOX_Y, 730.0),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(COST_BOX_WIDTH, COST_BOX_HEIGHT)),
+				..Default::default()
+			},
+			..Default::default()
+		},
+		DespawnOnExitGameState,
+		Name::new("Cost Box Sprite")
+	)).with_children(|parent| {
+		parent
+			.spawn((Text2dBundle {
+				text_2d_bounds: bevy::text::Text2dBounds{ size: Vec2::new(
+					COST_BOX_WIDTH - COST_BOX_MARGINS * 2.0,
+					COST_BOX_HEIGHT - COST_BOX_MARGINS,
+				)},
+				transform: Transform::from_xyz(-COST_BOX_WIDTH / 2.0 + COST_BOX_MARGINS, 0.0, 10.0),
+				text_anchor: bevy::sprite::Anchor::CenterLeft,
+				text: Text::from_section(format!("0 c"), get_cost_text_style(&asset_server))
+				.with_alignment(TextAlignment::Right),
+				..Default::default()
+			},
+			CostText,
+			Name::new("Cost Text")
 		));
 	});
 
@@ -191,12 +237,12 @@ fn spawn_reactor_visuals(
 			.spawn((Text2dBundle {
 				text_2d_bounds: bevy::text::Text2dBounds{ size: Vec2::new(
 					GOAL_BOX_WIDTH - GOAL_BOX_MARGINS * 2.0,
-					GOAL_BOX_HEIGHT - GOAL_BOX_MARGINS,
+					GOAL_BOX_HEIGHT - GOAL_BOX_MARGINS * 2.0,
 				)},
-				transform: Transform::from_xyz(-GOAL_BOX_WIDTH / 2.0 + GOAL_BOX_MARGINS, 0.0, 10.0),
-				text_anchor: bevy::sprite::Anchor::CenterLeft,
-				text: Text::from_section(get_level_goal_text(selected_level.0), get_cutscene_text_style(&asset_server))
-				.with_alignment(TextAlignment::Left),
+				transform: Transform::from_xyz(0.0, 0.0, 10.0),
+				text_anchor: bevy::sprite::Anchor::Center,
+				text: Text::from_section(get_level_goal_text(selected_level.0), get_goal_text_style(&asset_server))
+				.with_alignment(TextAlignment::Center),
 				..Default::default()
 			},
 			Name::new("Goal Text")
@@ -207,20 +253,33 @@ fn spawn_reactor_visuals(
 // Update the stopwatch to track time spent on a level
 fn update_stopwatch(
 	mut stopwatch_text_query: Query<(&mut Text, &mut StopwatchText)>,
-	asset_server: Res<AssetServer>,
 	time: Res<Time>,
 ) {
 	for (mut text, mut stopwatch) in stopwatch_text_query.iter_mut() {
 		stopwatch.0.tick(time.delta());
-		text.sections = vec![
-			TextSection::new(
-				if stopwatch.0.elapsed_secs() < 60.0 {format!("{:.2} s", stopwatch.0.elapsed_secs())}
-				else if stopwatch.0.elapsed_secs() < 6000.0 {format!("{:.0} m {:.0} s", (stopwatch.0.elapsed_secs() / 60.0).floor(), stopwatch.0.elapsed_secs() % 60.0)}
-				else if stopwatch.0.elapsed_secs() < 600000.0 {format!("{:.0} m", (stopwatch.0.elapsed_secs() / 60.0).floor())}
-				else {format!("You win!")},
-				get_stopwatch_text_style(&asset_server),
-			)
-		];
+		text.sections[0].value =
+			if stopwatch.0.elapsed_secs() < 60.0 {format!("{:.2} s", stopwatch.0.elapsed_secs())}
+			else if stopwatch.0.elapsed_secs() < 6000.0 {format!("{:.0} m {:.0} s", (stopwatch.0.elapsed_secs() / 60.0).floor(), stopwatch.0.elapsed_secs() % 60.0)}
+			else if stopwatch.0.elapsed_secs() < 600000.0 {format!("{:.0} m", (stopwatch.0.elapsed_secs() / 60.0).floor())}
+			else {format!("You win!")};
+	}
+}
+
+// Update the cost to track cost spent on a level
+fn update_cost(
+	current_cost: Res<CurrentCost>,
+	mut cost_text_query: Query<(&mut Text, With<CostText>)>,
+) {
+	for (mut text, _) in cost_text_query.iter_mut() {
+		text.sections[0].value = 
+		if current_cost.0 < 1000 {format!("{} c", current_cost.0)}
+		else if current_cost.0 < 10000 {format!("{:.3} kc", current_cost.0 as f32/1000.0)}
+		else if current_cost.0 < 100000 {format!("{:.2} kc", current_cost.0 as f32/1000.0)}
+		else if current_cost.0 < 1000000 {format!("{:.1} kc", current_cost.0 as f32/1000.0)}
+		else if current_cost.0 < 10000000 {format!("{:.3} Mc", current_cost.0 as f32/1000000.0)}
+		else if current_cost.0 < 100000000 {format!("{:.2} Mc", current_cost.0 as f32/1000000.0)}
+		else if current_cost.0 < 1000000000 {format!("{:.1} Mc", current_cost.0 as f32/1000000.0)}
+		else {format!("Expensive")};
 	}
 }
 
@@ -249,15 +308,14 @@ fn spawn_reactor_buttons(
 			let dim = button.dimensions;
 			let en = button.enabled;
 
-			let texture_handle = asset_server.load(
-				if en {get_molecule_path(i + 3*j)} 
-				else {"moles/lock.png".to_string()});
+			let texture_handle = asset_server.load(get_molecule_path(i + 3*j));
 			let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 4, 2, None, None);
 			let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
 			commands.spawn((SpriteBundle {
 				transform: Transform::from_translation(loc),
 				sprite: Sprite {
+					color: if en{Color::hex("EDD6AD").unwrap()} else {Color::hex("9D865D").unwrap()},
 					custom_size: Some(Vec2::new(dim.width, dim.height)), 
 					..Default::default()
 				},
@@ -273,8 +331,8 @@ fn spawn_reactor_buttons(
 					texture_atlas: texture_atlas_handle.clone(),
 					transform: Transform::from_xyz(loc.x, loc.y, loc.z + 1.0),
 					sprite: TextureAtlasSprite {
-						color: if en {get_molecule_color(i + j*3, selected_palette.0)} else {Color::hex("9D865D").unwrap()},
-						index: if en {0} else {1},
+						color: get_molecule_color(i + j*3, selected_palette.0),
+						index: 0,
 						custom_size: Some(Vec2::new(dim.width, dim.height)), 
 						..Default::default()
 					},
@@ -288,7 +346,33 @@ fn spawn_reactor_buttons(
 				},
 				DespawnOnExitGameState,
 				Name::new(format!("Molecule Select Button Sprite {}", i + j*3))
-			));	
+			));
+			if !en {
+				let texture_handle = asset_server.load("moles/lock.png".to_string());
+				let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 4, 2, None, None);
+				let texture_atlas_handle = texture_atlases.add(texture_atlas);
+				commands
+					.spawn((SpriteSheetBundle {
+						texture_atlas: texture_atlas_handle.clone(),
+						transform: Transform::from_xyz(loc.x, loc.y, loc.z + 2.0),
+						sprite: TextureAtlasSprite {
+							color: Color::WHITE,
+							index: 1,
+							custom_size: Some(Vec2::new(dim.width, dim.height)), 
+							..Default::default()
+						},
+						..Default::default()
+					},
+					MoleculeButton(i+j*3),
+					AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+					AnimationIndices{ 
+						first: 0, 
+						total: 8,
+					},
+					DespawnOnExitGameState,
+					Name::new(format!("Molecule Select Lock Button Sprite {}", i + j*3))
+				));	
+			}
 			
 		}
 	}

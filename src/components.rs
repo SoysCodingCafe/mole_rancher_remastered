@@ -75,16 +75,24 @@ pub const ZOOM_SPEED: f32 = 0.15;
 pub const ZOOM_TRANSLATION_SPEED: f32 = 80.0;
 pub const ZOOM_DEAD_ZONE_RADIUS: f32 = 180.0;
 
+pub const TOOLTIP_MARGINS: f32 = 32.0;
 pub const TOOLTIP_WIDTH: f32 = 320.0*1.5;
 pub const TOOLTIP_HEIGHT: f32 = 265.0*1.5;
 
+pub const REACTION_UI_SPACING: f32 = 12.0;
+
 pub const STOPWATCH_BOX_Y: f32 = 390.0;
-pub const STOPWATCH_BOX_WIDTH: f32 = 300.0;
+pub const STOPWATCH_BOX_WIDTH: f32 = 250.0;
 pub const STOPWATCH_BOX_HEIGHT: f32 = 100.0;
 pub const STOPWATCH_BOX_MARGINS: f32 = 8.0;
 
+pub const COST_BOX_Y: f32 = 390.0;
+pub const COST_BOX_WIDTH: f32 = 270.0;
+pub const COST_BOX_HEIGHT: f32 = 100.0;
+pub const COST_BOX_MARGINS: f32 = 8.0;
+
 pub const GOAL_BOX_Y: f32 = 390.0;
-pub const GOAL_BOX_WIDTH: f32 = 650.0;
+pub const GOAL_BOX_WIDTH: f32 = 480.0;
 pub const GOAL_BOX_HEIGHT: f32 = 100.0;
 pub const GOAL_BOX_MARGINS: f32 = 8.0;
 
@@ -373,6 +381,12 @@ pub struct ActorInfo {
 
 #[derive(Component)]
 pub struct StopwatchText(pub Stopwatch);
+
+#[derive(Component)]
+pub struct CostText;
+
+#[derive(Component)]
+pub struct TooltipText;
 
 #[derive(Component)]
 pub struct CutsceneText;
@@ -918,12 +932,41 @@ pub fn get_level_goal_text(
 	level: usize,
 ) -> String {
 	match level {
-		0 => format!("Produce at least 5 Comba molecules"),
-		1 => format!("Produce at least 5 Comba molecules"),
-		2 => format!("Empty the product reactor"),
-		3 => format!("Produce at least 5 Comba molecules"),
-		4 => format!("Produce at least 5 Densa molecules"),
+		0 => format!("Have at least 5 Comba molecules in the output chamber"),
+		1 => format!("Have at least 5 Comba molecules in the output chamber"),
+		2 => format!("Remove all Funda molecules from the output chamber"),
+		3 => format!("Have at least 5 Comba molecules in the output chamber"),
+		4 => format!("Have at least 5 Densa molecules in the output chamber"),
 		_ => format!("Have fun!"),
+	}
+}
+
+pub fn get_tooltip_text(
+	molecule_index: usize,
+	molecule_unlocked: bool,
+) -> String {
+	if molecule_unlocked {
+		match molecule_index {
+			0 => format!("Funda is the simplest molecule, and the cheapest to produce. Reacts with Supla to produce Comba."),
+			1 => format!("Supla is a common reagent used in many reactions. Can be combined with Funda to produce Comba."),
+			2 => format!("Comba was the first compound discovered by ranchers, and is the first step in a long journey."),
+			3 => format!("Volla reacts strongly with Funda and Supla to produce destructive Morta, however, it can be stabilized by reacting with Comba."),
+			4 => format!("Densa is extremely heavy and is not easily moved by other molecules. It is also very stable, but will still be destroyed by Morta."),
+			5 => format!("Morta is a fast and dangerous molecule which eradicates most other molecules. Thankfully it decays quickly, and can be useful for clearing out a reactor."),
+			6 => format!("Inera is a short lived molecule, and is not known to react with any other molecules. Skilled ranchers use these to push other molecules around."),
+			_ => format!("This molecule is unknown!"),
+		}
+	} else {
+		match molecule_index {
+			0 => format!("Funda, the simplest molecule. Unavailable for this level."),
+			1 => format!("Supla, the most common reagent. Unavailable for this level."),
+			2 => format!("Comba, the original compound. Unavailable for this level."),
+			3 => format!("Volla, the unstable molecule. Unavailable for this level."),
+			4 => format!("Densa, the compact compound. Unavailable for this level."),
+			5 => format!("Morta, the destructive molecule. Unavailable for this level."),
+			6 => format!("Inera, the harmless molecule. Unavailable for this level."),
+			_ => format!("This molecule is unknown!"),
+		}
 	}
 }
 
@@ -1086,6 +1129,17 @@ pub fn get_win_values_text_style(
 	}
 }
 
+pub fn get_tooltip_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 32.0,
+		color: Color::rgba(0.1, 0.1, 0.1, 1.0),
+		..Default::default()
+	}
+}
+
 pub fn get_cutscene_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
@@ -1102,7 +1156,29 @@ pub fn get_stopwatch_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
-		font_size: 64.0,
+		font_size: 48.0,
+		color: Color::rgba(0.1, 0.3, 0.1, 1.0),
+		..Default::default()
+	}
+}
+
+pub fn get_cost_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 48.0,
+		color: Color::rgba(0.1, 0.3, 0.1, 1.0),
+		..Default::default()
+	}
+}
+
+pub fn get_goal_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 28.0,
 		color: Color::rgba(0.1, 0.3, 0.1, 1.0),
 		..Default::default()
 	}

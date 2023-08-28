@@ -36,6 +36,7 @@ fn standard_buttons(
 	audio_volume: Res<AudioVolume>,
 	pkv: Res<PkvStore>,
 	mut button_query: Query<(&mut Sprite, &StandardButton, &ButtonEffect)>,
+	mut tooltip_text_query: Query<(&mut Text, With<TooltipText>)>,
 	mut animation_query: Query<(&mut TextureAtlasSprite, &mut AnimationTimer, &AnimationIndices, &MoleculeButton)>,
 	mut tooltip_query: Query<(&mut Transform, With<Tooltip>)>,
 	mut ev_w_button_call: EventWriter<ButtonCall>,
@@ -62,6 +63,8 @@ fn standard_buttons(
 				}
 				sprite.color = idle_color;
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
+					hovering_any = true;
+					sprite.color = hovered_color;
 					match effect {
 						ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(index)) => {
 							for (mut transform, _) in tooltip_query.iter_mut() {
@@ -84,11 +87,12 @@ fn standard_buttons(
 									}
 								};
 							}
+							for (mut text, _) in tooltip_text_query.iter_mut() {
+								text.sections[0].value = get_tooltip_text(*index, true);
+							}
 						},
 						_ => (),
 					}
-					sprite.color = hovered_color;
-					hovering_any = true;
 					if mouse.just_pressed(MouseButton::Left) {
 						ev_w_button_call.send(ButtonCall(*effect));
 					}
@@ -96,18 +100,34 @@ fn standard_buttons(
 			} else {
 				sprite.color = disabled_color;
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
-					for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
-						match effect {
-							ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(i)) => {
-								if molecule.0 == *i {
-									timer.0.tick(time.delta());
-									if timer.0.just_finished() {
-										spritesheet.index = (spritesheet.index + 1) % indices.total + indices.first;
+					hovering_any = true;
+					match effect {
+						ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(index)) => {
+							for (mut transform, _) in tooltip_query.iter_mut() {
+								let offset = if index < &9 {
+									Vec2::new(TOOLTIP_WIDTH/2.0, -TOOLTIP_HEIGHT/2.0)
+								} else {
+									Vec2::new(TOOLTIP_WIDTH/2.0, TOOLTIP_HEIGHT/2.0)
+								};
+								transform.translation = Vec3::new(
+									p.x + offset.x,
+									p.y + offset.y,
+									900.0,
+								);
+								for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
+									if molecule.0 == *index {
+										timer.0.tick(time.delta());
+										if timer.0.just_finished() {
+											spritesheet.index = (spritesheet.index + 1) % indices.total + indices.first;
+										}
 									}
-								}
-							},
-							_ => (),
-						}
+								};
+							}
+							for (mut text, _) in tooltip_text_query.iter_mut() {
+								text.sections[0].value = get_tooltip_text(*index, false);
+							}
+						},
+						_ => (),
 					};
 				}
 			}
