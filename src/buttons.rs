@@ -331,7 +331,6 @@ fn handle_button_calls(
 							pkv.set("save_data", &save_data)
 									.expect("Unable to save data");
 						}
-						
 					},
 					PopupButton::SfxVolume(volume) => {
 						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
