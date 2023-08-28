@@ -580,6 +580,13 @@ pub fn get_available_molecules(
 			available_molecules[3] = true;
 			available_molecules
 		}
+		5 => {
+			available_molecules[0] = true;
+			available_molecules[1] = true;
+			available_molecules[3] = true;
+			available_molecules[6] = true;
+			available_molecules
+		}
 		_ => {
 			for i in 0..TOTAL_MOLECULE_TYPES {
 				available_molecules[i] = true;
@@ -760,7 +767,7 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 2000.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
 		2 => {
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions { width: 2000.0, height: 1600.0 }}, reactor_id: 0, input_chamber: true, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions {width: 2000.0, height: 1600.0}}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
 		3 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 1000.0), dimensions: Dimensions{width: 4000.0, height: 2000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
@@ -772,12 +779,15 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(4500.0, 0.0), radius: 2000.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
 		}
 		5 => {
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 1500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
+		}
+		_ => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-3000.0, 100.0), dimensions: Dimensions{width: 3000.0, height: 3000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(3000.0, -2500.0), dimensions: Dimensions{width: 3000.0, height: 2000.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(4000.0, 2000.0), radius: 2200.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
 		},
-		6 => {reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
-		7 => {
+		_ => {reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
+		_ => {
 			for j in 0..4 {
 				for i in 0..8 {
 					reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-6844.0 + 1955.5*i as f32, 3180.0 - 2120.0*j as f32), radius: 800.0}, reactor_id: i + 8*j, 
@@ -785,7 +795,7 @@ pub fn get_reactors(
 				}
 			}
 		}
-		8 => {
+		_ => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-2000.0, 0.0), radius: 800.0}, reactor_id: 0, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 800.0}, reactor_id: 1, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(2000.0, 0.0), radius: 800.0}, reactor_id: 2, input_chamber: true, product_chamber: true});
@@ -793,7 +803,7 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 2000.0}}, reactor_id: 4, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 3000.0}}, reactor_id: 5, input_chamber: true, product_chamber: false});
 		}
-		9 => {
+		_ => {
 			{reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
 		}
 		_ => (),
@@ -837,7 +847,8 @@ pub fn get_reactor_connections(
 			},
 			_ => (),
 		}
-		5 => match reactor_id {
+		_ => (),
+		_ => match reactor_id {
 			0 => {
 				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter}));
 				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter}));
@@ -852,7 +863,7 @@ pub fn get_reactor_connections(
 			}
 			_ => (),
 		}
-		6 => match reactor_id {
+		_ => match reactor_id {
 			_ => {
 				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter}));
 				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter}));
@@ -864,13 +875,12 @@ pub fn get_reactor_connections(
 				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false, filter: filter}));
 			}
 		}
-		7 => match reactor_id {
+		_ => match reactor_id {
 			i => {
 				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: (i+1)%32, intake: true, filter: filter}));
 				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: i, intake: false, filter: filter}));
 			}
 		}
-		_ => (),
 	}
 	ReactorConnections(connections)
 }
@@ -926,6 +936,7 @@ pub fn get_level_goal(
 		2 => WinCondition::LessThan(1, 0),
 		3 => WinCondition::GreaterThan(5, 2),
 		4 => WinCondition::GreaterThan(5, 4),
+		5 => WinCondition::GreaterThan(15, 4),
 		_ => WinCondition::GreaterThan(1, 0),
 	}
 }
@@ -939,6 +950,7 @@ pub fn get_level_goal_text(
 		2 => format!("Remove all Funda molecules from the output chamber"),
 		3 => format!("Have at least 5 Comba molecules in the output chamber"),
 		4 => format!("Have at least 5 Densa molecules in the output chamber"),
+		5 => format!("Have at least 15 Densa molecules in the output chamber"),
 		_ => format!("Have fun!"),
 	}
 }
@@ -981,7 +993,9 @@ pub fn get_reactor_color(
 		// Product
 		1 => Color::MAROON,
 		// Selected
-		_ => Color::rgb(0.7, 0.7, 0.7),
+		2 => Color::rgb(0.7, 0.7, 0.7),
+		// Neither
+		_ => Color::GRAY,
 	}
 }
 
@@ -1012,6 +1026,7 @@ pub fn get_initial_zoom(
 		2 => 2.2,
 		3 => 9.0,
 		4 => 9.0,
+		5 => 7.0,
 		_ => 10.0,
 	}
 }
