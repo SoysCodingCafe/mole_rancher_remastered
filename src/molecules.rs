@@ -425,7 +425,7 @@ fn track_molecule(
 				// Scale reactor coords according to reactor camera's current position and scale
 				let (cam_transform, ortho_proj, _) = reactor_camera_query.single();
 				p = p * ortho_proj.scale + cam_transform.translation.xy();
-				if mouse.just_pressed(MouseButton::Left) {
+				if mouse.just_pressed(MouseButton::Middle) {
 					let mut new_target = false;
 					for (entity, info, transform, _) in molecule_query.iter() {
 						let offset = (p - transform.translation.xy()).length();
@@ -442,7 +442,7 @@ fn track_molecule(
 						}
 					}
 				}
-				if mouse.just_pressed(MouseButton::Middle) {
+				if mouse.just_pressed(MouseButton::Left) {
 					let mut new_reactor = false;
 					for (entity, reactor, condition, transform, _) in reactor_query.iter() {
 						match reactor.reactor_type {

@@ -182,9 +182,24 @@ fn spawn_splash_screen(
 	));
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("soyscodingcafe_logo.png"),
-			transform: Transform:: from_xyz(0.0, 0.0, 1.0),
-			..default()
+			texture: asset_server.load("splash/soyscodingcafe_logo.png"),
+			transform: Transform:: from_xyz(0.0, 150.0, 1.0),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(450.0, 450.0)),
+				..Default::default()},
+			..Default::default()
+		},
+		DespawnOnExitGameState,
+		Name::new("Logo")
+	));
+	commands
+		.spawn((SpriteBundle {
+			texture: asset_server.load("splash/bevy_logo_dark.png"),
+			transform: Transform:: from_xyz(-25.0, -250.0, 1.0),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(520.0, 130.0)),
+				..Default::default()},
+			..Default::default()
 		},
 		DespawnOnExitGameState,
 		Name::new("Logo")
