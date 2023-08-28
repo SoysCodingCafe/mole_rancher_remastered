@@ -260,6 +260,7 @@ fn handle_button_calls(
 	mut bright_lab_query: Query<(&mut Visibility, With<BrightLab>)>,
 	mut palette_query: Query<(&mut Sprite, &Palette)>,
 	mut next_pause_state: ResMut<NextState<PauseState>>,
+	mut logbook_tab_query: Query<(&mut Transform, &ButtonEffect)>,
 ) {
 	for ev in ev_r_button_call.iter() {
 		match ev.0 {
@@ -358,6 +359,18 @@ fn handle_button_calls(
 						}
 					},
 					PopupButton::LogbookPage(page) => {
+						for (mut transform, button) in logbook_tab_query.iter_mut() {
+							match button {
+								ButtonEffect::PopupButton(PopupButton::LogbookPage(i)) => {
+									if page == i {
+										transform.translation.z = 810.0;
+									} else {
+										transform.translation.z = 801.0;
+									}
+								},
+								_ => (),
+							}
+						}
 						for (mut text, side) in logbook_text_query.iter_mut() {
 							text.sections[0].value = get_logbook_text(*page, side.0);
 						}

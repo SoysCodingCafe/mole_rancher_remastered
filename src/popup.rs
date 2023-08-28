@@ -245,6 +245,19 @@ fn spawn_popup_buttons(
 						DespawnOnExitPauseState,
 						Name::new("Logbook Backdrop"),
 					));
+					commands
+						.spawn((SpriteBundle{
+							transform: Transform::from_xyz(0.0, 0.0, 805.0),
+							texture: asset_server.load("sprites/popup/logbook_page.png"),
+							sprite: Sprite{
+								custom_size: Some(Vec2::new(POPUP_WIDTH, POPUP_HEIGHT)),
+								..Default::default()
+							},
+							..Default::default()
+						},
+						DespawnOnExitPauseState,
+						Name::new("Logbook Page"),
+					));
 					commands.spawn((Text2dBundle{
 						transform: Transform::from_xyz(-POPUP_WIDTH/2.0 + LOGBOOK_MARGINS, POPUP_HEIGHT/2.0 - LOGBOOK_MARGINS, 810.0),
 						text_2d_bounds: bevy::text::Text2dBounds{ size: Vec2::new(
@@ -279,8 +292,9 @@ fn spawn_popup_buttons(
 					for i in 0..20 {
 						let color = get_molecule_color(i, selected_palette.0);
 						tabs.push((StandardButton {
-							location: if i < 10 {Vec3::new(-600.0 + 60.0 * i as f32 + (i as f32 * 7.0).sin() * 8.0, 390.0 + (i as f32 * 9.0).cos() * 5.0, 810.0)}
-								else {Vec3::new(60.0 + 60.0 * (i - 10)as f32 + (i as f32 * 7.0).cos() * 8.0, 390.0 + (i as f32 * 9.0).sin() * 5.0, 810.0)},
+							location: if i == 0 {Vec3::new(-600.0 + 60.0 * i as f32 + (i as f32 * 7.0).sin() * 8.0, 390.0 + (i as f32 * 9.0).cos() * 5.0, 810.0)}
+								else if i < 10 {Vec3::new(-600.0 + 60.0 * i as f32 + (i as f32 * 7.0).sin() * 8.0, 390.0 + (i as f32 * 9.0).cos() * 5.0, 801.0)}
+								else {Vec3::new(60.0 + 60.0 * (i - 10)as f32 + (i as f32 * 7.0).cos() * 8.0, 390.0 + (i as f32 * 9.0).sin() * 5.0, 801.0)},
 							dimensions: Dimensions {
 								width: 40.0,
 								height: 100.0,
