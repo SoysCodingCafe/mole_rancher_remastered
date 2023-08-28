@@ -40,7 +40,7 @@ fn spawn_particles(
 								transform.translation.z - 2.0),
 							texture: asset_server.load("sprites/ui/circle.png"),
 							sprite: Sprite {
-								color: get_molecule_color(m_info.index, palette.0),
+								color: *get_molecule_color(m_info.index, palette.0).set_a(0.4),
 								//color: Color::rgb(rand::random(), rand::random(), rand::random()),
 								custom_size: Some(Vec2::new(m_info.radius, m_info.radius)),
 								..Default::default()

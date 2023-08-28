@@ -27,6 +27,10 @@ fn spawn_menu(
 	commands.spawn((SpriteBundle {
 			texture: asset_server.load("sprites/background/menu.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 10.0),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)),
+				..Default::default()
+			},
 			..Default::default()
 		},
 		DespawnOnExitGameState,
@@ -79,6 +83,7 @@ fn spawn_menu(
 		commands.spawn((SpriteBundle {
 				transform: Transform::from_translation(button.location),
 				sprite: Sprite {
+					color: Color::hex("EDD6AD").unwrap(),
 					custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
 					..Default::default()
 				},

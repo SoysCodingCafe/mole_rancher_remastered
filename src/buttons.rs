@@ -1,5 +1,5 @@
 // Import Bevy game engine essentials
-use bevy::{prelude::*, app::AppExit};
+use bevy::{prelude::*, app::AppExit, render::view::RenderLayers};
 // Import Pkv Store for saving and loading game data
 use bevy_pkv::PkvStore;
 // Import components, resources, and events
@@ -13,7 +13,8 @@ impl Plugin for ButtonsPlugin {
     fn build(&self, app: &mut App) {
         app
 			.add_systems(Update, (
-				handle_button_calls,
+				replay_level.run_if(in_state(GameState::Reactor)),
+				handle_button_calls.after(replay_level),
 				standard_buttons,
 			))
 			.add_systems(Update, (
@@ -35,10 +36,15 @@ fn standard_buttons(
 	audio_volume: Res<AudioVolume>,
 	pkv: Res<PkvStore>,
 	mut button_query: Query<(&mut Sprite, &StandardButton, &ButtonEffect)>,
+	mut tooltip_text_query: Query<(&mut Text, With<TooltipText>)>,
 	mut animation_query: Query<(&mut TextureAtlasSprite, &mut AnimationTimer, &AnimationIndices, &MoleculeButton)>,
 	mut tooltip_query: Query<(&mut Transform, With<Tooltip>)>,
 	mut ev_w_button_call: EventWriter<ButtonCall>,
 ) {
+	let mut hovering_any = false;
+	let idle_color = Color::hex("EDD6AD").unwrap();
+	let hovered_color = Color::hex("CDB68D").unwrap();
+	let disabled_color = Color::hex("9D865D").unwrap();
 	// Get the current window, and the cursor position scaled 
 	// to the window size
 	let w = window_query.single();
@@ -47,7 +53,6 @@ fn standard_buttons(
 			ortho_size.width * (p.x / w.width() - 0.5), 
 			-ortho_size.height * (p.y / w.height() - 0.5)
 		);
-		let mut hovering_any = false;
 		for (mut sprite, button, effect) in button_query.iter_mut() {
 			if button.enabled {
 				if *current_state == PauseState::Paused {
@@ -56,7 +61,10 @@ fn standard_buttons(
 						_ => continue,
 					}
 				}
+				sprite.color = idle_color;
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
+					hovering_any = true;
+					sprite.color = hovered_color;
 					match effect {
 						ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(index)) => {
 							for (mut transform, _) in tooltip_query.iter_mut() {
@@ -79,70 +87,78 @@ fn standard_buttons(
 									}
 								};
 							}
+							for (mut text, _) in tooltip_text_query.iter_mut() {
+								text.sections[0].value = get_tooltip_text(*index, true);
+							}
 						},
 						_ => (),
 					}
-					sprite.color = Color::hex("CDB68D").unwrap();
-					hovering_any = true;
 					if mouse.just_pressed(MouseButton::Left) {
 						ev_w_button_call.send(ButtonCall(*effect));
 					}
 				}
 			} else {
-				sprite.color = Color::hex("9D865D").unwrap();
+				sprite.color = disabled_color;
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
-					for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
-						match effect {
-							ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(i)) => {
-								if molecule.0 == *i {
-									timer.0.tick(time.delta());
-									if timer.0.just_finished() {
-										spritesheet.index = (spritesheet.index + 1) % indices.total + indices.first;
+					hovering_any = true;
+					match effect {
+						ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(index)) => {
+							for (mut transform, _) in tooltip_query.iter_mut() {
+								let offset = if index < &9 {
+									Vec2::new(TOOLTIP_WIDTH/2.0, -TOOLTIP_HEIGHT/2.0)
+								} else {
+									Vec2::new(TOOLTIP_WIDTH/2.0, TOOLTIP_HEIGHT/2.0)
+								};
+								transform.translation = Vec3::new(
+									p.x + offset.x,
+									p.y + offset.y,
+									900.0,
+								);
+								for (mut spritesheet, mut timer, indices, molecule) in animation_query.iter_mut() {
+									if molecule.0 == *index {
+										timer.0.tick(time.delta());
+										if timer.0.just_finished() {
+											spritesheet.index = (spritesheet.index + 1) % indices.total + indices.first;
+										}
 									}
-								}
-							},
-							_ => (),
-						}
+								};
+							}
+							for (mut text, _) in tooltip_text_query.iter_mut() {
+								text.sections[0].value = get_tooltip_text(*index, false);
+							}
+						},
+						_ => (),
 					};
 				}
 			}
 		}
-		// If not hovering over any buttons then hide all effects
-		if !hovering_any {
-			for (mut sprite, button, _) in button_query.iter_mut() {
-				if button.enabled {sprite.color = Color::hex("EDD6AD").unwrap()} else {sprite.color = Color::hex("9D865D").unwrap()};
-			}
-			for (mut transform, _) in tooltip_query.iter_mut() {
-				transform.translation.z = -1.0;
-			}
+	}
+	// If not hovering over any buttons then hide all effects
+	if !hovering_any {
+		for (mut transform, _) in tooltip_query.iter_mut() {
+			transform.translation.z = -1.0;
 		}
-		for (mut sprite, _, effect) in button_query.iter_mut() {
-			match effect {
-				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
-					if (audio_volume.bgm * 10.0) as usize == *i {
-						if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
-					} else {
-						if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
-					}
-				},
-				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
-					if (audio_volume.sfx * 10.0) as usize == *i {
-						if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
-					} else {
-						if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
-					}
+	}
+	for (mut sprite, _, effect) in button_query.iter_mut() {
+		match effect {
+			ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
+				if (audio_volume.bgm * 10.0) as usize == *i {
+					sprite.color = disabled_color;
 				}
-				ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {
-					if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
-						if save_data.particles_enabled == *enable {
-							if sprite.color != Color::hex("9D865D").unwrap() {sprite.color = Color::hex("9D865D").unwrap()};
-						} else {
-							if sprite.color != Color::hex("CDB68D").unwrap() {sprite.color = Color::hex("EDD6AD").unwrap()};
-						}
-					}
+			},
+			ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
+				if (audio_volume.sfx * 10.0) as usize == *i {
+					sprite.color = disabled_color;
 				}
-				_ => (),
 			}
+			ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {
+				if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+					if save_data.particles_enabled == *enable {
+						sprite.color = disabled_color;
+					}
+				}
+			}
+			_ => (),
 		}
 	}
 }
@@ -231,13 +247,13 @@ fn handle_button_calls(
 	mut audio_volume: ResMut<AudioVolume>,
 	mut selected_level: ResMut<SelectedLevel>,
 	mut selected_palette: ResMut<SelectedPalette>,
-	mut selected_logbook_page: ResMut<SelectedLogbookPage>,
 	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
 	mut ev_r_button_call: EventReader<ButtonCall>,
 	mut ev_w_exit: EventWriter<AppExit>,
 	mut ev_w_fade_transition: EventWriter<FadeTransitionEvent>,
 	mut ev_w_replay_level: EventWriter<ReplayLevelEvent>,
 	mut ev_w_popup: EventWriter<PopupEvent>,
+	mut logbook_text_query: Query<(&mut Text, &LogbookText)>,
 	mut bright_lab_query: Query<(&mut Visibility, With<BrightLab>)>,
 	mut palette_query: Query<(&mut Sprite, &Palette)>,
 	mut next_pause_state: ResMut<NextState<PauseState>>,
@@ -281,7 +297,7 @@ fn handle_button_calls(
 						ev_w_popup.send(PopupEvent{ 
 							origin: Vec2::new(228.0, -10.0), 
 							image: asset_server.load("sprites/popup/level_select.png"),
-							alpha: 0.9,
+							alpha: 1.0,
 							popup_type: PopupType::LevelSelect,
 						});
 					},
@@ -341,7 +357,9 @@ fn handle_button_calls(
 						}
 					},
 					PopupButton::LogbookPage(page) => {
-						selected_logbook_page.0 = *page;
+						for (mut text, side) in logbook_text_query.iter_mut() {
+							text.sections[0].value = get_logbook_text(*page, side.0);
+						}
 					},
 					PopupButton::LevelSelect(level) => {
 						if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
@@ -352,6 +370,10 @@ fn handle_button_calls(
 							}
 						}
 					},
+					PopupButton::ReturnToLab => {
+						next_pause_state.set(PauseState::Unpaused);
+						ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
+					}
 					PopupButton::ReplayLevel => {
 						next_pause_state.set(PauseState::Unpaused);
 						ev_w_replay_level.send(ReplayLevelEvent);
@@ -381,6 +403,18 @@ fn handle_button_calls(
 					ReactorButton::SelectMolecule(molecule_index) => {
 						selected_molecule_type.0 = *molecule_index;
 					},
+					ReactorButton::RestartLevel => {
+						ev_w_replay_level.send(ReplayLevelEvent);
+					},
+					ReactorButton::PauseLevel => {
+						next_pause_state.set(PauseState::Paused);
+						ev_w_popup.send(PopupEvent{
+							origin: Vec2::ZERO, 
+							image: asset_server.load("sprites/popup/note_small.png"), 
+							alpha: 0.9, 
+							popup_type: PopupType::LevelIntro(selected_level.0), 
+						})
+					}
 					ReactorButton::ExitReactor => {
 						ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
 					},
@@ -389,6 +423,159 @@ fn handle_button_calls(
 			ButtonEffect::CutsceneButton(CutsceneButton::SkipCutscene) => {
 				ev_w_fade_transition.send(FadeTransitionEvent(GameState::Lab));
 			},
+		}
+	}
+}
+
+fn replay_level(
+	molecule_query: Query<(Entity, With<Molecule>)>,
+	asset_server: Res<AssetServer>,
+	level: Res<SelectedLevel>,
+	selected_palette: Res<SelectedPalette>,
+	mut current_cost: ResMut<CurrentCost>,
+	mut ev_r_replay_level: EventReader<ReplayLevelEvent>,
+	mut ev_w_popup: EventWriter<PopupEvent>,
+	mut commands: Commands,
+	mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+	mut next_state: ResMut<NextState<PauseState>>,
+	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
+	mut stopwatch_text_query: Query<(&mut Text, &mut StopwatchText)>,
+	mut reactor_query: Query<(Entity, &mut ReactorCondition)>,
+	mut launch_tube_query: Query<(&mut Transform, &mut LaunchTube, Without<ReactorCamera>)>,
+	mut reactor_camera_query: Query<(&mut OrthographicProjection, &mut Transform, With<ReactorCamera>)>,
+) {
+	for _ in ev_r_replay_level.iter() {
+		next_state.set(PauseState::Paused);
+		ev_w_popup.send(PopupEvent{ 
+			origin: Vec2::new(0.0, 0.0), 
+			image: asset_server.load("sprites/popup/note_small.png"),
+			alpha: 1.0,
+			popup_type: PopupType::LevelIntro(level.0),
+		});
+		for i in 0..TOTAL_MOLECULE_TYPES {
+			if get_available_molecules(level.0)[i] {
+				selected_molecule_type.0 = i;
+				break;
+			}
+		}
+		current_cost.0 = 0;
+		let (mut ortho_proj, mut transform, _) = reactor_camera_query.single_mut();
+		ortho_proj.scale = get_initial_zoom(level.0);
+		transform.translation.x = 0.0;
+		transform.translation.y = 0.0;
+		for (mut text, mut stopwatch) in stopwatch_text_query.iter_mut() {
+			text.sections[0].value = "".to_string();
+			stopwatch.0.reset();
+		}
+		for (entity, _) in molecule_query.iter() {
+			commands.entity(entity).despawn_recursive();
+		}
+		for (entity, mut condition) in reactor_query.iter_mut() {
+			condition.temperature = 0.0;
+			condition.pressure = 0.0;
+			commands.entity(entity).remove::<SelectedReactor>();
+		}
+		let reactors = get_reactors(level.0);
+		let z = 910.0;
+		for reactor in reactors.iter() {
+			match reactor.reactor_type {
+				ReactorType::Rectangle{origin, dimensions} => {
+					for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
+						commands
+							.spawn((SpriteSheetBundle {
+								transform: Transform::from_xyz(
+									origin.x + location.x + rand::random::<f32>(),
+									origin.y + location.y + rand::random::<f32>(),
+									500.0,
+								),
+								texture_atlas: texture_atlases.add(TextureAtlas::from_grid(asset_server.load(get_molecule_path(index)), Vec2::new(32.0, 32.0), 4, 2, None, None)).clone(),
+								sprite: TextureAtlasSprite{
+									color: get_molecule_color(index, selected_palette.0),
+									index: 0,
+									custom_size: Some(Vec2::new(get_molecule_radius(index) * 2.0, get_molecule_radius(index) * 2.0)),
+									..Default::default()
+								},
+								..Default::default()
+							},
+							*reactor,
+							Molecule(get_molecule_lifetime(index)),
+							MoleculeInfo {
+								index: index,
+								reacted: false,
+								radius: get_molecule_radius(index),
+								mass: get_molecule_mass(index),
+							},
+							ParticleTrail{
+								spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+								duration: PARTICLE_DURATION,
+							},
+							Velocity(velocity),
+							AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+							AnimationIndices{ 
+								first: 0, 
+								total: 8,
+							},
+							RenderLayers::layer(1),
+							DespawnOnExitGameState,
+							Name::new("Molecule")
+						));
+					}
+					for (mut transform, mut launch_tube, _) in launch_tube_query.iter_mut() {
+						if launch_tube.id == reactor.reactor_id {
+							*transform = Transform::from_translation(Vec3::new(origin.x, origin.y + dimensions.height / 2.0, z));
+							launch_tube.current_rotation = 0.0;
+						}
+					}
+				},
+				ReactorType::Circle{origin, radius} => {
+					for (index, location, velocity) in get_reactor_initialization(level.0, reactor.reactor_id) {
+						commands
+							.spawn((SpriteSheetBundle {
+								transform: Transform::from_xyz(
+									origin.x + location.x + rand::random::<f32>(),
+									origin.y + location.y + rand::random::<f32>(),
+									500.0,
+								),
+								texture_atlas: texture_atlases.add(TextureAtlas::from_grid(asset_server.load(get_molecule_path(index)), Vec2::new(32.0, 32.0), 4, 2, None, None)).clone(),
+								sprite: TextureAtlasSprite{
+									color: get_molecule_color(index, selected_palette.0),
+									index: 0,
+									custom_size: Some(Vec2::new(get_molecule_radius(index) * 2.0, get_molecule_radius(index) * 2.0)),
+									..Default::default()
+								},
+								..Default::default()
+							},
+							*reactor,
+							Molecule(get_molecule_lifetime(index)),
+							MoleculeInfo {
+								index: index,
+								reacted: false,
+								radius: get_molecule_radius(index),
+								mass: get_molecule_mass(index),
+							},
+							ParticleTrail{
+								spawn_timer: Timer::from_seconds(PARTICLE_SPAWN_DELAY, TimerMode::Repeating),
+								duration: PARTICLE_DURATION,
+							},
+							Velocity(velocity),
+							AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+							AnimationIndices{ 
+								first: 0, 
+								total: 8,
+							},
+							RenderLayers::layer(1),
+							DespawnOnExitGameState,
+							Name::new("Molecule")
+						));
+					}
+					for (mut transform, mut launch_tube, _) in launch_tube_query.iter_mut() {
+						if launch_tube.id == reactor.reactor_id {
+							*transform = Transform::from_translation(Vec3::new(origin.x, origin.y + radius, z));
+							launch_tube.current_rotation = 0.0;
+						}
+					}
+				},
+			}
 		}
 	}
 }

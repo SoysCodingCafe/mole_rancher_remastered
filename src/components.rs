@@ -75,12 +75,26 @@ pub const ZOOM_SPEED: f32 = 0.15;
 pub const ZOOM_TRANSLATION_SPEED: f32 = 80.0;
 pub const ZOOM_DEAD_ZONE_RADIUS: f32 = 180.0;
 
+pub const TOOLTIP_MARGINS: f32 = 32.0;
 pub const TOOLTIP_WIDTH: f32 = 320.0*1.5;
 pub const TOOLTIP_HEIGHT: f32 = 265.0*1.5;
 
-pub const STOPWATCH_BOX_WIDTH: f32 = 300.0;
-pub const STOPWATCH_BOX_HEIGHT: f32 = 80.0;
+pub const REACTION_UI_SPACING: f32 = 12.0;
+
+pub const STOPWATCH_BOX_Y: f32 = 390.0;
+pub const STOPWATCH_BOX_WIDTH: f32 = 250.0;
+pub const STOPWATCH_BOX_HEIGHT: f32 = 100.0;
 pub const STOPWATCH_BOX_MARGINS: f32 = 8.0;
+
+pub const COST_BOX_Y: f32 = 390.0;
+pub const COST_BOX_WIDTH: f32 = 270.0;
+pub const COST_BOX_HEIGHT: f32 = 100.0;
+pub const COST_BOX_MARGINS: f32 = 8.0;
+
+pub const GOAL_BOX_Y: f32 = 390.0;
+pub const GOAL_BOX_WIDTH: f32 = 480.0;
+pub const GOAL_BOX_HEIGHT: f32 = 100.0;
+pub const GOAL_BOX_MARGINS: f32 = 8.0;
 
 pub const PARTICLE_SPAWN_DELAY: f32 = 0.01;
 pub const PARTICLE_DURATION: f32 = 0.6;
@@ -103,12 +117,16 @@ pub const TOTAL_MOLECULE_TYPES: usize = 18;
 pub const LAUNCH_COOLDOWN: f32 = 0.2;
 pub const MOLECULE_CAP: usize = 800;
 
-pub const FADE_TRANSITION_DURATION: f32 = 0.2;
 pub const POPUP_EXPAND_TIME: f32 = 0.5;
+pub const POPUP_WIDTH: f32 = 1440.0;
+pub const POPUP_HEIGHT: f32 = 810.0;
+pub const LOGBOOK_MARGINS: f32 = 75.0;
+
+pub const FADE_TRANSITION_DURATION: f32 = 0.2;
 pub const WIN_COUNTDOWN_LENGTH: f32 = 3.0;
 
-pub const NUMBER_OF_LEVELS: usize = 30;
-pub const NUMBER_OF_CUTSCENES: usize = 32;
+pub const NUMBER_OF_LEVELS: usize = 31;
+pub const NUMBER_OF_CUTSCENES: usize = 33;
 
 
 // STATES
@@ -158,6 +176,7 @@ pub enum PopupType {
 	Settings,
 	Logbook,
 	LevelSelect,
+	LevelIntro(usize),
 	WinScreen(f32, f32, usize, usize),
 }
 
@@ -184,6 +203,7 @@ pub enum PopupButton {
 	ParticleTrails(bool),
 	LogbookPage(usize),
 	LevelSelect(usize),
+	ReturnToLab,
 	ReplayLevel,
 	CompleteLevel,
 	ExitPopup,
@@ -192,6 +212,8 @@ pub enum PopupButton {
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub enum ReactorButton {
 	SelectMolecule(usize),
+	RestartLevel,
+	PauseLevel,
 	ExitReactor,
 }
 
@@ -337,6 +359,12 @@ pub struct Highlight;
 pub struct Tooltip;
 
 #[derive(Component)]
+pub struct WinCountdownText;
+
+#[derive(Component)]
+pub struct LogbookText(pub usize);
+
+#[derive(Component)]
 pub struct Palette(pub usize);
 
 #[derive(Component)]
@@ -353,6 +381,12 @@ pub struct ActorInfo {
 
 #[derive(Component)]
 pub struct StopwatchText(pub Stopwatch);
+
+#[derive(Component)]
+pub struct CostText;
+
+#[derive(Component)]
+pub struct TooltipText;
 
 #[derive(Component)]
 pub struct CutsceneText;
@@ -448,9 +482,6 @@ pub struct TextSpeedTimer(pub Timer);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct SelectedPalette(pub usize);
-
-#[derive(Resource, Deref, DerefMut)]
-pub struct SelectedLogbookPage(pub usize);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct SelectedLevel(pub usize);
@@ -561,10 +592,10 @@ pub fn get_molecule_path(
 ) -> String {
 	match index {
 		0 => "moles/smooth_triangle.png".to_string(),
-		1 => "moles/cage_triangle.png".to_string(),
-		2 => "moles/cage_square.png".to_string(),
-		3 => "moles/spikes_dense.png".to_string(),
-		4 => "moles/spikes_sparse.png".to_string(),
+		1 => "moles/spikes_sparse.png".to_string(),
+		2 => "moles/spikes_dense.png".to_string(),
+		3 => "moles/cage_triangle.png".to_string(),
+		4 => "moles/smooth_triangle.png".to_string(),
 		5 => "moles/cage_square.png".to_string(),
 		_ => "moles/smooth_triangle.png".to_string(),
 	}
@@ -578,11 +609,11 @@ pub fn get_molecule_color(
 		0 => match index {
 			0 => Color::RED,
 			1 => Color::BLUE,
-			2 => Color::PURPLE,
-			3 => Color::ORANGE,
+			2 => Color::GREEN,
+			3 => Color::WHITE,
 			4 => Color::DARK_GRAY,
-			5 => Color::WHITE,
-			6 => Color::YELLOW_GREEN,
+			5 => Color::ORANGE,
+			6 => Color::YELLOW,
 			_ => Color::RED,
 		}
 		_ => match index {
@@ -601,13 +632,13 @@ pub fn get_molecule_radius(
 	index: usize,
 ) -> f32 {
 	match index {
-		0 => 32.0,
-		1 => 32.0,
-		2 => 64.0,
-		3 => 64.0,
-		4 => 8.0,
-		5 => 32.0,
-		6 => 64.0,
+		0 => 48.0,
+		1 => 64.0,
+		2 => 80.0,
+		3 => 16.0,
+		4 => 32.0,
+		5 => 56.0,
+		6 => 72.0,
 		_ => 32.0,
 	}
 }
@@ -646,13 +677,13 @@ pub fn get_molecule_initial_velocity(
 	index: usize,
 ) -> f32 {
 	match index {
-		0 => 1200.0,
-		1 => 1200.0,
-		2 => 1600.0,
-		3 => 2000.0,
-		4 => 5.0,
+		0 => 1000.0,
+		1 => 2000.0,
+		2 => 1500.0,
+		3 => 2500.0,
+		4 => 50.0,
 		5 => 3000.0,
-		6 => 2000.0,
+		6 => 3000.0,
 		_ => 600.0,
 	}
 }
@@ -727,15 +758,15 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 2000.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
 		2 => {
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 800.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions { width: 2000.0, height: 1600.0 }}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
 		3 => {
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 2000.0), dimensions: Dimensions{width: 4000.0, height: 2000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, -1500.0), radius: 2000.0}, reactor_id: 1, input_chamber: false, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 1000.0), dimensions: Dimensions{width: 4000.0, height: 2000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, -1000.0), radius: 800.0}, reactor_id: 1, input_chamber: false, product_chamber: true});
 		}
 		4 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(-4500.0, 0.0), radius: 2000.0}, reactor_id: 0, input_chamber: true, product_chamber: false});
-			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions{width: 4000.0, height: 1000.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
+			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, 0.0), dimensions: Dimensions{width: 4000.0, height: 600.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(4500.0, 0.0), radius: 2000.0}, reactor_id: 2, input_chamber: true, product_chamber: false});
 		}
 		5 => {
@@ -859,8 +890,10 @@ pub fn get_reactor_initialization(
 		}
 		1 => match reactor_id {
 			0 => {
-				for _ in 0..50 {
-					molecules.push((4, Vec2::new((rand::random::<f32>() - 0.5) * 3000.0, (rand::random::<f32>() - 0.5) * 3000.0), Vec2::ZERO));
+				for j in 0..9 {
+					for i in 0..9 {
+						molecules.push((4, Vec2::new(-600.0 + 150.0 * i as f32, -600.0 + 150.0 * j as f32), Vec2::ZERO));
+					}
 				}
 				molecules
 			},
@@ -868,9 +901,9 @@ pub fn get_reactor_initialization(
 		}
 		2 => match reactor_id {
 			0 => {
-				for _ in 0..100 {
-					molecules.push((0, Vec2::new((rand::random::<f32>() - 0.5) * 1500.0, (rand::random::<f32>() - 0.5) * 1500.0), 
-					Vec2::new((rand::random::<f32>() - 0.5) * 3000.0, (rand::random::<f32>() - 0.5) * 3000.0)));
+				for i in 0..18 {
+					molecules.push((0, Vec2::new(-800.0 + 100.0 * i as f32, 0.0), 
+					Vec2::new(0.0, if i % 2 == 0 {300.0} else {-300.0})));
 				}
 				molecules
 			},
@@ -892,6 +925,61 @@ pub fn get_level_goal(
 		3 => WinCondition::GreaterThan(5, 2),
 		4 => WinCondition::GreaterThan(5, 4),
 		_ => WinCondition::GreaterThan(1, 0),
+	}
+}
+
+pub fn get_level_goal_text(
+	level: usize,
+) -> String {
+	match level {
+		0 => format!("Have at least 5 Comba molecules in the output chamber"),
+		1 => format!("Have at least 5 Comba molecules in the output chamber"),
+		2 => format!("Remove all Funda molecules from the output chamber"),
+		3 => format!("Have at least 5 Comba molecules in the output chamber"),
+		4 => format!("Have at least 5 Densa molecules in the output chamber"),
+		_ => format!("Have fun!"),
+	}
+}
+
+pub fn get_tooltip_text(
+	molecule_index: usize,
+	molecule_unlocked: bool,
+) -> String {
+	if molecule_unlocked {
+		match molecule_index {
+			0 => format!("Funda is the simplest molecule, and the cheapest to produce. Reacts with Supla to produce Comba."),
+			1 => format!("Supla is a common reagent used in many reactions. Can be combined with Funda to produce Comba."),
+			2 => format!("Comba was the first compound discovered by ranchers, and is the first step in a long journey."),
+			3 => format!("Volla reacts strongly with Funda and Supla to produce destructive Morta, however, it can be stabilized by reacting with Comba."),
+			4 => format!("Densa is extremely heavy and is not easily moved by other molecules. It is also very stable, but will still be destroyed by Morta."),
+			5 => format!("Morta is a fast and dangerous molecule which eradicates most other molecules. Thankfully it decays quickly, and can be useful for clearing out a reactor."),
+			6 => format!("Inera is a short lived molecule, and is not known to react with any other molecules. Skilled ranchers use these to push other molecules around."),
+			_ => format!("This molecule is unknown!"),
+		}
+	} else {
+		match molecule_index {
+			0 => format!("Funda, the simplest molecule. Unavailable for this level."),
+			1 => format!("Supla, the most common reagent. Unavailable for this level."),
+			2 => format!("Comba, the original compound. Unavailable for this level."),
+			3 => format!("Volla, the unstable molecule. Unavailable for this level."),
+			4 => format!("Densa, the compact compound. Unavailable for this level."),
+			5 => format!("Morta, the destructive molecule. Unavailable for this level."),
+			6 => format!("Inera, the harmless molecule. Unavailable for this level."),
+			_ => format!("This molecule is unknown!"),
+		}
+	}
+}
+
+pub fn get_reactor_color(
+	reactor_type: usize,
+) -> Color {
+	match reactor_type {
+		// Input
+		0 => Color::YELLOW_GREEN,
+		// Product
+		1 => Color::MAROON,
+		// Selected
+		_ => Color::rgb(0.7, 0.7, 0.7),
 	}
 }
 
@@ -923,6 +1011,37 @@ pub fn get_initial_zoom(
 		3 => 9.0,
 		4 => 9.0,
 		_ => 10.0,
+	}
+}
+
+pub fn get_intro_text(
+	level: usize,
+) -> String {
+	match level {
+		0 => format!("This is the introduction text for level one. Move left and right with A and D and shoot with space bar. Rotate with Q and E. Select reactor with middle mouse click. Try to hit the molecules to cause reactions!"),
+		1 => format!("You are getting the hang of this! Select which molecule you want from the menu on the left, and remember to launch by pressing the space bar!"),
+		2 => format!("This reactor is filled with unwanted molecules! Use that new molecule in the menu to the left to clear them out! You can hold shift to move faster!"),
+		3 => format!("This reactor has two chambers, an input chamber at the top and an output chamber at the bottom! However, the pipes connecting them only accept specific kinds of molecules. How will you get the reaction products to the output chamber?"),
+		4 => format!("TGIF! Three chambers this time, but it should be no problem for you! Make sure you select each reactor with the middle mouse button so that you can control the launcher in each. Be aware that your movement is restricted due to the connections on the side of the chamber!"),
+		_ => format!("I hope you are enjoying Mole Rancher Remastered! If you made it this far, leave me a comment letting me know what you think! Any feedback is appreciated!"),
+	}
+}
+
+pub fn get_logbook_text(
+	page: usize,
+	side: usize,
+) -> String {
+	match side {
+		0 => match page {
+			0 => format!("Welcome to the logbook! Click the tabs to view other pages!"),
+			1 => format!("The Mole Ranch was first founded after the Molecular Shortages of 67, and is still in operation to this day."),
+			2 => format!("According to many ranchers, the spikier a molecule is the tastier it is."),
+			_ => format!("Maybe I will fill these pages myself once I have uncovered the secrets of the mole!"),
+		}
+		_ => match page {
+			2 => format!("However, they also require the most careful cooking techniques. A strong particle trail is indicative of a potent scent when cooking."),
+			_ => format!("Noone ever writes on the right page of notebooks... The ink would leak through!"),
+		}
 	}
 }
 
@@ -959,6 +1078,27 @@ pub fn get_settings_text_style(
 	}
 }
 
+pub fn get_intro_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 60.0,
+		color: Color::hex("2B2B29").unwrap(),
+		..Default::default()
+	}
+}
+
+pub fn get_win_countdown_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 100.0,
+		color: *Color::hex("2B2B29").unwrap().set_a(0.95),
+	}
+}
+
 pub fn get_win_title_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
@@ -989,6 +1129,17 @@ pub fn get_win_values_text_style(
 	}
 }
 
+pub fn get_tooltip_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 32.0,
+		color: Color::rgba(0.1, 0.1, 0.1, 1.0),
+		..Default::default()
+	}
+}
+
 pub fn get_cutscene_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
@@ -1005,7 +1156,29 @@ pub fn get_stopwatch_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
-		font_size: 64.0,
+		font_size: 48.0,
+		color: Color::rgba(0.1, 0.3, 0.1, 1.0),
+		..Default::default()
+	}
+}
+
+pub fn get_cost_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 48.0,
+		color: Color::rgba(0.1, 0.3, 0.1, 1.0),
+		..Default::default()
+	}
+}
+
+pub fn get_goal_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
+		font_size: 28.0,
 		color: Color::rgba(0.1, 0.3, 0.1, 1.0),
 		..Default::default()
 	}

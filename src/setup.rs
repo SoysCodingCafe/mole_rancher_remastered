@@ -39,7 +39,6 @@ impl Plugin for SetupPlugin {
 			.insert_resource(SelectedPalette(0))
 			.insert_resource(SelectedLevel(0))
 			.insert_resource(SelectedMoleculeType(0))
-			.insert_resource(SelectedLogbookPage(0))
 			.insert_resource(CurrentCost(0))
 			.insert_resource(MoleculeCount{total: 0, cap: MOLECULE_CAP})
 			.insert_resource(BootTimer(Timer::from_seconds(BOOT_DURATION, TimerMode::Once)))
@@ -187,7 +186,7 @@ fn spawn_splash_screen(
 	));
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("soycodingcafe_small.png"),
+			texture: asset_server.load("soyscodingcafe_logo.png"),
 			transform: Transform:: from_xyz(0.0, 0.0, 1.0),
 			..default()
 		},
