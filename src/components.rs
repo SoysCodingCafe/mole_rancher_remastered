@@ -448,13 +448,10 @@ pub struct OrthoSize {
 }
 
 #[derive(Resource)]
-pub struct AudioVolume {
-	pub bgm: f64,
-	pub sfx: f64,
-}
+pub struct BgmHandle(pub Handle<AudioInstance>);
 
 #[derive(Resource)]
-pub struct AudioHandles(pub Vec<(Handle<AudioInstance>, f64)>);
+pub struct SfxHandles(pub Vec<(Handle<AudioInstance>, f64)>);
 
 #[derive(Resource)]
 pub struct MoleculeCount {
