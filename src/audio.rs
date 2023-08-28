@@ -4,6 +4,7 @@ use std::time::Duration;
 use bevy::{prelude::*, math::Vec3Swizzles};
 // Import Kira audio for Bevy to handle loading sound files
 use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween};
+use bevy_pkv::PkvStore;
 // Import components, resources, and events
 use crate::components::*;
 
@@ -47,28 +48,31 @@ fn initialize_audio_instances(
 
 fn play_collision_sfx(
 	reactor_camera_query: Query<(&OrthographicProjection, &Transform, With<ReactorCamera>)>,
+	pkv: ResMut<PkvStore>,
 	mut audio_handles: ResMut<AudioHandles>,
 	mut audio_instances: ResMut<Assets<AudioInstance>>,
 	mut ev_r_sound_effect: EventReader<SoundEffectEvent>,
 	time: Res<Time>,
 ) {
-	for handle in audio_handles.0.iter_mut() {
-		if let Some(instance) = audio_instances.get_mut(&handle.0) {
-			handle.1 -= 20.0 * time.delta_seconds() as f64;
-			instance.set_volume((handle.1).clamp(0.0, 1.0), AudioTween::linear(Duration::from_millis(100)));
+	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+		for handle in audio_handles.0.iter_mut() {
+			if let Some(instance) = audio_instances.get_mut(&handle.0) {
+				handle.1 -= 20.0 * save_data.sfx_volume * time.delta_seconds() as f64;
+				instance.set_volume((handle.1).clamp(0.0, save_data.sfx_volume), AudioTween::linear(Duration::from_millis(100)));
+			}
 		}
-	}
 
-	let (ortho_proj, transform, _) = reactor_camera_query.single();
-	for ev in ev_r_sound_effect.iter() {
-		let offset = (ev.location - transform.translation.xy()).abs();
-		if offset.y < 500.0 * ortho_proj.scale && offset.x < 500.0 * ortho_proj.scale * ASPECT_RATIO {
-			if let Some(instance) = audio_instances.get_mut(&audio_handles.0[ev.note % 8].0) {
-				audio_handles.0[ev.note % 8].1 = 1.0;
-				instance.set_volume(((1.0 - offset.length()/(500.0 * ortho_proj.scale)).powf(2.0)).clamp(0.0, 1.0) as f64,
-				 AudioTween::linear(Duration::from_millis(100)));
-				instance.set_panning(((ev.location.x - transform.translation.x)/(500.0*ortho_proj.scale)*0.5 + 0.5).clamp(0.0, 1.0) as f64,
-				 AudioTween::linear(Duration::from_millis(100)));
+		let (ortho_proj, transform, _) = reactor_camera_query.single();
+		for ev in ev_r_sound_effect.iter() {
+			let offset = (ev.location - transform.translation.xy()).abs();
+			if offset.y < 500.0 * ortho_proj.scale && offset.x < 500.0 * ortho_proj.scale * ASPECT_RATIO {
+				if let Some(instance) = audio_instances.get_mut(&audio_handles.0[ev.note % 8].0) {
+					audio_handles.0[ev.note % 8].1 = save_data.sfx_volume;
+					instance.set_volume(((save_data.sfx_volume as f32 - offset.length()/(500.0 * ortho_proj.scale)).powf(2.0)).clamp(0.0, save_data.sfx_volume as f32) as f64,
+					AudioTween::linear(Duration::from_millis(100)));
+					instance.set_panning(((ev.location.x - transform.translation.x)/(500.0*ortho_proj.scale)*0.5 + 0.5).clamp(0.0, 1.0) as f64,
+					AudioTween::linear(Duration::from_millis(100)));
+				}
 			}
 		}
 	}
