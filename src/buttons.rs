@@ -1,5 +1,6 @@
 // Import Bevy game engine essentials
 use bevy::{prelude::*, app::AppExit, render::view::RenderLayers};
+use bevy_kira_audio::{Audio, AudioControl};
 // Import Pkv Store for saving and loading game data
 use bevy_pkv::PkvStore;
 // Import components, resources, and events
@@ -34,6 +35,8 @@ fn standard_buttons(
 	mouse: Res<Input<MouseButton>>,
 	current_state: Res<State<PauseState>>,
 	pkv: Res<PkvStore>,
+	audio: Res<Audio>,
+	asset_server: Res<AssetServer>,
 	mut button_query: Query<(&mut Sprite, &StandardButton, &ButtonEffect)>,
 	mut tooltip_text_query: Query<(&mut Text, With<TooltipText>)>,
 	mut animation_query: Query<(&mut TextureAtlasSprite, &mut AnimationTimer, &AnimationIndices, &MoleculeButton)>,
@@ -93,6 +96,11 @@ fn standard_buttons(
 						_ => (),
 					}
 					if mouse.just_pressed(MouseButton::Left) {
+						if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+							audio
+								.play(asset_server.load("audio/haptics/click.wav"))
+								.with_volume(save_data.sfx_volume);
+						}
 						ev_w_button_call.send(ButtonCall(*effect));
 					}
 				}
