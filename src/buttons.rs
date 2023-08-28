@@ -33,7 +33,6 @@ fn standard_buttons(
 	ortho_size: Res<OrthoSize>,
 	mouse: Res<Input<MouseButton>>,
 	current_state: Res<State<PauseState>>,
-	audio_volume: Res<AudioVolume>,
 	pkv: Res<PkvStore>,
 	mut button_query: Query<(&mut Sprite, &StandardButton, &ButtonEffect)>,
 	mut tooltip_text_query: Query<(&mut Text, With<TooltipText>)>,
@@ -140,25 +139,25 @@ fn standard_buttons(
 		}
 	}
 	for (mut sprite, _, effect) in button_query.iter_mut() {
-		match effect {
-			ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
-				if (audio_volume.bgm * 10.0) as usize == *i {
-					sprite.color = disabled_color;
+		if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+			match effect {
+				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
+					if (save_data.bgm_volume * 10.0) as usize == *i {
+						sprite.color = disabled_color;
+					}
+				},
+				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
+					if (save_data.sfx_volume * 10.0) as usize == *i {
+						sprite.color = disabled_color;
+					}
 				}
-			},
-			ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
-				if (audio_volume.sfx * 10.0) as usize == *i {
-					sprite.color = disabled_color;
-				}
-			}
-			ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {
-				if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+				ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {	
 					if save_data.particles_enabled == *enable {
 						sprite.color = disabled_color;
 					}
 				}
+				_ => (),
 			}
-			_ => (),
 		}
 	}
 }
@@ -244,7 +243,6 @@ fn handle_button_calls(
 	asset_server: Res<AssetServer>,
 	mut pkv: ResMut<PkvStore>,
 	mut cutscene_tracker: ResMut<CutsceneTracker>,
-	mut audio_volume: ResMut<AudioVolume>,
 	mut selected_level: ResMut<SelectedLevel>,
 	mut selected_palette: ResMut<SelectedPalette>,
 	mut selected_molecule_type: ResMut<SelectedMoleculeType>,
@@ -322,18 +320,16 @@ fn handle_button_calls(
 			ButtonEffect::PopupButton(ref effect) => {
 				match effect {
 					PopupButton::BgmVolume(volume) => {
-						audio_volume.bgm = *volume as f64/10.0;
 						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
-							save_data.bgm_volume = audio_volume.bgm;
+							save_data.bgm_volume = *volume as f64/10.0;
 							pkv.set("save_data", &save_data)
 									.expect("Unable to save data");
 						}
 						
 					},
 					PopupButton::SfxVolume(volume) => {
-						audio_volume.sfx = *volume as f64/10.0;
 						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
-							save_data.sfx_volume = audio_volume.sfx;
+							save_data.sfx_volume = *volume as f64/10.0;
 							pkv.set("save_data", &save_data)
 									.expect("Unable to save data");
 						}

@@ -18,6 +18,7 @@ impl Plugin for AudioPlugin {
 			initialize_audio_instances,
 		))
 		.add_systems(Update, (
+			update_bgm_volume.run_if(in_state(GameState::Menu)),
 			play_collision_sfx.run_if(in_state(GameState::Reactor)),
 		))
 		.add_systems(OnExit(GameState::Reactor), (
@@ -29,6 +30,7 @@ impl Plugin for AudioPlugin {
 
 fn initialize_audio_instances(
 	mut commands: Commands,
+	pkv: Res<PkvStore>,
 	audio: Res<Audio>,
 	asset_server: Res<AssetServer>,
 ) {
@@ -43,13 +45,35 @@ fn initialize_audio_instances(
 				0.0
 		));
 	}
-	commands.insert_resource(AudioHandles(audio_handles));
+	commands.insert_resource(SfxHandles(audio_handles));
+
+	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+		let bgm_handle = audio
+			.play(asset_server.load("audio/bgm.wav"))
+			.looped()
+			.with_volume(save_data.bgm_volume)
+			.handle();
+
+		commands.insert_resource(BgmHandle(bgm_handle));
+	}
+}
+
+fn update_bgm_volume(
+	pkv: Res<PkvStore>,
+	bgm_handle: Res<BgmHandle>,
+	mut audio_instances: ResMut<Assets<AudioInstance>>,
+) {
+	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+		if let Some(instance) = audio_instances.get_mut(&bgm_handle.0) {
+			instance.set_volume(save_data.bgm_volume, AudioTween::linear(Duration::from_millis(100)));
+		}
+	}
 }
 
 fn play_collision_sfx(
 	reactor_camera_query: Query<(&OrthographicProjection, &Transform, With<ReactorCamera>)>,
 	pkv: ResMut<PkvStore>,
-	mut audio_handles: ResMut<AudioHandles>,
+	mut audio_handles: ResMut<SfxHandles>,
 	mut audio_instances: ResMut<Assets<AudioInstance>>,
 	mut ev_r_sound_effect: EventReader<SoundEffectEvent>,
 	time: Res<Time>,
@@ -79,7 +103,7 @@ fn play_collision_sfx(
 }
 
 fn silence_collision_sfx(
-	audio_handles: Res<AudioHandles>,
+	audio_handles: Res<SfxHandles>,
 	mut audio_instances: ResMut<Assets<AudioInstance>>,
 ) {
 	for handle in &audio_handles.0 {

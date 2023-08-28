@@ -26,7 +26,6 @@ impl Plugin for SetupPlugin {
 			.add_event::<SoundEffectEvent>()
 			// Resources
 			.insert_resource(OrthoSize{width: ORTHO_WIDTH, height: ORTHO_HEIGHT})
-			.insert_resource(AudioVolume{bgm: 0.8, sfx: 0.8})
 			.insert_resource(PkvStore::new(".SoysCodingCafe", "Mole Rancher Remastered"))
 			.insert_resource(CutsceneTracker{
 				current_scene: 0,
@@ -83,12 +82,9 @@ impl Plugin for SetupPlugin {
 fn load_game(
 	mut pkv: ResMut<PkvStore>,
 	mut selected_palette: ResMut<SelectedPalette>,
-	mut audio_volume: ResMut<AudioVolume>,
 ) {
 	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
 		selected_palette.0 = save_data.selected_palette;
-		audio_volume.bgm = save_data.bgm_volume;
-		audio_volume.sfx = save_data.sfx_volume;
 	} else {
 		let mut levels_unlocked = Vec::new();
 		let mut best_times = Vec::new();
