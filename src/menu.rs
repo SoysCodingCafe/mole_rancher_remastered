@@ -79,6 +79,9 @@ fn spawn_menu(
 				height: 60.0,
 			},
 			enabled: true,
+			idle_color: Color::hex("EDD6AD").unwrap(),
+			hovered_color: Color::hex("CDB68D").unwrap(),
+			disabled_color: Color::hex("9D865D").unwrap(),
 		};
 		commands.spawn((SpriteBundle {
 				transform: Transform::from_translation(button.location),

@@ -44,9 +44,6 @@ fn standard_buttons(
 	mut ev_w_button_call: EventWriter<ButtonCall>,
 ) {
 	let mut hovering_any = false;
-	let idle_color = Color::hex("EDD6AD").unwrap();
-	let hovered_color = Color::hex("CDB68D").unwrap();
-	let disabled_color = Color::hex("9D865D").unwrap();
 	// Get the current window, and the cursor position scaled 
 	// to the window size
 	let w = window_query.single();
@@ -63,10 +60,10 @@ fn standard_buttons(
 						_ => continue,
 					}
 				}
-				sprite.color = idle_color;
+				sprite.color = button.idle_color;
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
 					hovering_any = true;
-					sprite.color = hovered_color;
+					sprite.color = button.hovered_color;
 					match effect {
 						ButtonEffect::ReactorButton(ReactorButton::SelectMolecule(index)) => {
 							for (mut transform, _) in tooltip_query.iter_mut() {
@@ -105,7 +102,7 @@ fn standard_buttons(
 					}
 				}
 			} else {
-				sprite.color = disabled_color;
+				sprite.color = button.disabled_color;
 				if (button.location.x - p.x).abs() < button.dimensions.width / 2.0 && (button.location.y - p.y).abs() < button.dimensions.height / 2.0 {
 					hovering_any = true;
 					match effect {
@@ -146,22 +143,22 @@ fn standard_buttons(
 			transform.translation.z = -1.0;
 		}
 	}
-	for (mut sprite, _, effect) in button_query.iter_mut() {
+	for (mut sprite, button, effect) in button_query.iter_mut() {
 		if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
 			match effect {
 				ButtonEffect::PopupButton(PopupButton::BgmVolume(i)) => {
 					if (save_data.bgm_volume * 10.0) as usize == *i {
-						sprite.color = disabled_color;
+						sprite.color = button.disabled_color;
 					}
 				},
 				ButtonEffect::PopupButton(PopupButton::SfxVolume(i)) => {
 					if (save_data.sfx_volume * 10.0) as usize == *i {
-						sprite.color = disabled_color;
+						sprite.color = button.disabled_color;
 					}
 				}
 				ButtonEffect::PopupButton(PopupButton::ParticleTrails(enable)) => {	
 					if save_data.particles_enabled == *enable {
-						sprite.color = disabled_color;
+						sprite.color = button.disabled_color;
 					}
 				}
 				_ => (),

@@ -81,6 +81,7 @@ fn spawn_popup_buttons(
 	selected_palette: Res<SelectedPalette>,
 	selected_level: Res<SelectedLevel>,
 	pkv: Res<PkvStore>,
+	ortho_size: Res<OrthoSize>,
 	mut commands: Commands,
 	mut ev_r_popup_complete: EventReader<PopupCompleteEvent>,
 ) {
@@ -115,6 +116,9 @@ fn spawn_popup_buttons(
 							height: 100.0,
 						},
 						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::ExitPopup)));
 					for i in 0..=10 {
 						buttons.push((StandardButton {
@@ -124,6 +128,9 @@ fn spawn_popup_buttons(
 								height: 100.0,
 							},
 							enabled: true,
+							idle_color: Color::hex("EDD6AD").unwrap(),
+							hovered_color: Color::hex("CDB68D").unwrap(),
+							disabled_color: Color::hex("9D865D").unwrap(),
 						}, ButtonEffect::PopupButton(PopupButton::BgmVolume(i))));
 						buttons.push((StandardButton {
 							location: Vec3::new(25.0 + 60.0 * i as f32, 65.0, 810.0),
@@ -132,6 +139,9 @@ fn spawn_popup_buttons(
 								height: 100.0,
 							},
 							enabled: true,
+							idle_color: Color::hex("EDD6AD").unwrap(),
+							hovered_color: Color::hex("CDB68D").unwrap(),
+							disabled_color: Color::hex("9D865D").unwrap(),
 						}, ButtonEffect::PopupButton(PopupButton::SfxVolume(i))));
 					}
 					buttons.push((StandardButton {
@@ -141,6 +151,9 @@ fn spawn_popup_buttons(
 							height: 100.0,
 						},
 						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::PaletteToggle)));
 					commands.spawn((Text2dBundle{
 						transform: Transform::from_xyz(100.0, -180.0, 820.0),
@@ -159,6 +172,9 @@ fn spawn_popup_buttons(
 							height: 100.0,
 						},
 						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::ParticleTrails(true))));
 					commands.spawn((Text2dBundle{
 						transform: Transform::from_xyz(350.0, -180.0, 820.0),
@@ -177,6 +193,9 @@ fn spawn_popup_buttons(
 							height: 100.0,
 						},
 						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::ParticleTrails(false))));
 					for (button, effect) in buttons {
 						commands
@@ -213,6 +232,19 @@ fn spawn_popup_buttons(
 					}
 				},
 				PopupType::Logbook => {
+					commands
+						.spawn((SpriteBundle{
+							transform: Transform::from_xyz(0.0, 0.0, 800.0),
+							sprite: Sprite{
+								color: Color::rgba(0.5, 0.5, 0.5, 0.4),
+								custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)),
+								..Default::default()
+							},
+							..Default::default()
+						},
+						DespawnOnExitPauseState,
+						Name::new("Logbook Backdrop"),
+					));
 					commands.spawn((Text2dBundle{
 						transform: Transform::from_xyz(-POPUP_WIDTH/2.0 + LOGBOOK_MARGINS, POPUP_HEIGHT/2.0 - LOGBOOK_MARGINS, 810.0),
 						text_2d_bounds: bevy::text::Text2dBounds{ size: Vec2::new(
@@ -244,33 +276,46 @@ fn spawn_popup_buttons(
 						Name::new("Logbook Text")
 					));
 					let mut tabs = Vec::new();
-					for i in 0..15 {
+					for i in 0..20 {
+						let color = get_molecule_color(i, selected_palette.0);
 						tabs.push((StandardButton {
-							location: Vec3::new(-700.0 + 100.0 * i as f32, 400.0, 810.0),
+							location: if i < 10 {Vec3::new(-600.0 + 60.0 * i as f32 + (i as f32 * 7.0).sin() * 8.0, 390.0 + (i as f32 * 9.0).cos() * 5.0, 810.0)}
+								else {Vec3::new(60.0 + 60.0 * (i - 10)as f32 + (i as f32 * 7.0).cos() * 8.0, 390.0 + (i as f32 * 9.0).sin() * 5.0, 810.0)},
 							dimensions: Dimensions {
 								width: 40.0,
-								height: 60.0,
+								height: 100.0,
 							},
 							enabled: true,
-						}, ButtonEffect::PopupButton(PopupButton::LogbookPage(i))));
+							idle_color: color,
+							hovered_color: Color::rgb((color.r() - 0.3).clamp(0.0, 1.0), (color.g() - 0.3).clamp(0.0, 1.0), (color.b() - 0.3).clamp(0.0, 1.0)),
+							disabled_color: Color::hex("9D865D").unwrap(),
+						}, ButtonEffect::PopupButton(PopupButton::LogbookPage(i)),
+						0.0_f32,
+						if i < 10 {true} else {false}));
 					};
-					for i in 0..7 {
+					/*for i in 0..7 {
 						tabs.push((StandardButton {
 							location: Vec3::new(700.0, 300.0 - 100.0 * i as f32, 810.0),
 							dimensions: Dimensions {
-								width: 60.0,
+								width: 100.0,
 								height: 40.0,
 							},
 							enabled: true,
-						}, ButtonEffect::PopupButton(PopupButton::LogbookPage(i+15))));
-					}
-					for (button, effect) in tabs {
+						}, ButtonEffect::PopupButton(PopupButton::LogbookPage(i+15)),
+						get_molecule_color(i, selected_palette.0),
+						90.0_f32));
+					}*/
+					for (button, effect, rotation, left) in tabs {
 						commands
 							.spawn((SpriteBundle {
-								transform: Transform::from_translation(button.location),
+								transform: Transform::from_translation(button.location)
+									.with_rotation(Quat::from_rotation_z(rotation.to_radians()))
+									.with_scale(if left {Vec3::splat(1.0)} else {Vec3::new(-1.0, 1.0, 1.0)}),
+								texture: asset_server.load("sprites/ui/bookmark.png"),
 								sprite: Sprite {
-									color: Color::hex("EDD6AD").unwrap(),
-									custom_size: Some(Vec2::new(button.dimensions.width, button.dimensions.height)), 
+									color: button.hovered_color,
+									custom_size: if rotation == 0.0 {Some(Vec2::new(button.dimensions.width, button.dimensions.height))}
+										else {Some(Vec2::new(button.dimensions.height, button.dimensions.width))}, 
 									..Default::default()
 								},
 								..Default::default()
@@ -288,6 +333,9 @@ fn spawn_popup_buttons(
 							height: 50.0,
 						},
 						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
 					};
 					commands
 						.spawn((SpriteBundle {
@@ -318,6 +366,9 @@ fn spawn_popup_buttons(
 										height: 85.0,
 									},
 									enabled: save_data.levels_unlocked[i+7*j],
+									idle_color: Color::hex("EDD6AD").unwrap(),
+									hovered_color: Color::hex("CDB68D").unwrap(),
+									disabled_color: Color::hex("9D865D").unwrap(),
 								};
 								commands.spawn((SpriteBundle {
 										transform: Transform::from_translation(button.location),
@@ -353,6 +404,9 @@ fn spawn_popup_buttons(
 							height: 50.0,
 						},
 						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
 					};
 					commands
 						.spawn((SpriteBundle {
@@ -402,6 +456,9 @@ fn spawn_popup_buttons(
 							height: 100.0,
 						},
 						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
 					};
 					commands
 						.spawn((SpriteBundle {
@@ -425,6 +482,9 @@ fn spawn_popup_buttons(
 							height: 100.0,
 						},
 						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
 					};
 					commands
 						.spawn((SpriteBundle {
@@ -513,6 +573,9 @@ fn spawn_popup_buttons(
 										height: 150.0,
 									},
 									enabled: enabled[i],
+									idle_color: Color::hex("EDD6AD").unwrap(),
+									hovered_color: Color::hex("CDB68D").unwrap(),
+									disabled_color: Color::hex("9D865D").unwrap(),
 								}, effects[i]
 							));
 						}

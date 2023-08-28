@@ -120,7 +120,7 @@ pub const MOLECULE_CAP: usize = 800;
 pub const POPUP_EXPAND_TIME: f32 = 0.5;
 pub const POPUP_WIDTH: f32 = 1440.0;
 pub const POPUP_HEIGHT: f32 = 810.0;
-pub const LOGBOOK_MARGINS: f32 = 75.0;
+pub const LOGBOOK_MARGINS: f32 = 80.0;
 
 pub const FADE_TRANSITION_DURATION: f32 = 0.2;
 pub const WIN_COUNTDOWN_LENGTH: f32 = 3.0;
@@ -272,6 +272,9 @@ pub struct StandardButton {
 	pub location: Vec3,
 	pub dimensions: Dimensions,
 	pub enabled: bool,
+	pub idle_color: Color,
+	pub hovered_color: Color,
+	pub disabled_color: Color,
 }
 
 #[derive(Component)]
