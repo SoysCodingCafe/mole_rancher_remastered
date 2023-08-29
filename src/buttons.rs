@@ -427,7 +427,7 @@ fn handle_button_calls(
 						ev_w_popup.send(PopupEvent{
 							origin: Vec2::ZERO, 
 							image: asset_server.load("sprites/popup/popup.png"), 
-							alpha: 0.9, 
+							alpha: 0.95,
 							popup_type: PopupType::LevelIntro(selected_level.0), 
 						})
 					}
@@ -465,7 +465,7 @@ fn replay_level(
 		ev_w_popup.send(PopupEvent{ 
 			origin: Vec2::new(0.0, 0.0), 
 			image: asset_server.load("sprites/popup/popup.png"),
-			alpha: 1.0,
+			alpha: 0.95,
 			popup_type: PopupType::LevelIntro(level.0),
 		});
 		for i in 0..TOTAL_MOLECULE_TYPES {

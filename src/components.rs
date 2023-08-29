@@ -53,7 +53,7 @@ pub const TEXT_BOX_MARGINS: f32 = 25.0;
 pub const PORTRAIT_WIDTH: f32 = 300.0;
 pub const PORTRAIT_HEIGHT: f32 = 300.0;
 
-pub const ACTOR_WIDTH: f32 = 600.0;
+pub const ACTOR_WIDTH: f32 = 450.0;
 pub const ACTOR_HEIGHT: f32 = 900.0;
 
 pub const TEXT_SPEED: f32 = 0.01;
@@ -103,8 +103,8 @@ pub const PARTICLE_DURATION: f32 = 0.6;
 pub const LEVER_WIDTH: f32 = 160.0;
 pub const LEVER_HEIGHT: f32 = 40.0;
 
-pub const CONNECTION_WIDTH: f32 = 256.0;
-pub const CONNECTION_HEIGHT: f32 = 128.0;
+pub const CONNECTION_WIDTH: f32 = 128.0;
+pub const CONNECTION_HEIGHT: f32 = 256.0;
 
 pub const LAUNCH_TUBE_WIDTH: f32 = 128.0;
 pub const LAUNCH_TUBE_HEIGHT: f32 = 256.0;
@@ -588,7 +588,7 @@ pub fn get_available_molecules(
 			available_molecules
 		}
 		_ => {
-			for i in 0..TOTAL_MOLECULE_TYPES {
+			for i in 0..7 {
 				available_molecules[i] = true;
 			};
 			available_molecules
@@ -606,6 +606,18 @@ pub fn get_molecule_path(
 		3 => "moles/cage_triangle.png".to_string(),
 		4 => "moles/smooth_triangle.png".to_string(),
 		5 => "moles/cage_square.png".to_string(),
+		6 => "moles/smooth_triangle.png".to_string(),
+		7 => "moles/spikes_sparse.png".to_string(),
+		8 => "moles/spikes_dense.png".to_string(),
+		9 => "moles/cage_triangle.png".to_string(),
+		10 => "moles/smooth_triangle.png".to_string(),
+		11 => "moles/cage_square.png".to_string(),
+		12 => "moles/spikes_dense.png".to_string(),
+		13 => "moles/cage_triangle.png".to_string(),
+		14 => "moles/smooth_triangle.png".to_string(),
+		15 => "moles/spikes_dense.png".to_string(),
+		16 => "moles/smooth_triangle.png".to_string(),
+		17 => "moles/spikes_dense.png".to_string(),
 		_ => "moles/smooth_triangle.png".to_string(),
 	}
 }
@@ -623,16 +635,63 @@ pub fn get_molecule_color(
 			4 => Color::DARK_GRAY,
 			5 => Color::ORANGE,
 			6 => Color::YELLOW,
+			7 => Color::RED,
+			8 => Color::BLUE,
+			9 => Color::GREEN,
+			10 => Color::WHITE,
+			11 => Color::DARK_GRAY,
+			12 => Color::ORANGE,
+			13 => Color::YELLOW,
+			14 => Color::RED,
+			15 => Color::BLUE,
+			16 => Color::GREEN,
+			17 => Color::WHITE,
 			_ => Color::RED,
 		}
-		_ => match index {
+		1 => match index {
 			0 => Color::RED,
 			1 => Color::ORANGE,
 			2 => Color::YELLOW,
 			3 => Color::GREEN,
 			4 => Color::BLUE,
 			5 => Color::INDIGO,
+			6 => Color::VIOLET,
+			7 => Color::RED,
+			8 => Color::ORANGE,
+			9 => Color::YELLOW,
+			10 => Color::GREEN,
+			11 => Color::BLUE,
+			12 => Color::INDIGO,
+			13 => Color::VIOLET,
+			14 => Color::RED,
+			15 => Color::ORANGE,
+			16 => Color::YELLOW,
+			17 => Color::GREEN,
+			_ => Color::BLUE,
+		}
+		2 => match index {
 			_ => Color::VIOLET,
+		}
+		_ => match index {
+			0 => Color::rgb(0.8, 0.8, 0.8),
+			1 => Color::rgb(0.3, 0.3, 0.3),
+			2 => Color::rgb(1.0, 1.0, 1.0),
+			3 => Color::rgb(0.5, 0.5, 0.5),
+			4 => Color::rgb(0.0, 0.0, 0.0),
+			5 => Color::rgb(0.7, 0.7, 0.7),
+			6 => Color::rgb(0.2, 0.2, 0.2),
+			7 => Color::rgb(0.6, 0.6, 0.6),
+			8 => Color::rgb(0.1, 0.1, 0.1),
+			9 => Color::rgb(0.9, 0.9, 0.9),
+			10 => Color::rgb(0.4, 0.4, 0.4),
+			11 => Color::rgb(0.6, 0.6, 0.6),
+			12 => Color::rgb(0.8, 0.8, 0.8),
+			13 => Color::rgb(0.3, 0.3, 0.3),
+			14 => Color::rgb(1.0, 1.0, 1.0),
+			15 => Color::rgb(0.5, 0.5, 0.5),
+			16 => Color::rgb(0.0, 0.0, 0.0),
+			17 => Color::rgb(0.7, 0.7, 0.7),
+			_ => Color::rgb(0.2, 0.2, 0.2),
 		}
 	}
 }
@@ -781,6 +840,9 @@ pub fn get_reactors(
 		5 => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 1500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
+		6 => {
+			{reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4000.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
+		}
 		_ => {
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-3000.0, 100.0), dimensions: Dimensions{width: 3000.0, height: 3000.0}}, reactor_id: 0, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(3000.0, -2500.0), dimensions: Dimensions{width: 3000.0, height: 2000.0}}, reactor_id: 1, input_chamber: false, product_chamber: true});
@@ -802,9 +864,6 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(-2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 800.0}}, reactor_id: 3, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(0.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 2000.0}}, reactor_id: 4, input_chamber: true, product_chamber: false});
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Rectangle{origin: Vec2::new(2000.0, -3000.0), dimensions: Dimensions{width: 800.0, height: 3000.0}}, reactor_id: 5, input_chamber: true, product_chamber: false});
-		}
-		_ => {
-			{reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
 		}
 		_ => (),
 	}
@@ -849,6 +908,19 @@ pub fn get_reactor_connections(
 		}
 		_ => (),
 		_ => match reactor_id {
+			_ => {
+				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter}));
+				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter}));
+				connections.push((Vec2::new(-1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter}));
+				connections.push((Vec2::new(-1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter}));
+				connections.push((Vec2::new(1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: true, filter: filter}));
+				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: false, filter: filter}));
+				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: true, filter: filter}));
+				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false, filter: filter}));
+			}
+		}
+		_ => (),
+		_ => match reactor_id {
 			0 => {
 				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter}));
 				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter}));
@@ -862,18 +934,6 @@ pub fn get_reactor_connections(
 				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter}));
 			}
 			_ => (),
-		}
-		_ => match reactor_id {
-			_ => {
-				connections.push((Vec2::new(0.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: true, filter: filter}));
-				connections.push((Vec2::new(1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 0, intake: false, filter: filter}));
-				connections.push((Vec2::new(-1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: true, filter: filter}));
-				connections.push((Vec2::new(-1.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 1, intake: false, filter: filter}));
-				connections.push((Vec2::new(1.0, -1.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: true, filter: filter}));
-				connections.push((Vec2::new(-1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 2, intake: false, filter: filter}));
-				connections.push((Vec2::new(1.0, 0.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: true, filter: filter}));
-				connections.push((Vec2::new(0.0, 1.0), Connection{reactor_id: reactor_id, connection_id: 3, intake: false, filter: filter}));
-			}
 		}
 		_ => match reactor_id {
 			i => {
@@ -937,6 +997,7 @@ pub fn get_level_goal(
 		3 => WinCondition::GreaterThan(5, 2),
 		4 => WinCondition::GreaterThan(5, 4),
 		5 => WinCondition::GreaterThan(15, 4),
+		6 => WinCondition::GreaterThan(1, 10),
 		_ => WinCondition::GreaterThan(1, 0),
 	}
 }
@@ -1027,6 +1088,7 @@ pub fn get_initial_zoom(
 		3 => 9.0,
 		4 => 9.0,
 		5 => 4.0,
+		6 => 10.0,
 		_ => 10.0,
 	}
 }
@@ -1036,11 +1098,12 @@ pub fn get_intro_text(
 ) -> String {
 	match level {
 		0 => format!("Welcome to the reactor view! Select a chamber with Left Click and press Spacebar to launch molecules. You can move the launcher left and right with A and D. Try hit the molecules in the center to cause a reaction!"),
-		1 => format!("You are getting the hang of this! Use Left Click to select different molecules from the menu on the left. You can hover over them for more details! You can hold W to continuously fire molecules. Remember to select a chamber with Left Click!"),
-		2 => format!("This reactor is filled with unwanted molecules! Use that new molecule in the menu to the left to clear them out! You can hold shift to move faster!"),
-		3 => format!("This reactor has two chambers, an input chamber at the top and an output chamber at the bottom! However, the pipes connecting them only accept specific kinds of molecules. How will you get the reaction products to the output chamber?"),
-		4 => format!("TGIF! Three chambers this time, but it should be no problem for you! Make sure you select each reactor with the middle mouse button so that you can control the launcher in each. Be aware that your movement is restricted due to the connections on the side of the chamber!"),
-		_ => format!("I hope you are enjoying Mole Rancher Remastered! If you made it this far, leave me a comment letting me know what you think! Any feedback is appreciated!"),
+		1 => format!("You are getting the hang of this! Use Left Click to select different molecules from the menu on the left. You can hover over them for more details! Also, you can hold W to continuously fire molecules. Remember to select a chamber with Left Click!"),
+		2 => format!("This chamber is filled with unwanted molecules! Use that new molecule in the menu to the left to clear them out. You can rotate the launcher using Q and E, and you move faster while holding down Shift."),
+		3 => format!("This level has two chambers. You can only launch molecules in the top chamber, and the pipes connecting the chambers only accept specific molecules. You can use the Mouse Wheel to zoom, and hold Right Click to pan around for a better view."),
+		4 => format!("TGIF! There are three chambers this time, but it should be no problem for you! Make sure you select each chamber with Left Click to control the launcher within it. Be aware that your movement is restricted due to the connections on the side of the chamber!"),
+		5 => format!("You thought Saturdays would be a holiday? No way! This will be your hardest challenge yet! Nothing new but this reaction requires two steps, though watch out for any unwanted reactions!"),
+		_ => format!("I hope you are enjoying Mole Rancher Remastered! If you made it this far, leave me a comment letting me know what you think! Any feedback is appreciated! More levels will be added in future updates! This is currently a sandbox level. Use Middle Mouse Button on a mole to track it!"),
 	}
 }
 
@@ -1220,41 +1283,153 @@ pub fn next_line(
 	match current_scene {
 		0 => match current_line {
 			0 =>
-			("DAY 1 - OUTSIDE MAIN ENTRANCE".to_string(),
+			("August 1st - The Mole Ranch".to_string(),
 			ActorInfo{actor: Actor::Nobody}),
 			1 =>
-			("New text! This text is very long for debug purposes! It also covers multiple lines! Wow! So cool! MMMMMMMMMMMMMMMMMMMM MMMMMMMMMMMMM MMMMMM MMMMMM M MMMMM MMMMM MMM MMMMMMMMMMMMMMM IIIIIIIIIIII IIII IIIII IIIIIIII IIIII IIIIIIIIIII IIIIIIIIIIIIIIIII IIIIIIIIIIIIII IIII Fini".to_string(),
+			("So you are the intern I have heard so much about?".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			2 =>
+			("Welcome! I will show you to your workstation.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			3 =>
+			("There is much to learn but I am sure you will pick it up quickly!".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			4 =>
+			("I will pass you over to Isa, she will be able to explain better than I. But I am sure we will catch up again at some point!".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			5 =>
+			("Ah, you have arrived. You will find a logbook on your desk to fill with your findings, and the computer is already logged in.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			6 =>
+			("Progress through the training exercises I have laid out for you, they should only take a week to complete. I will check in occasionally to see how you are progressing.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			7 =>
+			("Make sure you read the notes I have left for you, they will be essential when performing reactions.".to_string(),
 			ActorInfo{actor: Actor::Scientist}),
 			_ =>
-			("I am a guard! Do do doooo!".to_string(),
-			ActorInfo{actor: Actor::Guard}),
+			("I look forward to seeing you for your review on Sunday.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
 		},
 		1 => match current_line {
 			0 =>
-			("DAY 2 - OUTSIDE MAIN ENTRANCE".to_string(),
+			("August 2nd - The Mole Ranch".to_string(),
 			ActorInfo{actor: Actor::Nobody}),
 			1 =>
-			("So you are the scraps they have tossed me.".to_string(),
+			("Ah, so we did not scare you off! Good.".to_string(),
 			ActorInfo{actor: Actor::Guard}),
 			2 =>
-			("You must get inside quickly. Your predecessor is already starting to decompose, and the morgue is full.".to_string(),
+			("Isa is out today, I believe she is ranching a new mole type for you to use tomorrow!".to_string(),
 			ActorInfo{actor: Actor::Guard}),
 			3 =>
-			("Producing an acid to dispose of the body is so simple I could do it, but then who would guard the door?".to_string(),
+			("She likes efficient workers, so try to use as few moles as possible to keep reaction costs down! Though getting your work done quickly can be its own reward too.".to_string(),
 			ActorInfo{actor: Actor::Guard}),
 			4 =>
-			("The computer is already logged in, and the logbook is now yours, assuming you can read.".to_string(),
+			("Do not worry about those moles in the center of the reactor today, I have never seen them do much of anything, and they are not easily budged.".to_string(),
 			ActorInfo{actor: Actor::Guard}),
 			_ =>
-			("Now get to work.".to_string(),
+			("Your desk should be the way you left it, good luck!".to_string(),
 			ActorInfo{actor: Actor::Guard}),
+		},
+		2 => match current_line {
+			0 =>
+			("August 3rd - The Mole Ranch".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			1 =>
+			("Welcome back.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			2 =>
+			("The mole you will be working with today is very dangerous, and is capable of destroying most other moles.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			3 =>
+			("As such you will be using it to clean out an old reactor. With correct launcher positioning it should be pretty simple.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			_ =>
+			("Keep up the good work.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+		},
+		3 => match current_line {
+			0 =>
+			("August 4th - The Mole Ranch".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			1 =>
+			("Ah, intern. You are picking things up quickly.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			2 =>
+			("You will soon be moving onto reactors with multiple chambers, so do not be afraid to revisit previous problems to get a strong grasp on the basics.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			3 =>
+			("The reactions you learn here will be vital to more complex problems you will face in the future.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			_ =>
+			("Keep this up and you will be a rancher in no time.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+		},
+		4 => match current_line {
+			0 =>
+			("August 5th - The Mole Ranch".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			1 =>
+			("Friday already! This week has flown past. Almost as fast as you have flown through your training!".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			2 =>
+			("Even Isa seems to be impressed with the rate you are progressing!".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			_ =>
+			("Make sure you remember me once you are up in the big leagues, eh?".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+		},
+		5 => match current_line {
+			0 =>
+			("August 6th - The Mole Ranch".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			1 =>
+			("Today will be tricky, make sure you are careful about which reactions you trigger.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			2 =>
+			("Do not get frustrated if you feel like you have lost progress, as even mistakes can be valuable experiences!".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			_ =>
+			("I will see you tomorrow for your review.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+		},
+		6 => match current_line {
+			0 =>
+			("August 7th - Outside The Main Entrance".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			1 =>
+			("Well, this is it. Time to see if you have impressed Isa enough to stay.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			2 =>
+			("Hopefully you decide to stick around if all things go well. But regardless, it has been nice seeing you.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			3 =>
+			("Isa is waiting for you in her office, best not to keep her waiting too long.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			4 =>
+			("My name is Arnie by the way. It has been a pleasure getting to see you uncover the wonders of mole ranching. So thanks.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			5 =>
+			("Until next time.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			6 =>
+			("August 7th - Inside the Office".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			7 =>
+			("One week down. You have made great strides. It has been an honor seeing you grow and thrive.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			8 =>
+			("If you would be willing, it would be great if you would stay on as a full time rancher here.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			_ =>
+			("I will give you some time to think it over. Feel free to experiment on the computer, you should have access to all the moles you have seen so far.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
 		},
 		_ => match current_line {
 			0 =>
-			("DAY ? - PLEASE REPORT THIS".to_string(),
+			("August ??? - Please Report This".to_string(),
 			ActorInfo{actor: Actor::Nobody}),
 			_ =>
-			("You have reached an unreachable cutscene, interesting. This should not have happened".to_string(),
+			("You seem to have stumbled upon an unreachable cutscene, interesting. This should not have happened! Please let me know how you got here so I can fix it!".to_string(),
 			ActorInfo{actor: Actor::You}),
 		}
 	}
@@ -1264,8 +1439,13 @@ pub fn lines_per_scene(
 	current_scene: usize,
 ) -> usize {
 	match current_scene {
-		0 => 2,
+		0 => 8,
 		1 => 5,
+		2 => 4,
+		3 => 4,
+		4 => 3,
+		5 => 3,
+		6 => 9,
 		_ => 1,
 	}
 }
@@ -1276,6 +1456,11 @@ pub fn actors_in_scene(
 	match current_scene {
 		0 => vec![Actor::Scientist, Actor::Guard],
 		1 => vec![Actor::Guard],
+		2 => vec![Actor::Scientist],
+		3 => vec![Actor::Scientist],
+		4 => vec![Actor::Guard],
+		5 => vec![Actor::Scientist],
+		6 => vec![Actor::Scientist, Actor::Guard],
 		_ => vec![Actor::You],
 	}
 }
@@ -1286,8 +1471,19 @@ pub fn get_actor_path(
 	match actor {
 		Actor::Nobody => "".to_string(),
 		Actor::You => "".to_string(),
-		Actor::Guard => "actors/guard.png".to_string(),
-		Actor::Scientist => "actors/scientist.png".to_string(),
+		Actor::Guard => "sprites/characters/arnie_puppet.png".to_string(),
+		Actor::Scientist => "sprites/characters/isa_puppet.png".to_string(),
+	}
+}
+
+pub fn get_portrait_path(
+	actor: Actor,
+) -> String {
+	match actor {
+		Actor::Nobody => "".to_string(),
+		Actor::You => "".to_string(),
+		Actor::Guard => "sprites/characters/arnie_portrait.png".to_string(),
+		Actor::Scientist => "sprites/characters/isa_portrait.png".to_string(),
 	}
 }
 
@@ -1297,7 +1493,7 @@ pub fn get_actor_name(
 	match actor {
 		Actor::Nobody => "Nobody".to_string(),
 		Actor::You => "You".to_string(),
-		Actor::Guard => "Guard".to_string(),
-		Actor::Scientist => "Scientist".to_string(),
+		Actor::Guard => "Arnie".to_string(),
+		Actor::Scientist => "Isa".to_string(),
 	}
 }
