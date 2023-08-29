@@ -717,6 +717,8 @@ fn spawn_reactors(
 		let z = 910.0;
 		match reactor.reactor_type {
 			ReactorType::Rectangle{origin, dimensions} => {
+				let texture: Handle<Image> = asset_server.load("sprites/ui/rectangle.png");
+				r.insert(texture);
 				r.insert(Transform::from_xyz(origin.x, origin.y, 10.0));
 				r.insert(Sprite{
 					color: if reactor.product_chamber {Color::BISQUE} else {Color::GREEN}, 
