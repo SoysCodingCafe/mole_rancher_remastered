@@ -88,7 +88,7 @@ fn spawn_reactor_visuals(
 
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("background/ui/reactor_background.png"),
+			texture: asset_server.load("sprites/background/reactor_background.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 0.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(ortho_size.width * 10.0, ortho_size.height * 10.0)),
