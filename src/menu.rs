@@ -66,7 +66,7 @@ fn spawn_menu(
 
 	for i in 0..3 {
 		let button = StandardButton {
-			location: Vec3::new(0.0, -50.0 * i as f32, 100.0) + Vec3::new(0.0, -200.0, 0.0,),
+			location: Vec3::new(0.0, -200.0 -50.0 * i as f32, 100.0),
 			dimensions: Dimensions {
 				width: 400.0,
 				height: 40.0,
