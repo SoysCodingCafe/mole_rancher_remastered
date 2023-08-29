@@ -11,16 +11,16 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
+[target.wasm32-unknown-unknown]
+runner = "wasm-server-runner"
+
 [dependencies.bevy]
 version = "0.11.1"
 # Disable default features since using bevy_kira_audio instead
 default-features = false
 features = [
 	"animation",
-	"bevy_animation",
 	"bevy_asset",
-#	"bevy_core_pipeline",
-#	"bevy_render",
 	"bevy_sprite",
 	"bevy_text",
 	"bevy_ui",
@@ -29,6 +29,7 @@ features = [
 	"png",
 	"x11",
 	"subpixel_glyph_atlas",
+	"webgl2",
 ]
 
 [dependencies.bevy_kira_audio]
