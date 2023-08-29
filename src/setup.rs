@@ -99,8 +99,8 @@ fn load_game(
 			cutscenes_unlocked.push(false);
 		}
 		let save_data = SaveData{
-			sfx_volume: 0.8,
-			bgm_volume: 0.8,
+			sfx_volume: 0.4,
+			bgm_volume: 0.4,
 			selected_palette: 0,
 			particles_enabled: true,
 			levels_unlocked: levels_unlocked,
