@@ -526,7 +526,7 @@ fn spawn_reactor_levers(
 		LeverInfo{
 			lever_type: 1,
 			min_height: -230.0,
-			max_height: 30.0,
+			max_height: -30.0,
 		},
 		DespawnOnExitGameState,
 		Name::new("Pressure Lever"),

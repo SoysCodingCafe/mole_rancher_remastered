@@ -181,16 +181,26 @@ fn spawn_splash_screen(
 		Name::new("Splash Screen")
 	));
 	commands
-		.spawn((SpriteBundle {
-			texture: asset_server.load("splash/credits.png"),
-			transform: Transform:: from_xyz(0.0, -250.0, 1.0),
-			sprite: Sprite {
-				custom_size: Some(Vec2::new(540.0, 92.0)),
-				..Default::default()},
+		.spawn((Text2dBundle {
+			transform: Transform::from_xyz(-300.0, -250.0, 10.0,),
+			text_anchor: bevy::sprite::Anchor::CenterRight,
+			text: Text::from_section(format!("SoysCodingCafe \nOgelnac \nIQuick143 "), get_splash_text_style(&asset_server))
+				.with_alignment(TextAlignment::Right),
 			..Default::default()
 		},
 		DespawnOnExitGameState,
-		Name::new("Credits")
+		Name::new("Splash Text")
+	));
+	commands
+		.spawn((Text2dBundle {
+			transform: Transform::from_xyz(-300.0, -250.0, 10.0,),
+			text_anchor: bevy::sprite::Anchor::CenterLeft,
+			text: Text::from_section(format!(" Lead Programmer, Designer, Manager, and Producer.\n Lead Artist and Audio Engineer.\n Programmer, Quality Assurance, and Playtester."), get_splash_text_style(&asset_server))
+				.with_alignment(TextAlignment::Left),
+			..Default::default()
+		},
+		DespawnOnExitGameState,
+		Name::new("Splash Text")
 	));
 	commands
 		.spawn((SpriteBundle {

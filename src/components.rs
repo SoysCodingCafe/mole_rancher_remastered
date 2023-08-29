@@ -1128,6 +1128,16 @@ pub fn get_logbook_text(
 
 
 // TEXT STYLES
+pub fn get_splash_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 30.0,
+		color: Color::hex("EDD6AD").unwrap(),
+	}
+}
+
 pub fn get_title_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
