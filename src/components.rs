@@ -1036,11 +1036,12 @@ pub fn get_intro_text(
 ) -> String {
 	match level {
 		0 => format!("Welcome to the reactor view! Select a chamber with Left Click and press Spacebar to launch molecules. You can move the launcher left and right with A and D. Try hit the molecules in the center to cause a reaction!"),
-		1 => format!("You are getting the hang of this! Use Left Click to select different molecules from the menu on the left. You can hover over them for more details! You can hold W to continuously fire molecules. Remember to select a chamber with Left Click!"),
-		2 => format!("This reactor is filled with unwanted molecules! Use that new molecule in the menu to the left to clear them out! You can hold shift to move faster!"),
-		3 => format!("This reactor has two chambers, an input chamber at the top and an output chamber at the bottom! However, the pipes connecting them only accept specific kinds of molecules. How will you get the reaction products to the output chamber?"),
-		4 => format!("TGIF! Three chambers this time, but it should be no problem for you! Make sure you select each reactor with the middle mouse button so that you can control the launcher in each. Be aware that your movement is restricted due to the connections on the side of the chamber!"),
-		_ => format!("I hope you are enjoying Mole Rancher Remastered! If you made it this far, leave me a comment letting me know what you think! Any feedback is appreciated!"),
+		1 => format!("You are getting the hang of this! Use Left Click to select different molecules from the menu on the left. You can hover over them for more details! Also, you can hold W to continuously fire molecules. Remember to select a chamber with Left Click!"),
+		2 => format!("This chamber is filled with unwanted molecules! Use that new molecule in the menu to the left to clear them out. You can rotate the launcher using Q and E, and you move faster while holding down Shift."),
+		3 => format!("This level has two chambers. You can only launch molecules in the top chamber, and the pipes connecting the chambers only accept specific molecules. You can use the Mouse Wheel to zoom, and hold Right Click to pan around for a better view."),
+		4 => format!("TGIF! There are three chambers this time, but it should be no problem for you! Make sure you select each chamber with Left Click to control the launcher within it. Be aware that your movement is restricted due to the connections on the side of the chamber!"),
+		5 => format!("You thought Saturdays would be a holiday? No way! This will be your hardest challenge yet! Nothing new but this reaction requires two steps, though watch out for any unwanted reactions!"),
+		_ => format!("I hope you are enjoying Mole Rancher Remastered! If you made it this far, leave me a comment letting me know what you think! Any feedback is appreciated! More levels will be added in future updates!"),
 	}
 }
 
@@ -1220,13 +1221,31 @@ pub fn next_line(
 	match current_scene {
 		0 => match current_line {
 			0 =>
-			("DAY 1 - OUTSIDE MAIN ENTRANCE".to_string(),
+			("August 1st - The Mole Ranch".to_string(),
 			ActorInfo{actor: Actor::Nobody}),
 			1 =>
-			("New text! This text is very long for debug purposes! It also covers multiple lines! Wow! So cool! MMMMMMMMMMMMMMMMMMMM MMMMMMMMMMMMM MMMMMM MMMMMM M MMMMM MMMMM MMM MMMMMMMMMMMMMMM IIIIIIIIIIII IIII IIIII IIIIIIII IIIII IIIIIIIIIII IIIIIIIIIIIIIIIII IIIIIIIIIIIIII IIII Fini".to_string(),
+			("So you are the intern I have heard so much about?".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			2 =>
+			("Welcome! I will show you to your workstation.".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			3 =>
+			("There is much to learn but I am sure you will pick it up quickly!".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			4 =>
+			("I will pass you over to Isa, she will be able to explain better than I. But I am sure we will catch up again at some point!".to_string(),
+			ActorInfo{actor: Actor::Guard}),
+			5 =>
+			("Ah, you have arrived. You will find a logbook on your desk to fill with your findings, and the computer is already logged in.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			6 =>
+			("Progress through the training exercises I have laid out for you, they should only take a week to complete. I will check in occassionally to see how you are progressing.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
+			7 =>
+			("Make sure you read the notes I have left for you, they will be essential when performing reactions.".to_string(),
 			ActorInfo{actor: Actor::Scientist}),
 			_ =>
-			("I am a guard! Do do doooo!".to_string(),
+			("I look forward to seeing you for your review on Sunday.".to_string(),
 			ActorInfo{actor: Actor::Guard}),
 		},
 		1 => match current_line {
