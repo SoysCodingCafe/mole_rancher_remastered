@@ -38,7 +38,7 @@ fn spawn_menu(
 	));
 
 	// Title Text
-	commands.spawn((Text2dBundle {
+	/*commands.spawn((Text2dBundle {
 			transform: Transform::from_translation(Vec3::new(0.0, 250.0, 100.0)),
 			text: Text::from_section(format!("Mole Rancher"), get_title_text_style(&asset_server))
 					.with_alignment(TextAlignment::Center),
@@ -48,7 +48,7 @@ fn spawn_menu(
 		Name::new("Title Text"),
 	)).with_children(|parent| {
 		parent.spawn((Text2dBundle {
-				transform: Transform::from_translation(Vec3::new(0.0, -75.0, 0.0)),
+				transform: Transform::from_translation(Vec3::new(0.0, -65.0, 0.0)),
 				text: Text::from_section(format!("Remastered Edition"), get_subtitle_text_style(&asset_server))
 						.with_alignment(TextAlignment::Center),
 				..Default::default()
@@ -56,7 +56,20 @@ fn spawn_menu(
 			DespawnOnExitGameState,
 			Name::new("Subtitle Text"),
 		));
-	});
+	});*/
+
+	//Title Logo
+	commands.spawn((SpriteBundle {
+			texture: asset_server.load("splash\title.png"),
+			transform: Transform::from_xyz(0.0, 0.0, 100.0),
+			sprite: Sprite {
+				..Default::default()
+			},
+			..Default::default()
+		},
+		DespawnOnExitGameState,
+		Name::new("Title Logo")
+	));
 
 	// Buttons
 	let effect = [

@@ -43,7 +43,7 @@ pub const ORTHO_HEIGHT: f32 = 900.0;
 pub const ORTHO_WIDTH: f32 = ORTHO_HEIGHT * ASPECT_RATIO;
 
 // Boot
-pub const BOOT_DURATION: f32 = 2.0;
+pub const BOOT_DURATION: f32 = 5.0;
 
 // Cutscene
 pub const TEXT_BOX_WIDTH: f32 = 1200.0;
@@ -1069,7 +1069,7 @@ pub fn get_title_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 120.0,
+		font_size: 100.0,
 		color: Color::hex("EDD6AD").unwrap(),
 	}
 }
@@ -1079,7 +1079,7 @@ pub fn get_subtitle_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 60.0,
+		font_size: 40.0,
 		color: Color::hex("EDD6AD").unwrap(),
 	}
 }
