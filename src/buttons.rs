@@ -181,18 +181,18 @@ fn custom_lab_buttons(
 ) {
 	// Top Left, Top Right, Bottom Right, Bottom Left, Lab Interaction
 	let buttons = [
-		([Vec2::new(88.0, 78.0), Vec2::new(404.0, 54.0), Vec2::new(336.0, -226.0), Vec2::new(68.0, -162.0)], 
+		([Vec2::new(270.0, 88.0), Vec2::new(596.0, 74.0), Vec2::new(573.0, -163.0), Vec2::new(253.0, -97.0)], 
 		ButtonEffect::CustomLabButton(CustomLabButton::MonitorActivate)), // Monitor
-		([Vec2::new(-72.0, -158.0), Vec2::new(204.0, -190.0), Vec2::new(220.0, -290.0), Vec2::new(-104.0, -238.0)], 
+		([Vec2::new(260.0, -136.0), Vec2::new(546.0, -213.0), Vec2::new(490.0, -307.0), Vec2::new(156.0, -186.0)], 
 		ButtonEffect::CustomLabButton(CustomLabButton::MonitorActivate)), // Keyboard
-		([Vec2::new(-408.0, -134.0), Vec2::new(-148.0, -86.0), Vec2::new(-128.0, -190.0), Vec2::new(-464.0, -274.0)], 
+		([Vec2::new(-604.0, -177.0), Vec2::new(-275.0, -146.0), Vec2::new(-117.0, -287.0), Vec2::new(-639.0, -351.0)], 
 		ButtonEffect::CustomLabButton(CustomLabButton::LogbookOpen)), // Logbook
-		([Vec2::new(-800.0, 382.0), Vec2::new(-728.0, 374.0), Vec2::new(-488.0, -178.0), Vec2::new(-800.0, -346.0)], 
+		([Vec2::new(-800.0, 450.0), Vec2::new(-786.0, 450.0), Vec2::new(-666.0, -195.0), Vec2::new(-800.0, -287.0)], 
 		ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)), // Door
-		([Vec2::new(-672.0, 318.0), Vec2::new(-440.0, 302.0), Vec2::new(-428.0, 242.0), Vec2::new(-656.0, 258.0)], 
+		([Vec2::new(-730.0, 417.0), Vec2::new(-543.0, 413.0), Vec2::new(-538.0, 336.0), Vec2::new(-730.0, 336.0)], 
 		ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)), // Exit Sign
-		([Vec2::new(492.0, 322.0), Vec2::new(796.0, 350.0), Vec2::new(652.0, -18.0), Vec2::new(404.0, 34.0)], 
-		ButtonEffect::CustomLabButton(CustomLabButton::Poster)), // Poster
+		/*([Vec2::new(492.0, 322.0), Vec2::new(796.0, 350.0), Vec2::new(652.0, -18.0), Vec2::new(404.0, 34.0)], 
+		ButtonEffect::CustomLabButton(CustomLabButton::Poster)), // Poster */
 	];
 
 	// Get the current window, and the cursor position scaled 

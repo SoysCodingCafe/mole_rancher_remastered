@@ -92,7 +92,7 @@ fn spawn_menu(
 		)).with_children(|parent| {
 			parent
 				.spawn((Text2dBundle {
-					transform: Transform::from_xyz(0.0, -3.0, 10.0,),
+					transform: Transform::from_xyz(0.0, -2.5, 10.0,),
 					text: Text::from_section(format!("{}", text[i]), get_button_text_style(&asset_server))
 						.with_alignment(TextAlignment::Center),
 					..Default::default()

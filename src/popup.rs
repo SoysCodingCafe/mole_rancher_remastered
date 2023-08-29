@@ -110,22 +110,31 @@ fn spawn_popup_buttons(
 
 					let mut buttons  = Vec::new();
 					buttons.push((StandardButton {
-						location: Vec3::new(-520.0, -310.0, 810.0),
+						location: Vec3::new(0.0, -310.0, 810.0),
 						dimensions: Dimensions {
-							width: 200.0,
-							height: 100.0,
+							width: 400.0,
+							height: 40.0,
 						},
 						enabled: true,
 						idle_color: Color::hex("EDD6AD").unwrap(),
 						hovered_color: Color::hex("CDB68D").unwrap(),
 						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::ExitPopup)));
+					commands.spawn((Text2dBundle {
+							transform: Transform::from_xyz(0.0, -310.0, 820.0),
+							text: Text::from_section(format!("Back"), get_button_text_style(&asset_server))
+								.with_alignment(TextAlignment::Center),
+							..Default::default()
+						},
+						DespawnOnExitPauseState,
+						Name::new("Settings Quit Button")
+					));
 					for i in 0..=10 {
 						buttons.push((StandardButton {
-							location: Vec3::new(25.0 + 60.0 * i as f32, 190.0, 810.0),
+							location: Vec3::new(25.0 + 30.0 * i as f32, 95.0, 810.0),
 							dimensions: Dimensions {
-								width: 50.0,
-								height: 100.0,
+								width: 25.0,
+								height: 50.0,
 							},
 							enabled: true,
 							idle_color: Color::hex("EDD6AD").unwrap(),
@@ -133,10 +142,10 @@ fn spawn_popup_buttons(
 							disabled_color: Color::hex("9D865D").unwrap(),
 						}, ButtonEffect::PopupButton(PopupButton::BgmVolume(i))));
 						buttons.push((StandardButton {
-							location: Vec3::new(25.0 + 60.0 * i as f32, 65.0, 810.0),
+							location: Vec3::new(25.0 + 30.0 * i as f32, 32.5, 810.0),
 							dimensions: Dimensions {
-								width: 50.0,
-								height: 100.0,
+								width: 25.0,
+								height: 50.0,
 							},
 							enabled: true,
 							idle_color: Color::hex("EDD6AD").unwrap(),
@@ -145,10 +154,10 @@ fn spawn_popup_buttons(
 						}, ButtonEffect::PopupButton(PopupButton::SfxVolume(i))));
 					}
 					buttons.push((StandardButton {
-						location: Vec3::new(50.0, -55.0, 810.0),
+						location: Vec3::new(50.0, -27.5, 810.0),
 						dimensions: Dimensions {
-							width: 100.0,
-							height: 100.0,
+							width: 50.0,
+							height: 50.0,
 						},
 						enabled: true,
 						idle_color: Color::hex("EDD6AD").unwrap(),
@@ -156,7 +165,7 @@ fn spawn_popup_buttons(
 						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::PaletteToggle)));
 					commands.spawn((Text2dBundle{
-						transform: Transform::from_xyz(100.0, -180.0, 820.0),
+						transform: Transform::from_xyz(75.0, -90.0, 820.0),
 						text: Text::from_section(format!("On"), get_settings_text_style(&asset_server))
 							.with_alignment(TextAlignment::Center),
 						text_anchor: bevy::sprite::Anchor::Center,
@@ -166,10 +175,10 @@ fn spawn_popup_buttons(
 						Name::new("Particle Trail Enable Text")
 					));
 					buttons.push((StandardButton {
-						location: Vec3::new(100.0, -175.0, 810.0),
+						location: Vec3::new(75.0, -87.5, 810.0),
 						dimensions: Dimensions {
-							width: 200.0,
-							height: 100.0,
+							width: 100.0,
+							height: 50.0,
 						},
 						enabled: true,
 						idle_color: Color::hex("EDD6AD").unwrap(),
@@ -177,7 +186,7 @@ fn spawn_popup_buttons(
 						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::ParticleTrails(true))));
 					commands.spawn((Text2dBundle{
-						transform: Transform::from_xyz(350.0, -180.0, 820.0),
+						transform: Transform::from_xyz(175.0, -90.0, 820.0),
 						text: Text::from_section(format!("Off"), get_settings_text_style(&asset_server))
 							.with_alignment(TextAlignment::Center),
 						text_anchor: bevy::sprite::Anchor::Center,
@@ -187,10 +196,10 @@ fn spawn_popup_buttons(
 						Name::new("Particle Trail Enable Text")
 					));
 					buttons.push((StandardButton {
-						location: Vec3::new(350.0, -175.0, 810.0),
+						location: Vec3::new(175.0, -87.5, 810.0),
 						dimensions: Dimensions {
-							width: 200.0,
-							height: 100.0,
+							width: 100.0,
+							height: 50.0,
 						},
 						enabled: true,
 						idle_color: Color::hex("EDD6AD").unwrap(),
@@ -217,10 +226,10 @@ fn spawn_popup_buttons(
 					for i in 0..15 {
 						commands
 							.spawn((SpriteBundle{
-								transform: Transform::from_xyz(133.0 + 36.0 * i as f32, -55.0, 810.0),
+								transform: Transform::from_xyz(100.0 + 25.0 * i as f32, -27.5, 810.0),
 								sprite: Sprite {
 									color: get_molecule_color(i, selected_palette.0),
-									custom_size: Some(Vec2::new(25.0, 100.0)), 
+									custom_size: Some(Vec2::new(25.0, 50.0)), 
 									..Default::default()
 								},
 								..Default::default()

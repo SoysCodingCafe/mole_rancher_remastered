@@ -40,7 +40,7 @@ fn spawn_lab(
 			..Default::default()
 		},
 		DespawnOnExitGameState,
-		Name::new("Lab Dark")
+		Name::new("Lab Bright")
 	));
 
 	// Spawn background for bright lab, but initially set to hidden
@@ -57,7 +57,7 @@ fn spawn_lab(
 		},
 		BrightLab,
 		DespawnOnExitGameState,
-		Name::new("Lab Bright")
+		Name::new("Lab Dark")
 	));
 
 	for i in 0..3 {
@@ -83,7 +83,7 @@ fn spawn_lab(
 		("Monitor", "sprites/ui/monitor.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::MonitorActivate)),
 		("Logbook", "sprites/ui/logbook.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::LogbookOpen)),
 		("Exit", "sprites/ui/exit.png", 11.0, 1.0, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)),
-		("Exit Glow", "sprites/ui/glow.png", 11.0, 0.05, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)),
+		//("Exit Glow", "sprites/ui/glow.png", 11.0, 0.05, Visibility::Hidden, ButtonEffect::CustomLabButton(CustomLabButton::ExitLab)),
 	];
 
 	for (name, path, z, a, visibility, interaction) in lab_sprite_info {
