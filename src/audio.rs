@@ -49,7 +49,7 @@ fn initialize_audio_instances(
 
 	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
 		let bgm_handle = audio
-			.play(asset_server.load("audio/bgm.wav"))
+			.play(asset_server.load("audio/bgm.ogg"))
 			.looped()
 			.with_volume(save_data.bgm_volume.powf(2.5))
 			.handle();

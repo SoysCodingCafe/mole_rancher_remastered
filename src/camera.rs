@@ -99,7 +99,8 @@ fn pan_zoom_reactor_camera(
 				}
 			}
 			for ev in ev_r_scroll.iter() {
-				scroll += ev.y;
+				scroll = (scroll + ev.y).clamp(-1.0, 1.0);
+
 				if (p - REACTOR_VIEWPORT_CENTER).length() > ZOOM_DEAD_ZONE_RADIUS {
 					offset = (p - REACTOR_VIEWPORT_CENTER).normalize();
 				}
