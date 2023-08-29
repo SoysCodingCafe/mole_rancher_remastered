@@ -88,9 +88,9 @@ fn spawn_reactor_visuals(
 
 	commands
 		.spawn((SpriteBundle {
+			texture: asset_server.load("background/ui/reactor_background.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 0.0),
 			sprite: Sprite {
-				color: Color::DARK_GREEN,
 				custom_size: Some(Vec2::new(ortho_size.width * 10.0, ortho_size.height * 10.0)),
 				..Default::default()
 			},
@@ -167,6 +167,7 @@ fn spawn_reactor_visuals(
 		.spawn((SpriteBundle {
 			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x + REACTOR_VIEWPORT_WIDTH/2.0 - STOPWATCH_BOX_WIDTH/2.0, STOPWATCH_BOX_Y, 730.0),
 			sprite: Sprite {
+				color: Color::hex("F2F2F2").unwrap(),
 				custom_size: Some(Vec2::new(STOPWATCH_BOX_WIDTH, STOPWATCH_BOX_HEIGHT)),
 				..Default::default()
 			},
@@ -196,6 +197,7 @@ fn spawn_reactor_visuals(
 		.spawn((SpriteBundle {
 			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x - REACTOR_VIEWPORT_WIDTH/2.0 + GOAL_BOX_WIDTH + COST_BOX_WIDTH/2.0 + REACTION_UI_SPACING, COST_BOX_Y, 730.0),
 			sprite: Sprite {
+				color: Color::hex("F2F2F2").unwrap(),
 				custom_size: Some(Vec2::new(COST_BOX_WIDTH, COST_BOX_HEIGHT)),
 				..Default::default()
 			},
@@ -225,6 +227,7 @@ fn spawn_reactor_visuals(
 		.spawn((SpriteBundle {
 			transform: Transform::from_xyz(REACTOR_VIEWPORT_CENTER.x - REACTOR_VIEWPORT_WIDTH/2.0 + GOAL_BOX_WIDTH/2.0, GOAL_BOX_Y, 730.0),
 			sprite: Sprite {
+				color: Color::hex("F2F2F2").unwrap(),
 				custom_size: Some(Vec2::new(GOAL_BOX_WIDTH, GOAL_BOX_HEIGHT)),
 				..Default::default()
 			},
