@@ -384,7 +384,7 @@ fn spawn_reactor_buttons(
 	}
 
 	let button = StandardButton {
-		location: Vec3::new(-600.0, -375.0, 710.0),
+		location: Vec3::new(-400.0, -375.0, 710.0),
 		dimensions: Dimensions {
 			width: 400.0,
 			height: 40.0,
@@ -454,7 +454,7 @@ fn spawn_reactor_buttons(
 	});
 
 	let button = StandardButton {
-		location: Vec3::new(600.0, -375.0, 710.0),
+		location: Vec3::new(400.0, -375.0, 710.0),
 		dimensions: Dimensions {
 			width: 400.0,
 			height: 40.0,

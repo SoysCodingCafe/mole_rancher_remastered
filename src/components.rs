@@ -1069,7 +1069,7 @@ pub fn get_title_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 100.0,
+		font_size: 50.0,
 		color: Color::hex("EDD6AD").unwrap(),
 	}
 }
