@@ -384,10 +384,10 @@ fn spawn_reactor_buttons(
 	}
 
 	let button = StandardButton {
-		location: Vec3::new(-675.0, -375.0, 710.0),
+		location: Vec3::new(-600.0, -375.0, 710.0),
 		dimensions: Dimensions {
-			width: 150.0,
-			height: 75.0,
+			width: 400.0,
+			height: 40.0,
 		},
 		enabled: true,
 		idle_color: Color::hex("EDD6AD").unwrap(),
@@ -406,14 +406,23 @@ fn spawn_reactor_buttons(
 		ButtonEffect::ReactorButton(ReactorButton::ExitReactor),
 		button,
 		DespawnOnExitGameState,
-		Name::new("Exit Reactor Button"),
-	));
+	)).with_children(|parent| {
+		parent
+			.spawn((Text2dBundle {
+				transform: Transform::from_xyz(0.0, -2.5, 10.0,),
+				text: Text::from_section(format!("Exit"), get_button_text_style(&asset_server))
+					.with_alignment(TextAlignment::Center),
+				..Default::default()
+			},
+			Name::new("Exit Reactor Button")
+		));
+	});
 
 	let button = StandardButton {
 		location: Vec3::new(0.0, -375.0, 710.0),
 		dimensions: Dimensions {
-			width: 150.0,
-			height: 75.0,
+			width: 400.0,
+			height: 40.0,
 		},
 		enabled: true,
 		idle_color: Color::hex("EDD6AD").unwrap(),
@@ -432,14 +441,23 @@ fn spawn_reactor_buttons(
 		ButtonEffect::ReactorButton(ReactorButton::PauseLevel),
 		button,
 		DespawnOnExitGameState,
-		Name::new("Pause Button"),
-	));
+	)).with_children(|parent| {
+		parent
+			.spawn((Text2dBundle {
+				transform: Transform::from_xyz(0.0, -2.5, 10.0,),
+				text: Text::from_section(format!("Pause"), get_button_text_style(&asset_server))
+					.with_alignment(TextAlignment::Center),
+				..Default::default()
+			},
+			Name::new("Pause Button")
+		));
+	});
 
 	let button = StandardButton {
-		location: Vec3::new(675.0, -375.0, 710.0),
+		location: Vec3::new(600.0, -375.0, 710.0),
 		dimensions: Dimensions {
-			width: 150.0,
-			height: 75.0,
+			width: 400.0,
+			height: 40.0,
 		},
 		enabled: true,
 		idle_color: Color::hex("EDD6AD").unwrap(),
@@ -458,8 +476,17 @@ fn spawn_reactor_buttons(
 		ButtonEffect::ReactorButton(ReactorButton::RestartLevel),
 		button,
 		DespawnOnExitGameState,
-		Name::new("Replay Level Button"),
-	));
+	)).with_children(|parent| {
+		parent
+			.spawn((Text2dBundle {
+				transform: Transform::from_xyz(0.0, -2.5, 10.0,),
+				text: Text::from_section(format!("Replay"), get_button_text_style(&asset_server))
+					.with_alignment(TextAlignment::Center),
+				..Default::default()
+			},
+			Name::new("Replay Level Button")
+		));
+	});
 }
 
 // Spawn reactor levers for controlling the temperature
