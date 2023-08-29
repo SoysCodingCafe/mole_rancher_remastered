@@ -44,7 +44,7 @@ fn main() {
 			})
 			.set(AssetPlugin {
 				// Enables asset hot reloading
-				watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
+				//watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
 				..Default::default()
 			})
 			// Prevents pixel art sprites from becoming blurry

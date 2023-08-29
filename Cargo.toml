@@ -19,18 +19,16 @@ features = [
 	"animation",
 	"bevy_animation",
 	"bevy_asset",
-	"bevy_core_pipeline",
-	"bevy_render",
-	"bevy_pbr",
+#	"bevy_core_pipeline",
+#	"bevy_render",
 	"bevy_sprite",
-#	"bevy_scene",
 	"bevy_text",
 	"bevy_ui",
 	"bevy_winit",
-	"filesystem_watcher",
-#	"serialize",
+#	"filesystem_watcher",
 	"png",
 	"x11",
+	"subpixel_glyph_atlas",
 ]
 
 [dependencies.bevy_kira_audio]
