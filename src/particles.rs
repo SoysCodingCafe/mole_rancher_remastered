@@ -38,7 +38,7 @@ fn spawn_particles(
 								transform.translation.x + (rand::random::<f32>() - 0.5) * 8.0, 
 								transform.translation.y + (rand::random::<f32>() - 0.5) * 8.0, 
 								transform.translation.z - 2.0),
-							texture: asset_server.load("sprites/ui/circle.png"),
+							texture: asset_server.load("sprites/ui/circle_trail.png"),
 							sprite: Sprite {
 								color: *get_molecule_color(m_info.index, palette.0).set_a(0.4),
 								//color: Color::rgb(rand::random(), rand::random(), rand::random()),
