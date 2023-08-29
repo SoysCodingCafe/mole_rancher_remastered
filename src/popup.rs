@@ -516,14 +516,15 @@ fn spawn_popup_buttons(
 						DespawnOnExitPauseState,
 						Name::new("Exit Intro Button")
 					));
-					commands.spawn((Text2dBundle {
-						transform: Transform::from_xyz(400.0, -300.0, 820.0),
-						text: Text::from_section(format!("Back"), get_button_text_style(&asset_server))
-							.with_alignment(TextAlignment::Center),
-						..Default::default()
-					},
-					DespawnOnExitPauseState,
-					Name::new("Exit Intro Button")
+					commands
+						.spawn((Text2dBundle {
+							transform: Transform::from_xyz(400.0, -300.0, 820.0),
+							text: Text::from_section(format!("Continue"), get_button_text_style(&asset_server))
+								.with_alignment(TextAlignment::Center),
+							..Default::default()
+						},
+						DespawnOnExitPauseState,
+						Name::new("Exit Intro Button")
 					));
 					let button = StandardButton {
 						location: Vec3::new(-400.0, -300.0, 810.0),
@@ -592,7 +593,7 @@ fn spawn_popup_buttons(
 					];
 
 					let x = 10.0;
-					let y = 100.0;
+					let y = 0.0;
 					let z = 810.0;
 					commands.spawn((Text2dBundle{
 						transform: Transform::from_xyz(-x, y, z),
@@ -615,7 +616,26 @@ fn spawn_popup_buttons(
 						DespawnOnExitPauseState,
 						Name::new("Win Text")
 					));
-					
+					commands
+						.spawn((Text2dBundle {
+							transform: Transform::from_xyz(-300.0, -300.0, 840.0),
+							text: Text::from_section(format!("Replay"), get_button_text_style(&asset_server))
+								.with_alignment(TextAlignment::Center),
+							..Default::default()
+						},
+						DespawnOnExitPauseState,
+						Name::new("Exit Win Screen Text")
+					));
+					commands
+						.spawn((Text2dBundle {
+							transform: Transform::from_xyz(300.0, -300.0, 840.0),
+							text: Text::from_section(format!("Continue"), get_button_text_style(&asset_server))
+								.with_alignment(TextAlignment::Center),
+							..Default::default()
+						},
+						DespawnOnExitPauseState,
+						Name::new("Continue Win Screen Text")
+					));
 					let mut buttons = Vec::new();
 					let effects = [
 						ButtonEffect::PopupButton(PopupButton::ReplayLevel),
@@ -626,10 +646,10 @@ fn spawn_popup_buttons(
 						for i in 0..2 {
 							buttons.push((
 								StandardButton {
-									location: Vec3::new(-300.0+600.0*i as f32, -200.0, 830.0),
+									location: Vec3::new(-300.0+600.0*i as f32, -300.0, 830.0),
 									dimensions: Dimensions {
-										width: 200.0,
-										height: 150.0,
+										width: 400.0,
+										height: 40.0,
 									},
 									enabled: enabled[i],
 									idle_color: Color::hex("EDD6AD").unwrap(),
