@@ -1119,6 +1119,7 @@ pub fn get_logbook_text(
 			_ => format!("Maybe I will fill these pages myself once I have uncovered the secrets of the mole!"),
 		}
 		_ => match page {
+			0 => format!("This feature is currently incomplete, but more information will be added in future updates!"),
 			2 => format!("However, they also require the most careful cooking techniques. A strong particle trail is indicative of a potent scent when cooking."),
 			_ => format!("Noone ever writes on the right page of notebooks... The ink would leak through!"),
 		}
@@ -1163,8 +1164,8 @@ pub fn get_intro_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 30.0,
-		color: Color::hex("2B2B29").unwrap(),
+		font_size: 40.0,
+		color: Color::hex("EDD6AD").unwrap(),
 		..Default::default()
 	}
 }
@@ -1185,7 +1186,7 @@ pub fn get_win_title_text_style(
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
 		font_size: 50.0,
-		color: Color::hex("EDD6AD").unwrap(),
+		color: Color::hex("2B2B29").unwrap(),
 	}
 }
 
@@ -1194,8 +1195,8 @@ pub fn get_win_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 25.0,
-		color: Color::hex("EDD6AD").unwrap(),
+		font_size: 50.0,
+		color: Color::hex("2B2B29").unwrap(),
 	}
 }
 
@@ -1204,8 +1205,8 @@ pub fn get_win_values_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 25.0,
-		color: Color::hex("CDB68D").unwrap(),
+		font_size: 50.0,
+		color: Color::hex("2B2B29").unwrap(),
 	}
 }
 
