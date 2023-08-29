@@ -195,7 +195,7 @@ fn spawn_splash_screen(
 	commands
 		.spawn((SpriteBundle {
 			texture: asset_server.load("splash/bevy_logo_dark.png"),
-			transform: Transform:: from_xyz(-25.0, 50.0, 1.0),
+			transform: Transform:: from_xyz(0.0, 50.0, 1.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(540.0, 137.0)),
 				..Default::default()},

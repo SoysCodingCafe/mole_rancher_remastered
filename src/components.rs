@@ -43,7 +43,7 @@ pub const ORTHO_HEIGHT: f32 = 900.0;
 pub const ORTHO_WIDTH: f32 = ORTHO_HEIGHT * ASPECT_RATIO;
 
 // Boot
-pub const BOOT_DURATION: f32 = 5.0;
+pub const BOOT_DURATION: f32 = 10.0;
 
 // Cutscene
 pub const TEXT_BOX_WIDTH: f32 = 1200.0;
@@ -1206,7 +1206,7 @@ pub fn get_button_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 45.0,
+		font_size: 25.0,
 		color: Color::hex("2B2B29").unwrap(),
 		..Default::default()
 	}

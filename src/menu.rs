@@ -37,32 +37,12 @@ fn spawn_menu(
 		Name::new("Menu Background")
 	));
 
-	// Title Text
-	/*commands.spawn((Text2dBundle {
-			transform: Transform::from_translation(Vec3::new(0.0, 250.0, 100.0)),
-			text: Text::from_section(format!("Mole Rancher"), get_title_text_style(&asset_server))
-					.with_alignment(TextAlignment::Center),
-			..Default::default()
-		},
-		DespawnOnExitGameState,
-		Name::new("Title Text"),
-	)).with_children(|parent| {
-		parent.spawn((Text2dBundle {
-				transform: Transform::from_translation(Vec3::new(0.0, -65.0, 0.0)),
-				text: Text::from_section(format!("Remastered Edition"), get_subtitle_text_style(&asset_server))
-						.with_alignment(TextAlignment::Center),
-				..Default::default()
-			},
-			DespawnOnExitGameState,
-			Name::new("Subtitle Text"),
-		));
-	});*/
-
 	//Title Logo
 	commands.spawn((SpriteBundle {
 			texture: asset_server.load("splash/title.png"),
-			transform: Transform::from_xyz(0.0, 200.0, 100.0),
+			transform: Transform::from_xyz(0.0, 100.0, 100.0),
 			sprite: Sprite {
+				custom_size: Some(Vec2::new(875.0, 147.0)),
 				..Default::default()
 			},
 			..Default::default()
@@ -86,10 +66,10 @@ fn spawn_menu(
 
 	for i in 0..3 {
 		let button = StandardButton {
-			location: Vec3::new(0.0, -70.0 * i as f32, 100.0),
+			location: Vec3::new(0.0, -50.0 * i as f32, 100.0) + Vec3::new(0.0, -200.0, 0.0,),
 			dimensions: Dimensions {
-				width: 452.0,
-				height: 60.0,
+				width: 400.0,
+				height: 40.0,
 			},
 			enabled: true,
 			idle_color: Color::hex("EDD6AD").unwrap(),
@@ -112,7 +92,7 @@ fn spawn_menu(
 		)).with_children(|parent| {
 			parent
 				.spawn((Text2dBundle {
-					transform: Transform::from_xyz(0.0, -5.0, 10.0,),
+					transform: Transform::from_xyz(0.0, -3.0, 10.0,),
 					text: Text::from_section(format!("{}", text[i]), get_button_text_style(&asset_server))
 						.with_alignment(TextAlignment::Center),
 					..Default::default()
