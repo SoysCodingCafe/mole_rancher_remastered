@@ -154,7 +154,7 @@ fn spawn_popup_buttons(
 						}, ButtonEffect::PopupButton(PopupButton::SfxVolume(i))));
 					}
 					buttons.push((StandardButton {
-						location: Vec3::new(50.0, -27.5, 810.0),
+						location: Vec3::new(37.5, -27.5, 810.0),
 						dimensions: Dimensions {
 							width: 50.0,
 							height: 50.0,
@@ -165,7 +165,7 @@ fn spawn_popup_buttons(
 						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::PaletteToggle)));
 					commands.spawn((Text2dBundle{
-						transform: Transform::from_xyz(75.0, -90.0, 820.0),
+						transform: Transform::from_xyz(62.5, -90.0, 820.0),
 						text: Text::from_section(format!("On"), get_settings_text_style(&asset_server))
 							.with_alignment(TextAlignment::Center),
 						text_anchor: bevy::sprite::Anchor::Center,
@@ -175,7 +175,7 @@ fn spawn_popup_buttons(
 						Name::new("Particle Trail Enable Text")
 					));
 					buttons.push((StandardButton {
-						location: Vec3::new(75.0, -87.5, 810.0),
+						location: Vec3::new(62.5, -87.5, 810.0),
 						dimensions: Dimensions {
 							width: 100.0,
 							height: 50.0,
@@ -226,10 +226,10 @@ fn spawn_popup_buttons(
 					for i in 0..15 {
 						commands
 							.spawn((SpriteBundle{
-								transform: Transform::from_xyz(100.0 + 25.0 * i as f32, -27.5, 810.0),
+								transform: Transform::from_xyz(85.0 + 17.5 * i as f32, -27.5, 810.0),
 								sprite: Sprite {
 									color: get_molecule_color(i, selected_palette.0),
-									custom_size: Some(Vec2::new(25.0, 50.0)), 
+									custom_size: Some(Vec2::new(12.5, 50.0)), 
 									..Default::default()
 								},
 								..Default::default()
