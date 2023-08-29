@@ -350,10 +350,10 @@ fn spawn_popup_buttons(
 						));
 					};
 					let button = StandardButton {
-						location: Vec3::new(-650.0, -350.0, 810.0),
+						location: Vec3::new(-500.0, -350.0, 810.0),
 						dimensions: Dimensions {
-							width: 100.0,
-							height: 50.0,
+							width: 300.0,
+							height: 40.0,
 						},
 						enabled: true,
 						idle_color: Color::hex("EDD6AD").unwrap(),
@@ -374,6 +374,15 @@ fn spawn_popup_buttons(
 						button,
 						DespawnOnExitPauseState,
 						Name::new("Logbook Button")
+					));
+					commands.spawn((Text2dBundle {
+						transform: Transform::from_xyz(-500.0, -350.0, 820.0),
+						text: Text::from_section(format!("Back"), get_button_text_style(&asset_server))
+							.with_alignment(TextAlignment::Center),
+						..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Logbook Button")
 					));
 				},
 				PopupType::LevelSelect => {
@@ -421,10 +430,10 @@ fn spawn_popup_buttons(
 						}
 					}
 					let button = StandardButton {
-						location: Vec3::new(-350.0, -350.0, 810.0),
+						location: Vec3::new(-525.0, -337.5, 810.0),
 						dimensions: Dimensions {
-							width: 100.0,
-							height: 50.0,
+							width: 300.0,
+							height: 40.0,
 						},
 						enabled: true,
 						idle_color: Color::hex("EDD6AD").unwrap(),
@@ -445,6 +454,15 @@ fn spawn_popup_buttons(
 						button,
 						DespawnOnExitPauseState,
 						Name::new("Exit Level Select Button")
+					));
+					commands.spawn((Text2dBundle {
+						transform: Transform::from_xyz(-525.0, -337.5, 820.0),
+						text: Text::from_section(format!("Back"), get_button_text_style(&asset_server))
+							.with_alignment(TextAlignment::Center),
+						..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Exit Level Select Button")
 					));
 				},
 				PopupType::LevelIntro(level) => {
@@ -475,8 +493,8 @@ fn spawn_popup_buttons(
 					let button = StandardButton {
 						location: Vec3::new(400.0, -300.0, 810.0),
 						dimensions: Dimensions {
-							width: 200.0,
-							height: 100.0,
+							width: 400.0,
+							height: 40.0,
 						},
 						enabled: true,
 						idle_color: Color::hex("EDD6AD").unwrap(),
@@ -498,11 +516,20 @@ fn spawn_popup_buttons(
 						DespawnOnExitPauseState,
 						Name::new("Exit Intro Button")
 					));
+					commands.spawn((Text2dBundle {
+						transform: Transform::from_xyz(400.0, -300.0, 820.0),
+						text: Text::from_section(format!("Back"), get_button_text_style(&asset_server))
+							.with_alignment(TextAlignment::Center),
+						..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Exit Intro Button")
+					));
 					let button = StandardButton {
 						location: Vec3::new(-400.0, -300.0, 810.0),
 						dimensions: Dimensions {
-							width: 200.0,
-							height: 100.0,
+							width: 400.0,
+							height: 40.0,
 						},
 						enabled: true,
 						idle_color: Color::hex("EDD6AD").unwrap(),
@@ -523,6 +550,15 @@ fn spawn_popup_buttons(
 						button,
 						DespawnOnExitPauseState,
 						Name::new("Return to Lab Button")
+					));
+					commands.spawn((Text2dBundle {
+						transform: Transform::from_xyz(-400.0, -300.0, 820.0),
+						text: Text::from_section(format!("Exit"), get_button_text_style(&asset_server))
+							.with_alignment(TextAlignment::Center),
+						..Default::default()
+					},
+					DespawnOnExitPauseState,
+					Name::new("Return to Lab Button")
 					));
 				}
 				PopupType::WinScreen(prev_best_time, current_time, prev_best_cost, current_cost) => {
