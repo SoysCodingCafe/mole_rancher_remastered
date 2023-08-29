@@ -1089,7 +1089,7 @@ pub fn get_settings_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 60.0,
+		font_size: 30.0,
 		color: Color::hex("EDD6AD").unwrap(),
 		..Default::default()
 	}
@@ -1100,7 +1100,7 @@ pub fn get_intro_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 60.0,
+		font_size: 30.0,
 		color: Color::hex("2B2B29").unwrap(),
 		..Default::default()
 	}
@@ -1111,7 +1111,7 @@ pub fn get_win_countdown_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 100.0,
+		font_size: 50.0,
 		color: *Color::hex("2B2B29").unwrap().set_a(0.95),
 	}
 }
@@ -1121,7 +1121,7 @@ pub fn get_win_title_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 100.0,
+		font_size: 50.0,
 		color: Color::hex("EDD6AD").unwrap(),
 	}
 }
@@ -1131,7 +1131,7 @@ pub fn get_win_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 50.0,
+		font_size: 25.0,
 		color: Color::hex("EDD6AD").unwrap(),
 	}
 }
@@ -1141,7 +1141,7 @@ pub fn get_win_values_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 50.0,
+		font_size: 25.0,
 		color: Color::hex("CDB68D").unwrap(),
 	}
 }
@@ -1151,7 +1151,7 @@ pub fn get_tooltip_text_style(
 ) -> TextStyle {
 	TextStyle {
 		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
-		font_size: 32.0,
+		font_size: 16.0,
 		color: Color::rgba(0.1, 0.1, 0.1, 1.0),
 		..Default::default()
 	}
