@@ -1138,16 +1138,6 @@ pub fn get_title_text_style(
 	}
 }
 
-pub fn get_subtitle_text_style(
-	asset_server: &Res<AssetServer>
-) -> TextStyle {
-	TextStyle {
-		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 40.0,
-		color: Color::hex("EDD6AD").unwrap(),
-	}
-}
-
 pub fn get_settings_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
@@ -1166,6 +1156,17 @@ pub fn get_intro_text_style(
 		font: asset_server.load("fonts/Ronda.ttf"),
 		font_size: 40.0,
 		color: Color::hex("EDD6AD").unwrap(),
+		..Default::default()
+	}
+}
+
+pub fn get_logbook_text_style(
+	asset_server: &Res<AssetServer>
+) -> TextStyle {
+	TextStyle {
+		font: asset_server.load("fonts/Ronda.ttf"),
+		font_size: 40.0,
+		color: Color::hex("2B2B29").unwrap(),
 		..Default::default()
 	}
 }
