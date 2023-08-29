@@ -30,7 +30,7 @@ fn spawn_lab(
 	// Spawn background for lab when dark
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("sprites/background/lab_dark.png"),
+			texture: asset_server.load("sprites/background/lab_bright.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 0.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)), 
@@ -46,7 +46,7 @@ fn spawn_lab(
 	// Spawn background for bright lab, but initially set to hidden
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("sprites/background/lab_bright.png"),
+			texture: asset_server.load("sprites/background/lab_dark.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 10.0),
 			sprite: Sprite {
 				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)), 

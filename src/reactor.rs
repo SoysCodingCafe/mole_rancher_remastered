@@ -56,7 +56,7 @@ fn spawn_reactor_intro(
 	next_state.set(PauseState::Paused);
 	ev_w_popup.send(PopupEvent{ 
 		origin: Vec2::new(0.0, 0.0), 
-		image: asset_server.load("sprites/popup/note_small.png"),
+		image: asset_server.load("sprites/popup/popup.png"),
 		alpha: 0.9,
 		popup_type: PopupType::LevelIntro(level.0),
 	});

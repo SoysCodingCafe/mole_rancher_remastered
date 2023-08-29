@@ -60,8 +60,8 @@ fn spawn_menu(
 
 	//Title Logo
 	commands.spawn((SpriteBundle {
-			texture: asset_server.load("splash\title.png"),
-			transform: Transform::from_xyz(0.0, 0.0, 100.0),
+			texture: asset_server.load("splash/title.png"),
+			transform: Transform::from_xyz(0.0, 200.0, 100.0),
 			sprite: Sprite {
 				..Default::default()
 			},

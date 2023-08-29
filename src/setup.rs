@@ -172,7 +172,7 @@ fn spawn_splash_screen(
 		.spawn((SpriteBundle {
 			transform: Transform::from_xyz(0.0, 0.0, 0.0),
 			sprite: Sprite {
-				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)), 
+				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)),
 				color: Color::hex("1A1A1A").unwrap(),
 				..Default::default()},
 			..Default::default()
@@ -182,21 +182,22 @@ fn spawn_splash_screen(
 	));
 	commands
 		.spawn((SpriteBundle {
-			texture: asset_server.load("splash/soyscodingcafe_logo.png"),
+			texture: asset_server.load("splash/credits.png"),
 			transform: Transform:: from_xyz(0.0, -250.0, 1.0),
 			sprite: Sprite {
-				custom_size: Some(Vec2::new(150.0, 150.0)),
+				custom_size: Some(Vec2::new(540.0, 92.0)),
 				..Default::default()},
 			..Default::default()
 		},
 		DespawnOnExitGameState,
-		Name::new("Logo")
+		Name::new("Credits")
 	));
 	commands
 		.spawn((SpriteBundle {
 			texture: asset_server.load("splash/bevy_logo_dark.png"),
 			transform: Transform:: from_xyz(-25.0, 50.0, 1.0),
 			sprite: Sprite {
+				custom_size: Some(Vec2::new(540.0, 137.0)),
 				..Default::default()},
 			..Default::default()
 		},
