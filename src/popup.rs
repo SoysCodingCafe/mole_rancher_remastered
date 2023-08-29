@@ -273,7 +273,7 @@ fn spawn_popup_buttons(
 							POPUP_WIDTH/2.0 - LOGBOOK_MARGINS * 2.0,
 							POPUP_HEIGHT - LOGBOOK_MARGINS * 2.0,
 						)},
-						text: Text::from_section(get_logbook_text(0, 0), get_intro_text_style(&asset_server))
+						text: Text::from_section(get_logbook_text(0, 0), get_logbook_text_style(&asset_server))
 							.with_alignment(TextAlignment::Left),
 						text_anchor: bevy::sprite::Anchor::TopLeft,
 						..Default::default()
@@ -288,7 +288,7 @@ fn spawn_popup_buttons(
 							POPUP_WIDTH/2.0 - LOGBOOK_MARGINS * 2.0,
 							POPUP_HEIGHT - LOGBOOK_MARGINS * 2.0,
 						)},
-						text: Text::from_section(get_logbook_text(0, 1), get_intro_text_style(&asset_server))
+						text: Text::from_section(get_logbook_text(0, 1), get_logbook_text_style(&asset_server))
 							.with_alignment(TextAlignment::Left),
 						text_anchor: bevy::sprite::Anchor::TopLeft,
 						..Default::default()
