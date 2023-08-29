@@ -66,7 +66,6 @@ fn update_bgm_volume(
 	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
 		if let Some(instance) = audio_instances.get_mut(&bgm_handle.0) {
 			instance.set_volume(save_data.bgm_volume.powf(2.5), AudioTween::linear(Duration::from_millis(100)));
-			println!("{}", save_data.bgm_volume);
 		}
 	}
 }

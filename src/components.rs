@@ -1035,8 +1035,8 @@ pub fn get_intro_text(
 	level: usize,
 ) -> String {
 	match level {
-		0 => format!("This is the introduction text for level one. Move left and right with A and D and shoot with space bar. Rotate with Q and E. Select reactor with middle mouse click. Try to hit the molecules to cause reactions!"),
-		1 => format!("You are getting the hang of this! Select which molecule you want from the menu on the left, and remember to launch by pressing the space bar!"),
+		0 => format!("Welcome to the reactor view! Select a chamber with Left Click and press Spacebar to launch molecules. You can move the launcher left and right with A and D. Try hit the molecules in the center to cause a reaction!"),
+		1 => format!("You are getting the hang of this! Use Left Click to select different molecules from the menu on the left. You can hover over them for more details! You can hold W to continuously fire molecules. Remember to select a chamber with Left Click!"),
 		2 => format!("This reactor is filled with unwanted molecules! Use that new molecule in the menu to the left to clear them out! You can hold shift to move faster!"),
 		3 => format!("This reactor has two chambers, an input chamber at the top and an output chamber at the bottom! However, the pipes connecting them only accept specific kinds of molecules. How will you get the reaction products to the output chamber?"),
 		4 => format!("TGIF! Three chambers this time, but it should be no problem for you! Make sure you select each reactor with the middle mouse button so that you can control the launcher in each. Be aware that your movement is restricted due to the connections on the side of the chamber!"),
