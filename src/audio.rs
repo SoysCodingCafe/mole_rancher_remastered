@@ -51,7 +51,7 @@ fn initialize_audio_instances(
 		let bgm_handle = audio
 			.play(asset_server.load("audio/bgm.wav"))
 			.looped()
-			.with_volume(save_data.bgm_volume)
+			.with_volume(save_data.bgm_volume.powf(2.5))
 			.handle();
 
 		commands.insert_resource(BgmHandle(bgm_handle));
@@ -65,7 +65,8 @@ fn update_bgm_volume(
 ) {
 	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
 		if let Some(instance) = audio_instances.get_mut(&bgm_handle.0) {
-			instance.set_volume(save_data.bgm_volume, AudioTween::linear(Duration::from_millis(100)));
+			instance.set_volume(save_data.bgm_volume.powf(2.5), AudioTween::linear(Duration::from_millis(100)));
+			println!("{}", save_data.bgm_volume);
 		}
 	}
 }
