@@ -35,7 +35,7 @@ fn main() {
 					// Stops the game from stopping keyboard shortcuts e.g. F12
 					prevent_default_event_handling: false,
 					// Default to Borderless Fullscreen
-					mode: bevy::window::WindowMode::BorderlessFullscreen,
+					//mode: bevy::window::WindowMode::BorderlessFullscreen,
 					// Set custom window title
 					title: "Mole Rancher Remastered".to_string(),
 					..default()
