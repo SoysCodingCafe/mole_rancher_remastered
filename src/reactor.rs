@@ -57,7 +57,7 @@ fn spawn_reactor_intro(
 	ev_w_popup.send(PopupEvent{ 
 		origin: Vec2::new(0.0, 0.0), 
 		image: asset_server.load("sprites/popup/popup.png"),
-		alpha: 0.9,
+		alpha: 0.95,
 		popup_type: PopupType::LevelIntro(level.0),
 	});
 }
@@ -727,8 +727,9 @@ fn spawn_reactors(
 					commands
 						.spawn((SpriteBundle {
 							transform: Transform::from_xyz(origin.x, origin.y + dimensions.height / 2.0, z),
+							texture: asset_server.load("sprites/ui/launcher.png"),
 							sprite: Sprite {
-								color: Color::DARK_GRAY,
+								//color: Color::DARK_GRAY,
 								custom_size: Some(Vec2::new(LAUNCH_TUBE_WIDTH, LAUNCH_TUBE_HEIGHT)),
 								..Default::default()
 							},
@@ -791,6 +792,7 @@ fn spawn_reactors(
 						z + connection.connection_id as f32
 					);
 					commands.spawn((SpriteBundle {
+						texture: asset_server.load("sprites/ui/connection.png"),
 						transform: Transform::from_translation(translation)
 						.with_rotation(Quat::from_rotation_z(if direction.y == 1.0 {0.0} else if direction.y == -1.0 {180.0_f32.to_radians()} else {if direction.x == 1.0 {-90.0_f32.to_radians()} else {90.0_f32.to_radians()}})),
 						sprite: Sprite {
@@ -821,8 +823,9 @@ fn spawn_reactors(
 					commands
 						.spawn((SpriteBundle {
 							transform: Transform::from_xyz(origin.x, origin.y + radius, z),
+							texture: asset_server.load("sprites/ui/launcher.png"),
 							sprite: Sprite {
-								color: Color::DARK_GRAY,
+								//color: Color::DARK_GRAY,
 								custom_size: Some(Vec2::new(LAUNCH_TUBE_WIDTH, LAUNCH_TUBE_HEIGHT)),
 								..Default::default()
 							},
@@ -886,6 +889,7 @@ fn spawn_reactors(
 						z + connection.connection_id as f32
 					);
 					commands.spawn((SpriteBundle {
+						texture: asset_server.load("sprites/ui/connection.png"),
 						transform: Transform::from_translation(translation)
 						.with_rotation(Quat::from_rotation_arc(Vec3::Y, (translation.xy() - origin).normalize().extend(0.0))),
 						sprite: Sprite {

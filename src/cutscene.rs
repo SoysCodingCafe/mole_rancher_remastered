@@ -28,16 +28,34 @@ fn spawn_cutscene(
 	mut commands: Commands,
 	asset_server: Res<AssetServer>,
 	cutscene_tracker: Res<CutsceneTracker>,
+	ortho_size: Res<OrthoSize>,
 ) {
 	let (initial_line, _) = next_line(cutscene_tracker.current_scene, 0);
 	for char in actors_in_scene(cutscene_tracker.current_scene) {
 		commands
 			.spawn((SpriteBundle {
-				//texture: asset_server.load(get_actor_path(char)),
+				texture: asset_server.load(get_actor_path(char)),
 				transform: Transform::from_xyz(if Actor::Guard == char {-350.0} else {350.0}, -50.0, 200.0),
 				sprite: Sprite {
-					color: Color::rgba(6.0, 6.0, 1.0, 0.0),
+					color: Color::rgba(1.0, 1.0, 1.0, 0.0),
 					custom_size: Some(Vec2::new(ACTOR_WIDTH, ACTOR_HEIGHT)),
+					..Default::default()
+				},
+				..Default::default()
+			},
+			ActorInfo{
+				actor: char,
+			},
+			DespawnOnExitGameState,
+			Name::new(get_actor_name(char))
+		));
+		commands
+			.spawn((SpriteBundle {
+				texture: asset_server.load(get_portrait_path(char)),
+				transform: Transform::from_xyz(-625.0, -250.0, 610.0),
+				sprite: Sprite {
+					color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+					custom_size: Some(Vec2::new(PORTRAIT_WIDTH, PORTRAIT_HEIGHT)),
 					..Default::default()
 				},
 				..Default::default()
@@ -50,18 +68,32 @@ fn spawn_cutscene(
 		));
 	}
 
-	let char_portrait_size = Vec2::new(PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
 	commands
 		.spawn((SpriteBundle {
 			transform: Transform::from_xyz(-625.0, -250.0, 600.0),
 			sprite: Sprite {
-				custom_size: Some(Vec2::new(char_portrait_size.x, char_portrait_size.y)),
+				color: Color::ALICE_BLUE,
+				custom_size: Some(Vec2::new(PORTRAIT_WIDTH, PORTRAIT_HEIGHT)),
 				..Default::default()
 			},
 			..Default::default()
 		},
 		DespawnOnExitGameState,
 		Name::new("Text Box Portrait")
+	));
+
+	commands
+		.spawn((SpriteBundle {
+			texture: asset_server.load("sprites/characters/cutscene_background.png"),
+			transform: Transform::from_xyz(0.0, 0.0, 10.0),
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)),
+				..Default::default()
+			},
+			..Default::default()
+		},
+		DespawnOnExitGameState,
+		Name::new("Cutscene Background")
 	));
 
 	commands
@@ -100,8 +132,8 @@ fn spawn_cutscene(
 	let button = StandardButton {
 		location: Vec3::new(600.0, 350.0, 810.0),
 		dimensions: Dimensions {
-			width: 200.0,
-			height: 100.0,
+			width: 150.0,
+			height: 50.0,
 		},
 		enabled: true,
 		idle_color: Color::hex("EDD6AD").unwrap(),
@@ -121,7 +153,17 @@ fn spawn_cutscene(
 		button,
 		DespawnOnExitGameState,
 		Name::new("Skip Cutscene Button")
-	));
+	)).with_children(|parent| {
+		parent
+			.spawn((Text2dBundle {
+				transform: Transform::from_xyz(0.0, -3.0, 10.0,),
+				text: Text::from_section(format!("Skip"), get_button_text_style(&asset_server))
+					.with_alignment(TextAlignment::Center),
+				..Default::default()
+			},
+			Name::new("Skip Cutscene Button Text")
+		));
+	});
 }
 
 // Update cutscene text as user advances through
