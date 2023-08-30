@@ -4,6 +4,7 @@ A game about combining molecules to generate power made in the Bevy game engine.
 This is the remastered version of the original game which came 5th Overall in the Bevy Jam #2.
 
 The remastered version of Mole Rancher can be played at: https://soyscodingcafe.itch.io/mole-rancher-remastered
+
 The game jam version of Mole Rancher can be played at: https://soyscodingcafe.itch.io/mole-rancher
 
 ## CREDITS
