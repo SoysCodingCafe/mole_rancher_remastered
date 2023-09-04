@@ -28,3 +28,5 @@ Bevy Discord Community - Continual Source of Inspiration and Guidance.
 LogicProjects - Bevy Tutorials and Guidance.
 
 Jacques-dev - Learn Bevy Tutorial Series.
+
+ErnieIzde8ski - Pull request to fix minor Linux bug.
