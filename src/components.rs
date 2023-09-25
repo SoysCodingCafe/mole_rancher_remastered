@@ -53,8 +53,8 @@ pub const TEXT_BOX_MARGINS: f32 = 25.0;
 pub const PORTRAIT_WIDTH: f32 = 300.0;
 pub const PORTRAIT_HEIGHT: f32 = 300.0;
 
-pub const ACTOR_WIDTH: f32 = 450.0;
-pub const ACTOR_HEIGHT: f32 = 900.0;
+pub const ACTOR_WIDTH: f32 = 512.0;
+pub const ACTOR_HEIGHT: f32 = 896.0;
 
 pub const TEXT_SPEED: f32 = 0.01;
 pub const FADE_ACTOR_SPEED: f32 = 6.0;

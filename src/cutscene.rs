@@ -67,7 +67,7 @@ fn spawn_cutscene(
 		));
 	}
 
-	commands
+	/*commands
 		.spawn((SpriteBundle {
 			transform: Transform::from_xyz(-625.0, -250.0, 600.0),
 			sprite: Sprite {
@@ -79,13 +79,14 @@ fn spawn_cutscene(
 		},
 		DespawnOnExitGameState,
 		Name::new("Text Box Portrait")
-	));
+	));*/
 
 	commands
 		.spawn((SpriteBundle {
 			texture: asset_server.load("sprites/characters/cutscene_background.png"),
 			transform: Transform::from_xyz(0.0, 0.0, 10.0),
 			sprite: Sprite {
+				color: Color::hex("DA9F56").unwrap(),
 				custom_size: Some(Vec2::new(ortho_size.width, ortho_size.height)),
 				..Default::default()
 			},
@@ -99,6 +100,7 @@ fn spawn_cutscene(
 		.spawn((SpriteBundle {
 			transform: Transform::from_xyz(150.0, -250.0, 600.0),
 			sprite: Sprite {
+				color: Color::hex("DA9F56").unwrap(),
 				custom_size: Some(Vec2::new(TEXT_BOX_WIDTH, TEXT_BOX_HEIGHT)),
 				..Default::default()
 			},
