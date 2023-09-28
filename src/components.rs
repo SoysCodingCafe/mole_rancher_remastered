@@ -1174,7 +1174,7 @@ pub fn get_logbook_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
 	TextStyle {
-		font: asset_server.load("fonts/Ronda.ttf"),
+		font: asset_server.load("fonts/RonysiswadiArchitect5.ttf"),
 		font_size: 40.0,
 		color: Color::hex("2B2B29").unwrap(),
 		..Default::default()
@@ -1195,8 +1195,8 @@ pub fn get_win_title_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
 	TextStyle {
-		font: asset_server.load("fonts/Ronda.ttf"),
-		font_size: 50.0,
+		font: asset_server.load("fonts/RonysiswadiArchitect5.ttf"),
+		font_size: 65.0,
 		color: Color::hex("2B2B29").unwrap(),
 	}
 }
@@ -1205,7 +1205,7 @@ pub fn get_win_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
 	TextStyle {
-		font: asset_server.load("fonts/Ronda.ttf"),
+		font: asset_server.load("fonts/RonysiswadiArchitect5.ttf"),
 		font_size: 50.0,
 		color: Color::hex("2B2B29").unwrap(),
 	}
@@ -1215,7 +1215,7 @@ pub fn get_win_values_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
 	TextStyle {
-		font: asset_server.load("fonts/Ronda.ttf"),
+		font: asset_server.load("fonts/RonysiswadiArchitect5.ttf"),
 		font_size: 50.0,
 		color: Color::hex("2B2B29").unwrap(),
 	}
@@ -1225,8 +1225,8 @@ pub fn get_tooltip_text_style(
 	asset_server: &Res<AssetServer>
 ) -> TextStyle {
 	TextStyle {
-		font: asset_server.load("fonts/PixelSplitter-Bold.ttf"),
-		font_size: 16.0,
+		font: asset_server.load("fonts/RonysiswadiArchitect5.ttf"),
+		font_size: 40.0,
 		color: Color::rgba(0.1, 0.1, 0.1, 1.0),
 		..Default::default()
 	}
