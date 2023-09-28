@@ -587,6 +587,10 @@ pub fn get_available_molecules(
 			available_molecules[6] = true;
 			available_molecules
 		}
+		6 => {
+			available_molecules[6] = true;
+			available_molecules
+		}
 		_ => {
 			for i in 0..7 {
 				available_molecules[i] = true;
@@ -779,7 +783,8 @@ pub fn valid_molecule_combination(
 	let (mol_a, mol_b) = (mol_a.min(mol_b), mol_a.max(mol_b));
 	match mol_a {
 		0 => match mol_b {
-			1 => ReactionInfo::Reaction(vec![2], Limits(0.0, 1.0), Limits(0.0, 1.0)),
+			0 => ReactionInfo::Reaction(vec![1], Limits(0.9, 1.0), Limits(0.0, 1.0)),
+			1 => ReactionInfo::Reaction(vec![2], Limits(0.0, 0.9), Limits(0.0, 1.0)),
 			3 => ReactionInfo::Reaction(vec![5, 5, 5, 5, 5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			5 => ReactionInfo::Reaction(vec![5], Limits(0.0, 1.0), Limits(0.0, 1.0)),
 			_ => ReactionInfo::None,
@@ -841,6 +846,9 @@ pub fn get_reactors(
 			reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 1500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});
 		}
 		6 => {
+			{reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 1500.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
+		}
+		_ => {
 			{reactors.push(ReactorInfo{reactor_type: ReactorType::Circle{origin: Vec2::new(0.0, 0.0), radius: 4000.0}, reactor_id: 0, input_chamber: true, product_chamber: true});}
 		}
 		_ => {
@@ -981,6 +989,17 @@ pub fn get_reactor_initialization(
 			},
 			_ => molecules,
 		}
+		6 => match reactor_id {
+			0 => {
+				for j in 0..5 {
+					for i in 0..5 {
+						molecules.push((0, Vec2::new(-400.0 + 200.0 * i as f32, -400.0 + 200.0 * j as f32), Vec2::ZERO));
+					}
+				}
+				molecules
+			},
+			_ => molecules,
+		}
 		_ => {
 			molecules
 		}
@@ -997,7 +1016,8 @@ pub fn get_level_goal(
 		3 => WinCondition::GreaterThan(5, 2),
 		4 => WinCondition::GreaterThan(5, 4),
 		5 => WinCondition::GreaterThan(15, 4),
-		6 => WinCondition::GreaterThan(1, 10),
+		6 => WinCondition::GreaterThan(5, 1),
+		_ => WinCondition::GreaterThan(1, 10),
 		_ => WinCondition::GreaterThan(1, 0),
 	}
 }
@@ -1012,6 +1032,7 @@ pub fn get_level_goal_text(
 		3 => format!("Have at least 5 Comba molecules in the output chamber"),
 		4 => format!("Have at least 5 Densa molecules in the output chamber"),
 		5 => format!("Have at least 15 Densa molecules in the output chamber"),
+		6 => format!("Have at least 5 Supla molecules in the output chamber"),
 		_ => format!("Have fun!"),
 	}
 }
@@ -1088,7 +1109,7 @@ pub fn get_initial_zoom(
 		3 => 9.0,
 		4 => 9.0,
 		5 => 4.0,
-		6 => 10.0,
+		6 => 8.0,
 		_ => 10.0,
 	}
 }
@@ -1103,6 +1124,7 @@ pub fn get_intro_text(
 		3 => format!("This level has two chambers. You can only launch molecules in the top chamber, and the pipes connecting the chambers only accept specific molecules. You can use the Mouse Wheel to zoom, and hold Right Click to pan around for a better view."),
 		4 => format!("TGIF! There are three chambers this time, but it should be no problem for you! Make sure you select each chamber with Left Click to control the launcher within it. Be aware that your movement is restricted due to the connections on the side of the chamber!"),
 		5 => format!("You thought Saturdays would be a holiday? No way! This will be your hardest challenge yet! Nothing new but this reaction requires two steps, though watch out for any unwanted reactions!"),
+		6 => format!("Hello, Arnie here, well done on passing your review! I have made you some popcorn to celebrate! Totally unrelated, the temperature lever has been fixed at the side of the reactor. Just select a reactor with Left Click, then click and drag the lever to change the temperature! If you find any kernels, do not tell Isa! Ha ha! Maybe Fundas will react differently at high temperatures like the popcorn!"),
 		_ => format!("I hope you are enjoying Mole Rancher Remastered! If you made it this far, leave me a comment letting me know what you think! Any feedback is appreciated! More levels will be added in future updates! This is currently a sandbox level. Use Middle Mouse Button on a mole to track it!"),
 	}
 }
@@ -1432,10 +1454,36 @@ pub fn next_line(
 			8 =>
 			("If you would be willing, it would be great if you would stay on as a full time rancher here.".to_string(),
 			ActorInfo{actor: Actor::Scientist}),
+			9 =>
+			("I will give you some time to think it over. Feel free to revisit any of the training exercises you have completed so far.".to_string(),
+			ActorInfo{actor: Actor::Scientist}),
 			_ =>
-			("I will give you some time to think it over. Feel free to experiment on the computer, you should have access to all the moles you have seen so far.".to_string(),
+			("If you do decide to stay, Arnie has been working hard on improving the reactor. I believe he has left a note for you on your computer.".to_string(),
 			ActorInfo{actor: Actor::Scientist}),
 		},
+		7 => match current_line {
+			0 =>
+			("August 8th - Inside the Reactor".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			1 =>
+			("You are the only person here.".to_string(),
+			ActorInfo{actor: Actor::You}),
+			2 =>
+			("The temperature is slowly rising.".to_string(),
+			ActorInfo{actor: Actor::You}),
+			3 =>
+			("Just as you begin to panic, you hear a screeching alarm echo around the reactor...".to_string(),
+			ActorInfo{actor: Actor::You}),
+			4 =>
+			("August 8th - The Reactor Control Bench".to_string(),
+			ActorInfo{actor: Actor::Nobody}),
+			5 =>
+			("You must have drifted off ranching the moles. It has been a busy week, and it can be so relaxing watching them bounce around inside the reactors.".to_string(),
+			ActorInfo{actor: Actor::You}),
+			_ =>
+			("Ah well. Time to get back to work.".to_string(),
+			ActorInfo{actor: Actor::You}),
+		}
 		_ => match current_line {
 			0 =>
 			("August ??? - Please Report This".to_string(),
@@ -1457,7 +1505,8 @@ pub fn lines_per_scene(
 		3 => 4,
 		4 => 3,
 		5 => 3,
-		6 => 9,
+		6 => 10,
+		7 => 5,
 		_ => 1,
 	}
 }
@@ -1473,6 +1522,7 @@ pub fn actors_in_scene(
 		4 => vec![Actor::Guard],
 		5 => vec![Actor::Scientist],
 		6 => vec![Actor::Scientist, Actor::Guard],
+		7 => vec![Actor::You],
 		_ => vec![Actor::You],
 	}
 }
