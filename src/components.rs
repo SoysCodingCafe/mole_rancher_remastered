@@ -1028,7 +1028,7 @@ pub fn get_tooltip_text(
 			3 => format!("Volla reacts strongly with Funda and Supla to produce destructive Morta, however, it can be stabilized by reacting with Comba."),
 			4 => format!("Densa is extremely heavy and is not easily moved by other molecules. It is also very stable, but will still be destroyed by Morta."),
 			5 => format!("Morta is a fast and dangerous molecule which eradicates most other molecules. Thankfully it decays quickly, and can be useful for clearing out a reactor."),
-			6 => format!("Inera is a short lived molecule, and is not known to react with any other molecules. Skilled ranchers use these to push other molecules around."),
+			6 => format!("Inera is a short-lived molecule, and is not known to react with any other molecules. Skilled ranchers use these to push other molecules around."),
 			_ => format!("This molecule is unknown!"),
 		}
 	} else {
