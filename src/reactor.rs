@@ -2,7 +2,7 @@
 use bevy::{prelude::*, render::view::RenderLayers, math::Vec3Swizzles, time::Stopwatch};
 use bevy_pkv::PkvStore;
 // Import components, resources, and events
-use crate::components::*;
+use crate::{components::*, molecules::reset_choices};
 
 // Plugin for handling reactor sprites and logic
 pub struct ReactorPlugin;
@@ -12,13 +12,14 @@ impl Plugin for ReactorPlugin {
         app
 			.add_systems(OnEnter(GameState::Reactor), (
 				spawn_reactor_intro,
-				spawn_reactor_visuals,
+				spawn_reactor_visuals.after(reset_choices),
 				spawn_reactor_buttons,
 				spawn_reactor_levers,
 				spawn_reactors,
 			))
 			.add_systems(Update, (
 				recolor_selected_reactor,
+				particle_highlight,
 				update_cost,
 				update_stopwatch,
 				handle_levers,
@@ -47,6 +48,29 @@ fn recolor_selected_reactor (
 	}
 }
 
+fn particle_highlight (
+	mut particle_query: Query<(&mut Transform, With<SelectedParticle>)>,
+	selected_molecule_type: ResMut<SelectedMoleculeType>,
+) {
+	let mut xcomp = 0;
+	let mut ycomp = 0;
+
+	if selected_molecule_type.0 <= 2 {
+		xcomp = selected_molecule_type.0;
+		ycomp = 0;
+	} else if selected_molecule_type.0 > 2 && selected_molecule_type.0 <= 5 {
+		xcomp = selected_molecule_type.0 - 3;
+		ycomp = 1;
+	} else if selected_molecule_type.0 > 5 && selected_molecule_type.0 <= 8 {
+		xcomp = selected_molecule_type.0 - 6;
+		ycomp = 2;
+	}
+
+	for (mut transform, _) in particle_query.iter_mut() {
+		transform.translation = Vec3::new(-720.0 + 125.0 * xcomp as f32, 288.0 - 100.0 * ycomp as f32, 710.0);
+	}
+}
+
 fn spawn_reactor_intro(
 	asset_server: Res<AssetServer>,
 	level: Res<SelectedLevel>,
@@ -70,7 +94,32 @@ fn spawn_reactor_visuals(
 	selected_level: Res<SelectedLevel>,
 	asset_server: Res<AssetServer>,
 	ortho_size: Res<OrthoSize>,
+	selected_molecule_type: ResMut<SelectedMoleculeType>,
 ) {
+	let mut xcomp = 0;
+	let mut ycomp = 0;
+
+	if selected_molecule_type.0 <= 2 {
+		xcomp = selected_molecule_type.0;
+		ycomp = 0;
+	} else if selected_molecule_type.0 > 2 && selected_molecule_type.0 <= 5 {
+		xcomp = selected_molecule_type.0 - 3;
+		ycomp = 1;
+	} else if selected_molecule_type.0 > 5 && selected_molecule_type.0 <= 8 {
+		xcomp = selected_molecule_type.0 - 6;
+		ycomp = 2;
+	}
+
+	commands
+		.spawn((SpriteBundle {
+			texture: asset_server.load("sprites/ui/highlight_particle.png"),
+			transform: Transform::from_translation(Vec3::new(-720.0 + 125.0 * xcomp as f32, 288.0 - 100.0 * ycomp as f32, 710.0)),
+			..Default::default()
+			},
+		DespawnOnExitGameState,
+		Name::new("Molecule Highlight"),
+	)).insert(SelectedParticle);
+
 	commands
 		.spawn((SpriteBundle {
 			texture: asset_server.load("sprites/background/reactor_controls.png"),

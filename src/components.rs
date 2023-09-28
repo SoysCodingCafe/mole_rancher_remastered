@@ -358,6 +358,9 @@ pub struct SelectedMolecule;
 pub struct SelectedReactor;
 
 #[derive(Component)]
+pub struct SelectedParticle;
+
+#[derive(Component)]
 pub struct Highlight;
 
 #[derive(Component)]
