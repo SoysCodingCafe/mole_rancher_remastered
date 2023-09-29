@@ -640,7 +640,7 @@ fn intake_connections(
 	for (c_transform, connection) in connection_query.iter() {
 		for (entity, m_transform, m_info, velocity, r_info, _) in molecule_query.iter() {
 			if connection.reactor_id == r_info.reactor_id {
-				if (c_transform.translation.xy() - m_transform.translation.xy()).length() < CONNECTION_WIDTH 
+				if (c_transform.translation.xy() - m_transform.translation.xy()).length() < CONNECTION_IN_WIDTH 
 				&& connection.intake
 				&& connection.filter[m_info.index] {
 					ev_w_connection.send(ConnectionEvent{
@@ -656,7 +656,7 @@ fn intake_connections(
 		}
 		for (entity, m_transform, m_info, velocity, r_info, _) in selected_molecule_query.iter() {
 			if connection.reactor_id == r_info.reactor_id {
-				if (c_transform.translation.xy() - m_transform.translation.xy()).length() < CONNECTION_WIDTH 
+				if (c_transform.translation.xy() - m_transform.translation.xy()).length() < CONNECTION_IN_WIDTH 
 				&& connection.intake 
 				&& connection.filter[m_info.index] {
 					ev_w_connection.send(ConnectionEvent{
@@ -843,13 +843,13 @@ fn spawn_reactors(
 						z + connection.connection_id as f32
 					);
 					commands.spawn((SpriteBundle {
-						texture: asset_server.load("sprites/ui/connection.png"),
+						texture: asset_server.load("sprites/ui/connection_in.png"),
 						transform: Transform::from_translation(translation)
 						.with_rotation(Quat::from_rotation_z(if direction.y == 1.0 {0.0} else if direction.y == -1.0 {180.0_f32.to_radians()} else {if direction.x == 1.0 {-90.0_f32.to_radians()} else {90.0_f32.to_radians()}})),
 						sprite: Sprite {
 							color: if connection.intake {get_molecule_color(connection.connection_id, selected_palette.0)} 
 								else {*get_molecule_color(connection.connection_id, selected_palette.0).set_a(0.8)},
-							custom_size: Some(Vec2::new(CONNECTION_WIDTH, CONNECTION_HEIGHT)),
+							custom_size: Some(Vec2::new(CONNECTION_IN_WIDTH, CONNECTION_HEIGHT)),
 							..Default::default()
 						},
 						..Default::default()
@@ -940,13 +940,13 @@ fn spawn_reactors(
 						z + connection.connection_id as f32
 					);
 					commands.spawn((SpriteBundle {
-						texture: asset_server.load("sprites/ui/connection.png"),
+						texture: asset_server.load("sprites/ui/connection_out.png"),
 						transform: Transform::from_translation(translation)
 						.with_rotation(Quat::from_rotation_arc(Vec3::Y, (translation.xy() - origin).normalize().extend(0.0))),
 						sprite: Sprite {
 							color: if connection.intake {get_molecule_color(connection.connection_id, selected_palette.0)} 
 								else {*get_molecule_color(connection.connection_id, selected_palette.0).set_a(0.8)},
-							custom_size: Some(Vec2::new(CONNECTION_WIDTH, CONNECTION_HEIGHT)),
+							custom_size: Some(Vec2::new(CONNECTION_OUT_WIDTH, CONNECTION_HEIGHT)),
 							..Default::default()
 						},
 						..Default::default()

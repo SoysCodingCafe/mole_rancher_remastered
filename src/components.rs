@@ -103,10 +103,11 @@ pub const PARTICLE_DURATION: f32 = 0.6;
 pub const LEVER_WIDTH: f32 = 160.0;
 pub const LEVER_HEIGHT: f32 = 40.0;
 
-pub const CONNECTION_WIDTH: f32 = 128.0;
+pub const CONNECTION_OUT_WIDTH: f32 = 128.0;
+pub const CONNECTION_IN_WIDTH: f32 = 189.0;
 pub const CONNECTION_HEIGHT: f32 = 256.0;
 
-pub const LAUNCH_TUBE_WIDTH: f32 = 128.0;
+pub const LAUNCH_TUBE_WIDTH: f32 = 146.0;
 pub const LAUNCH_TUBE_HEIGHT: f32 = 256.0;
 pub const LAUNCH_TUBE_SPEED: f32 = 1.0;
 pub const LAUNCH_TUBE_ROTATIONAL_SPEED: f32 = 150.0;
