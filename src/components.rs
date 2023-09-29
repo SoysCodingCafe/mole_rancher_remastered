@@ -28,6 +28,7 @@ pub struct SaveData {
 	pub sfx_volume: f64,
 	pub bgm_volume: f64,
 	pub selected_palette: usize,
+	pub fullscreen_enabled: bool,
 	pub particles_enabled: bool,
 	pub levels_unlocked: Vec<bool>,
 	pub best_times: Vec<f32>,
@@ -150,7 +151,6 @@ pub enum PauseState {
 	Paused,
 }
 
-
 // ENUMS
 #[derive(Eq, PartialEq, Default)]
 pub enum FadeScreenState {
@@ -204,6 +204,7 @@ pub enum PopupButton {
 	SfxVolume(usize),
 	PaletteToggle,
 	ParticleTrails(bool),
+	Fullscreen(bool),
 	LogbookPage(usize),
 	LevelSelect(usize),
 	ReturnToLab,
@@ -488,6 +489,9 @@ pub struct TextSpeedTimer(pub Timer);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct SelectedPalette(pub usize);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct FullscreenEnabled(pub usize);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct SelectedLevel(pub usize);

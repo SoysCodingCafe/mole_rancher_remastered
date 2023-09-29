@@ -99,7 +99,7 @@ fn spawn_popup_buttons(
 					));
 					commands.spawn((Text2dBundle{
 						transform: Transform::from_xyz(-25.0, 0.0, 810.0),
-						text: Text::from_section(format!("BGM Volume:\n\nSFX Volume:\n\nToggle Palette:\n\nParticle Trails:"), get_settings_text_style(&asset_server))
+						text: Text::from_section(format!("BGM Volume:\n\nSFX Volume:\n\nToggle Palette:\n\nParticle Trails:\n\n Fullscreen Mode:"), get_settings_text_style(&asset_server))
 							.with_alignment(TextAlignment::Right),
 						text_anchor: bevy::sprite::Anchor::CenterRight,
 						..Default::default()
@@ -121,7 +121,7 @@ fn spawn_popup_buttons(
 						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::ExitPopup)));
 					commands.spawn((Text2dBundle {
-							transform: Transform::from_xyz(0.0, -310.0, 820.0),
+							transform: Transform::from_xyz(0.0, -312.5, 820.0),
 							text: Text::from_section(format!("Back"), get_button_text_style(&asset_server))
 								.with_alignment(TextAlignment::Center),
 							..Default::default()
@@ -131,7 +131,7 @@ fn spawn_popup_buttons(
 					));
 					for i in 0..=10 {
 						buttons.push((StandardButton {
-							location: Vec3::new(25.0 + 30.0 * i as f32, 95.0, 810.0),
+							location: Vec3::new(25.0 + 30.0 * i as f32, 125.0, 810.0),
 							dimensions: Dimensions {
 								width: 25.0,
 								height: 50.0,
@@ -142,7 +142,7 @@ fn spawn_popup_buttons(
 							disabled_color: Color::hex("9D865D").unwrap(),
 						}, ButtonEffect::PopupButton(PopupButton::BgmVolume(i))));
 						buttons.push((StandardButton {
-							location: Vec3::new(25.0 + 30.0 * i as f32, 32.5, 810.0),
+							location: Vec3::new(25.0 + 30.0 * i as f32, 62.5, 810.0),
 							dimensions: Dimensions {
 								width: 25.0,
 								height: 50.0,
@@ -154,7 +154,7 @@ fn spawn_popup_buttons(
 						}, ButtonEffect::PopupButton(PopupButton::SfxVolume(i))));
 					}
 					buttons.push((StandardButton {
-						location: Vec3::new(37.5, -27.5, 810.0),
+						location: Vec3::new(37.5, 2.5, 810.0),
 						dimensions: Dimensions {
 							width: 50.0,
 							height: 50.0,
@@ -165,7 +165,7 @@ fn spawn_popup_buttons(
 						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::PaletteToggle)));
 					commands.spawn((Text2dBundle{
-						transform: Transform::from_xyz(62.5, -90.0, 820.0),
+						transform: Transform::from_xyz(62.5, -60.0, 820.0),
 						text: Text::from_section(format!("On"), get_settings_text_style(&asset_server))
 							.with_alignment(TextAlignment::Center),
 						text_anchor: bevy::sprite::Anchor::Center,
@@ -175,7 +175,7 @@ fn spawn_popup_buttons(
 						Name::new("Particle Trail Enable Text")
 					));
 					buttons.push((StandardButton {
-						location: Vec3::new(62.5, -87.5, 810.0),
+						location: Vec3::new(62.5, -57.5, 810.0),
 						dimensions: Dimensions {
 							width: 100.0,
 							height: 50.0,
@@ -186,17 +186,17 @@ fn spawn_popup_buttons(
 						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::ParticleTrails(true))));
 					commands.spawn((Text2dBundle{
-						transform: Transform::from_xyz(175.0, -90.0, 820.0),
+						transform: Transform::from_xyz(175.0, -60.0, 820.0),
 						text: Text::from_section(format!("Off"), get_settings_text_style(&asset_server))
 							.with_alignment(TextAlignment::Center),
 						text_anchor: bevy::sprite::Anchor::Center,
 						..Default::default()
 						},
 						DespawnOnExitPauseState,
-						Name::new("Particle Trail Enable Text")
+						Name::new("Particle Trail Disable Text")
 					));
 					buttons.push((StandardButton {
-						location: Vec3::new(175.0, -87.5, 810.0),
+						location: Vec3::new(175.0, -57.5, 810.0),
 						dimensions: Dimensions {
 							width: 100.0,
 							height: 50.0,
@@ -206,6 +206,48 @@ fn spawn_popup_buttons(
 						hovered_color: Color::hex("CDB68D").unwrap(),
 						disabled_color: Color::hex("9D865D").unwrap(),
 					}, ButtonEffect::PopupButton(PopupButton::ParticleTrails(false))));
+					commands.spawn((Text2dBundle{
+						transform: Transform::from_xyz(62.5, -120.0, 820.0),
+						text: Text::from_section(format!("On"), get_settings_text_style(&asset_server))
+							.with_alignment(TextAlignment::Center),
+						text_anchor: bevy::sprite::Anchor::Center,
+						..Default::default()
+						},
+						DespawnOnExitPauseState,
+						Name::new("Fullscreen Enable Text")
+					));
+					buttons.push((StandardButton {
+						location: Vec3::new(62.5, -117.5, 810.0),
+						dimensions: Dimensions {
+							width: 100.0,
+							height: 50.0,
+						},
+						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
+					}, ButtonEffect::PopupButton(PopupButton::Fullscreen(true))));
+					commands.spawn((Text2dBundle{
+						transform: Transform::from_xyz(175.0, -120.0, 820.0),
+						text: Text::from_section(format!("Off"), get_settings_text_style(&asset_server))
+							.with_alignment(TextAlignment::Center),
+						text_anchor: bevy::sprite::Anchor::Center,
+						..Default::default()
+						},
+						DespawnOnExitPauseState,
+						Name::new("Fullscreen Disable Text")
+					));
+					buttons.push((StandardButton {
+						location: Vec3::new(175.0, -117.5, 810.0),
+						dimensions: Dimensions {
+							width: 100.0,
+							height: 50.0,
+						},
+						enabled: true,
+						idle_color: Color::hex("EDD6AD").unwrap(),
+						hovered_color: Color::hex("CDB68D").unwrap(),
+						disabled_color: Color::hex("9D865D").unwrap(),
+					}, ButtonEffect::PopupButton(PopupButton::Fullscreen(false))));
 					for (button, effect) in buttons {
 						commands
 							.spawn((SpriteBundle {
@@ -226,7 +268,7 @@ fn spawn_popup_buttons(
 					for i in 0..15 {
 						commands
 							.spawn((SpriteBundle{
-								transform: Transform::from_xyz(85.0 + 17.5 * i as f32, -27.5, 810.0),
+								transform: Transform::from_xyz(85.0 + 17.5 * i as f32, 2.5, 810.0),
 								sprite: Sprite {
 									color: get_molecule_color(i, selected_palette.0),
 									custom_size: Some(Vec2::new(12.5, 50.0)), 
@@ -240,6 +282,7 @@ fn spawn_popup_buttons(
 						));
 					}
 				},
+				
 				PopupType::Logbook => {
 					commands
 						.spawn((SpriteBundle{

@@ -1,5 +1,6 @@
 // Import Bevy game engine essentials
 use bevy::{prelude::*, window::WindowResized, render::camera::Viewport, input::mouse::{MouseMotion, MouseWheel}};
+use bevy_pkv::PkvStore;
 // Import components, resources, and events
 use crate::components::*;
 
@@ -144,14 +145,28 @@ fn pan_zoom_reactor_camera(
 
 fn toggle_fullscreen(
 	keyboard: Res<Input<KeyCode>>,
+	pkv: Res<PkvStore>,
 	mut window_query: Query<&mut Window>,
 ) {
-	if keyboard.just_pressed(KeyCode::F) {
+	/*if keyboard.just_pressed(KeyCode::F) {
 		for mut window in window_query.iter_mut() {
 			match window.mode {
 				bevy::window::WindowMode::Windowed => window.mode = bevy::window::WindowMode::BorderlessFullscreen,
 				_ => window.mode = bevy::window::WindowMode::Windowed,
 			} 
+		}
+	}*/
+	if let Ok(save_data) = pkv.get::<SaveData>("save_data") {
+		if save_data.fullscreen_enabled {
+			for mut window in window_query.iter_mut() {
+        		if window.mode == bevy::window::WindowMode::Windowed {
+            		window.mode = bevy::window::WindowMode::BorderlessFullscreen;
+				}
+			}
+   		} else {
+			for mut window in window_query.iter_mut() {
+           		window.mode = bevy::window::WindowMode::Windowed;
+			}
 		}
 	}
 }

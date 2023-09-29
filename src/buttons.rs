@@ -164,6 +164,11 @@ fn standard_buttons(
 						sprite.color = button.disabled_color;
 					}
 				}
+				ButtonEffect::PopupButton(PopupButton::Fullscreen(enable)) => {	
+					if save_data.fullscreen_enabled == *enable {
+						sprite.color = button.disabled_color;
+					}
+				}
 				_ => (),
 			}
 		}
@@ -356,6 +361,13 @@ fn handle_button_calls(
 					PopupButton::ParticleTrails(enable) => {
 						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
 							save_data.particles_enabled = *enable;
+							pkv.set("save_data", &save_data)
+									.expect("Unable to save data");
+						}
+					},
+					PopupButton::Fullscreen(enable) => {
+						if let Ok(mut save_data) = pkv.get::<SaveData>("save_data") {
+							save_data.fullscreen_enabled = *enable;
 							pkv.set("save_data", &save_data)
 									.expect("Unable to save data");
 						}
