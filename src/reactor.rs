@@ -839,27 +839,78 @@ fn spawn_reactors(
 				for (direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
 					let translation = Vec3::new(
 						origin.x + direction.x * dimensions.width / 2.0, 
-						origin.y + direction.y * dimensions.height/2.0, 
+						origin.y + direction.y * dimensions.height / 2.0, 
 						z + connection.connection_id as f32
 					);
-					commands.spawn((SpriteBundle {
-						texture: asset_server.load("sprites/ui/connection_in.png"),
-						transform: Transform::from_translation(translation)
-						.with_rotation(Quat::from_rotation_z(if direction.y == 1.0 {0.0} else if direction.y == -1.0 {180.0_f32.to_radians()} else {if direction.x == 1.0 {-90.0_f32.to_radians()} else {90.0_f32.to_radians()}})),
-						sprite: Sprite {
-							color: if connection.intake {get_molecule_color(connection.connection_id, selected_palette.0)} 
-								else {*get_molecule_color(connection.connection_id, selected_palette.0).set_a(0.8)},
-							custom_size: Some(Vec2::new(CONNECTION_IN_WIDTH, CONNECTION_HEIGHT)),
+					if connection.intake {
+						commands.spawn((SpriteBundle {
+							texture: asset_server.load("sprites/ui/connection_in.png"),
+							transform: Transform::from_translation(translation)
+							.with_rotation(Quat::from_rotation_z(if direction.y == 1.0 {0.0} else if direction.y == -1.0 {180.0_f32.to_radians()} else {if direction.x == 1.0 {-90.0_f32.to_radians()} else {90.0_f32.to_radians()}})),
+							sprite: Sprite {
+								color: {get_molecule_color(connection.connection_id, selected_palette.0)},
+								custom_size: Some(Vec2::new(CONNECTION_IN_WIDTH, CONNECTION_HEIGHT)),
+								..Default::default()
+							},
 							..Default::default()
 						},
-						..Default::default()
-					},
-					connection,
-					RenderLayers::layer(1),
-					DespawnOnExitGameState,
-					Name::new("Connection"),
-					));
-				};
+						connection,
+						RenderLayers::layer(1),
+						DespawnOnExitGameState,
+						Name::new("Connection In"),
+						));
+					}
+				}
+				for (direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
+					let translation = Vec3::new(
+						origin.x + direction.x * dimensions.width / 2.0, 
+						origin.y + direction.y * dimensions.height / 2.0,
+						z + connection.connection_id as f32
+					);
+					if !connection.intake {
+						commands.spawn((SpriteBundle {
+							texture: asset_server.load("sprites/ui/connection_out.png"),
+							transform: Transform::from_translation(translation)
+							.with_rotation(Quat::from_rotation_arc(Vec3::Y, (translation.xy() - origin).normalize().extend(0.0))),
+							sprite: Sprite {
+								color: {get_molecule_color(connection.connection_id, selected_palette.0)},
+								custom_size: Some(Vec2::new(CONNECTION_OUT_WIDTH, CONNECTION_HEIGHT)),
+								..Default::default()
+							},
+							..Default::default()
+						},
+						connection,
+						RenderLayers::layer(1),
+						DespawnOnExitGameState,
+						Name::new("Connection Out"),
+						));
+					}
+				}
+				for (direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
+					let translation = Vec3::new(
+						origin.x + direction.x * dimensions.width / 2.0, 
+						origin.y + direction.y * dimensions.height / 2.0, 
+						z + connection.connection_id as f32
+					);
+					if connection.intake {
+						commands.spawn((SpriteSheetBundle {
+							texture_atlas: texture_atlases.add(TextureAtlas::from_grid(asset_server.load(get_molecule_path(connection.connection_id)), Vec2::new(32.0, 32.0), 4, 2, None, None)).clone(), 
+							transform: Transform::from_rotation(Quat::from_rotation_z(if direction.y == 1.0 {0.0} else if direction.y == -1.0 {180.0_f32.to_radians()} else {if direction.x == 1.0 {-90.0_f32.to_radians()} else {90.0_f32.to_radians()}}))
+							.with_translation(if direction.y == 1.0 {translation + Vec3:: new(0.0,250.0,0.0)} else if direction.y == -1.0 {translation - Vec3:: new(0.0,250.0,0.0)} else {if direction.x == 1.0 {translation + Vec3:: new(250.0,0.0,0.0)} else {translation - Vec3:: new(250.0,0.0,0.0)}}),
+							sprite: TextureAtlasSprite{
+								color: {get_molecule_color(connection.connection_id, selected_palette.0)},
+								index: 0,
+								custom_size: Some(Vec2::new(144.0, 144.0)),
+								..Default::default()
+							},
+							..Default::default()
+						},
+						RenderLayers::layer(1),
+						DespawnOnExitGameState,
+						Name::new("Molecule Identifier"),
+						));
+					}
+				}
 			},
 			ReactorType::Circle{origin, radius} => {
 				let texture: Handle<Image> = asset_server.load("sprites/ui/circle.png");
@@ -904,7 +955,7 @@ fn spawn_reactors(
 							sprite: TextureAtlasSprite{
 								color: get_molecule_color(index, selected_palette.0),
 								index: 0,
-								custom_size: Some(Vec2::new(get_molecule_radius(index) * 2.0, get_molecule_radius(index) * 2.0)),
+								custom_size: Some(Vec2::new(get_molecule_radius(index) * 4.0, get_molecule_radius(index) * 4.0)),
 								..Default::default()
 							},
 							..Default::default()
@@ -939,24 +990,79 @@ fn spawn_reactors(
 						origin.y + direction.y * radius, 
 						z + connection.connection_id as f32
 					);
-					commands.spawn((SpriteBundle {
-						texture: asset_server.load("sprites/ui/connection_out.png"),
-						transform: Transform::from_translation(translation)
-						.with_rotation(Quat::from_rotation_arc(Vec3::Y, (translation.xy() - origin).normalize().extend(0.0))),
-						sprite: Sprite {
-							color: if connection.intake {get_molecule_color(connection.connection_id, selected_palette.0)} 
-								else {*get_molecule_color(connection.connection_id, selected_palette.0).set_a(0.8)},
-							custom_size: Some(Vec2::new(CONNECTION_OUT_WIDTH, CONNECTION_HEIGHT)),
+					if connection.intake {
+						println!("INPUT CIRC");
+						commands.spawn((SpriteBundle {
+							texture: asset_server.load("sprites/ui/connection_in.png"),
+							transform: Transform::from_translation(translation)
+							.with_rotation(Quat::from_rotation_z(if direction.y == 1.0 {0.0} else if direction.y == -1.0 {180.0_f32.to_radians()} else {if direction.x == 1.0 {-90.0_f32.to_radians()} else {90.0_f32.to_radians()}})),
+							sprite: Sprite {
+								color: {get_molecule_color(connection.connection_id, selected_palette.0)},
+								custom_size: Some(Vec2::new(CONNECTION_IN_WIDTH, CONNECTION_HEIGHT)),
+								..Default::default()
+							},
 							..Default::default()
 						},
-						..Default::default()
-					},
-					connection,
-					RenderLayers::layer(1),
-					DespawnOnExitGameState,
-					Name::new("Connection"),
-					));
-				};
+						connection,
+						RenderLayers::layer(1),
+						DespawnOnExitGameState,
+						Name::new("Connection In"),
+						));
+					}
+				}
+				for (mut direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
+					direction = direction.normalize();
+					let translation = Vec3::new(
+						origin.x + direction.x * radius, 
+						origin.y + direction.y * radius, 
+						z + connection.connection_id as f32
+					);
+					if !connection.intake {
+						println!("OUTPUT CIRC");
+						commands.spawn((SpriteBundle {
+							texture: asset_server.load("sprites/ui/connection_out.png"),
+							transform: Transform::from_translation(translation)
+							.with_rotation(Quat::from_rotation_arc(Vec3::Y, (translation.xy() - origin).normalize().extend(0.0))),
+							sprite: Sprite {
+								color: {get_molecule_color(connection.connection_id, selected_palette.0)},
+								custom_size: Some(Vec2::new(CONNECTION_OUT_WIDTH, CONNECTION_HEIGHT)),
+								..Default::default()
+							},
+							..Default::default()
+						},
+						connection,
+						RenderLayers::layer(1),
+						DespawnOnExitGameState,
+						Name::new("Connection Out"),
+						));
+					}
+				}
+				for (mut direction, connection) in get_reactor_connections(level.0, reactor.reactor_id).0 {
+					direction = direction.normalize();
+					let translation = Vec3::new(
+						origin.x + direction.x * radius, 
+						origin.y + direction.y * radius, 
+						z + connection.connection_id as f32
+					);
+					if connection.intake {
+						commands.spawn((SpriteSheetBundle {
+							texture_atlas: texture_atlases.add(TextureAtlas::from_grid(asset_server.load(get_molecule_path(connection.connection_id)), Vec2::new(32.0, 32.0), 4, 2, None, None)).clone(), 
+							transform: Transform::from_rotation(Quat::from_rotation_z(if direction.y == 1.0 {0.0} else if direction.y == -1.0 {180.0_f32.to_radians()} else {if direction.x == 1.0 {-90.0_f32.to_radians()} else {90.0_f32.to_radians()}}))
+							.with_translation(if direction.y == 1.0 {translation + Vec3:: new(0.0,250.0,0.0)} else if direction.y == -1.0 {translation - Vec3:: new(0.0,250.0,0.0)} else {if direction.x == 1.0 {translation + Vec3:: new(250.0,0.0,0.0)} else {translation - Vec3:: new(250.0,0.0,0.0)}}),
+							sprite: TextureAtlasSprite{
+								color: {get_molecule_color(connection.connection_id, selected_palette.0)},
+								index: 0,
+								custom_size: Some(Vec2::new(CONNECTION_HEIGHT, CONNECTION_HEIGHT)),
+								..Default::default()
+							},
+							..Default::default()
+						},
+						RenderLayers::layer(1),
+						DespawnOnExitGameState,
+						Name::new("Molecule Identifier"),
+						));
+					}
+				}
 			},
 		}
 	}
